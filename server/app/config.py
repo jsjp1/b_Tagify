@@ -1,17 +1,20 @@
 import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-success = load_dotenv(dotenv_path=".env")
-if not success: 
-  print(".env file load failed")
-  exit(-1)
+class Settings(BaseSettings):
+  ALGORITHM: str = "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+  REFRESH_TOKEN_EXPIRE_MINUTES: int = 20160 # 14days
   
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-
-print(POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_DB)
-
-DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/{POSTGRES_DB}"
-print(DATABASE_URL)
+  SECRET_KEY: str
+  
+  POSTGRES_USER: str
+  POSTGRES_PASSWORD: str
+  POSTGRES_HOST: str
+  POSTGRES_DB: str
+  
+  model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
+  
+def get_settings():
+  env_path = os.path.abspath(".env")
+  return Settings(_env_file=env_path, _env_file_encoding="utf-8")

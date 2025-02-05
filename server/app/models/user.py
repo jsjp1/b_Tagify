@@ -7,10 +7,10 @@ class User(Base):
   __tablename__ = "users"
   
   id = Column(BIGINT, primary_key=True, index=True)
-  username = Column(String, unique=True, index=True)
+  username = Column(String, index=True)
   oauth_provider = Column(String)
   oauth_id = Column(String, unique=True)
-  email = Column(String, unique=True, nullable=True)
+  email = Column(String, nullable=True)
   profile_image = Column(String, nullable=True)
   
   created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
