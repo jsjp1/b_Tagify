@@ -9,3 +9,4 @@ class Tag(Base):
   tagname = Column(String, unique=True, nullable=False, index=True)
   
   user_tags = relationship("UserTag", back_populates="tag", cascade="all, delete-orphan")
+  video_tags = relationship("VideoTag", back_populates="tag", cascade="all, delete-orphan")
