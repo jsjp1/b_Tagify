@@ -17,5 +17,5 @@ class Video(Base):
   created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
   updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)
   
-  video_tag = relationship("VideoTag", back_populates="videos", cascade="all, delete-orphan")
-  user = relationship("User", back_populates="videos") 
+  video_tags = relationship("VideoTag", back_populates="video", cascade="all, delete-orphan")
+  user = relationship("User", back_populates="videos")
