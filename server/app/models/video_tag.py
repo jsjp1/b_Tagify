@@ -11,4 +11,4 @@ class VideoTag(Base):
   created_at = Column(TIMESTAMP, server_default=func.now())
   
   video = relationship("Video", back_populates="video_tags", passive_deletes=True)
-  tag = relationship("Tag", back_populates="user_tags", passive_deletes=True)
+  tag = relationship("Tag", back_populates="video_tags", passive_deletes=True)
