@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import relationship
 from models.base import Base
 
-
 class VideoTag(Base):
   __tablename__ = "video_tags"
   
