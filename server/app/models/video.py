@@ -1,7 +1,7 @@
-from models.base import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, BIGINT, DateTime, ForeignKey
+from app.models.base import Base
 
 class Video(Base):
   __tablename__ = "videos"

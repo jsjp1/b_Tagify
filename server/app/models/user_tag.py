@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, func
+from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.orm import relationship
-from models.base import Base
+from app.models.base import Base
 
 class UserTag(Base):
   __tablename__ = "user_tags"

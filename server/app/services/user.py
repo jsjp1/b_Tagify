@@ -2,8 +2,8 @@ from fastapi import HTTPException
 from requests import Session
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from models.user import User
-from schemas.user import UserCreate, UserLogin
+from app.models.user import User
+from app.schemas.user import UserCreate, UserLogin
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

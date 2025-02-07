@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import relationship
-from models.base import Base
+from app.models.base import Base
 
 class VideoTag(Base):
   __tablename__ = "video_tags"
@@ -12,3 +12,5 @@ class VideoTag(Base):
   
   video = relationship("Video", back_populates="video_tags", passive_deletes=True)
   tag = relationship("Tag", back_populates="video_tags", passive_deletes=True)
+  
+  

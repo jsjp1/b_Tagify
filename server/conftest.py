@@ -1,0 +1,75 @@
+import random
+from typing import Any, Generator
+import uuid
+
+import faker
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+from app.models.base import Base
+from app.main import get_application
+from app.db import get_db
+
+POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
+
+engine = create_engine(POSTGRES_TEST_DB_URL)
+TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+@pytest.fixture(scope="function")
+def app() -> Generator[FastAPI, Any, None]:
+    _app = get_application()
+    yield _app 
+    engine.dispose()
+
+@pytest.fixture(scope="function")
+def db_session() -> Generator[Session, Any, None]:
+    Base.metadata.create_all(engine)
+    connection = engine.connect()
+    session = TestSessionLocal(bind=connection)
+
+    yield session 
+
+    session.rollback()
+    session.close()
+    connection.close()
+    Base.metadata.drop_all(engine)
+
+@pytest.fixture(scope="function")
+def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
+    def _get_test_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = _get_test_db
+    with TestClient(app) as client:
+        yield client
+        
+        
+f = faker.Faker("ko-KR")
+        
+@pytest.fixture()
+def oauth_id():
+    return str(uuid.uuid4())
+
+@pytest.fixture()
+def oauth_provider():
+    providers = ["Google", "Apple"]
+    rand_idx = random.randrange(0, len(providers))
+    
+    return providers[rand_idx]
+
+@pytest.fixture()
+def test_user(oauth_id, oauth_provider):
+    user = {
+        "username": f.user_name(),
+        "oauth_id": oauth_id,
+        "oauth_provider": oauth_provider,
+        "email": f.email(),
+        "profile_image": f.url(),
+    }
+    
+    return user
