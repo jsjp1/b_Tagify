@@ -8,6 +8,7 @@ class Video(Base):
   
   id = Column(BIGINT, primary_key=True, index=True)
   title = Column(String, nullable=False)
+  link = Column(String, nullable=False)
   thumbnail = Column(String, nullable=True)
   summation = Column(String, nullable=True)
   video_length = Column(String, nullable=False)
