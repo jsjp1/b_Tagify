@@ -54,7 +54,6 @@ async def test_signup_fail_oauth_null(client, test_user):
   """
   oauth_id 필드가 null이면 안됨
   """
-  
   async with AsyncClient(transport=ASGITransport(app=client.app), base_url="http://test") as async_client:
     test_user_tmp = deepcopy(test_user)
     del test_user_tmp["oauth_id"]
@@ -82,6 +81,8 @@ async def test_signup_fail_oauth_null(client, test_user):
     
 @pytest.mark.asyncio
 async def test_signup_and_login_success(client, test_user):
+  """
+  """
   async with AsyncClient(transport=ASGITransport(app=client.app), base_url="http://test") as async_client:
     response = await async_client.post(
       "/api/users/signup",
