@@ -27,9 +27,8 @@ async def test_signup_success(client, test_user):
   response_json = response.json()
   
   assert response.status_code == 200, f"User Sign Up API Failed: {response.text}"
-  assert response_json["message"] == "success"
-  assert response_json["created_user_profile"]["oauth_id"] == test_user["oauth_id"]
-  assert response_json["created_user_profile"]["email"] == test_user["email"]
+  assert response_json["oauth_id"] == test_user["oauth_id"]
+  assert response_json["email"] == test_user["email"]
     
 @pytest.mark.asyncio
 async def test_signup_fail(client, test_user):
@@ -88,8 +87,8 @@ async def test_signup_and_login_success(client, test_user):
     )
     
     login_user = {
-      "oauth_id": response.json()["created_user_profile"]["oauth_id"],
-      "email": response.json()["created_user_profile"]["email"],
+      "oauth_id": response.json()["oauth_id"],
+      "email": response.json()["email"],
     }
     
     response = await async_client.post(
@@ -100,14 +99,13 @@ async def test_signup_and_login_success(client, test_user):
   response_json = response.json()
   
   assert response.status_code == 200, f"User Login API Failed: {response.text}"
-  assert response_json["message"] == "success"
   assert "access_token" in response_json
   assert "refresh_token" in response_json
-  assert response_json["existed_user_profile"]["username"] == test_user["username"]
-  assert response_json["existed_user_profile"]["oauth_provider"] == test_user["oauth_provider"]
-  assert response_json["existed_user_profile"]["profile_image"] == test_user["profile_image"]
-  assert response_json["existed_user_profile"]["oauth_id"] == test_user["oauth_id"]
-  assert response_json["existed_user_profile"]["email"] == test_user["email"]
+  assert response_json["username"] == test_user["username"]
+  assert response_json["oauth_provider"] == test_user["oauth_provider"]
+  assert response_json["profile_image"] == test_user["profile_image"]
+  assert response_json["oauth_id"] == test_user["oauth_id"]
+  assert response_json["email"] == test_user["email"]
   
 @pytest.mark.asyncio
 async def test_signup_and_login_fail(client, test_user):

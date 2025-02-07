@@ -3,14 +3,14 @@ from requests import Session
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from app.models.user import User
-from app.schemas.user import UserCreate, UserCreateResponse, UserLogin, UserLoginResponse
+from app.schemas.user import UserCreate, UserLogin
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserService():
   @staticmethod
-  async def get_user(user: UserLogin, db: Session) -> UserLoginResponse:
+  async def get_user(user: UserLogin, db: Session) -> User:
     """
     존재하는 사용자 확인 및 반환
     """
@@ -18,10 +18,10 @@ class UserService():
     if not db_user:
       raise HTTPException(status_code=400, detail=f"Cannot find user {user.email}")
     
-    return UserLoginResponse.model_validate(db_user, from_attributes=True)
+    return db_user
     
   @staticmethod
-  async def create_user(user: UserCreate, db: Session) -> UserCreateResponse:
+  async def create_user(user: UserCreate, db: Session) -> User:
     """
     새로운 사용자 생성
     """
@@ -42,7 +42,7 @@ class UserService():
       db.commit()
       db.refresh(db_user)
       
-      return UserCreateResponse.model_validate(db_user, from_attributes=True)
+      return db_user
     
     except IntegrityError:
       db.rollback()
