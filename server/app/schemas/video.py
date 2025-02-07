@@ -1,5 +1,5 @@
 from typing import Literal, Optional
-from pydantic import BaseModel, AnyHttpUrl, Field, field_serializer
+from pydantic import BaseModel, Field
 
 class VideoAnalyze(BaseModel):
   link: str
@@ -7,3 +7,8 @@ class VideoAnalyze(BaseModel):
   detail_degree: Literal[1, 2, 3, 4, 5] = Field(default=3)
   
   model_config = {"from_attributes": True}    
+  
+class VideoAnalyzeResponse(BaseModel):
+  video_id: int
+  
+  model_config = {"from_attributes": True}

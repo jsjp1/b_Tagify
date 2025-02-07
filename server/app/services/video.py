@@ -1,13 +1,12 @@
 from typing import List
 from requests import Session
-from app.schemas.video import VideoAnalyze
+from app.schemas.video import VideoAnalyze, VideoAnalyzeResponse
 from config import Settings
 
 class VideoService():
   @staticmethod
-  async def analyze_video(video: VideoAnalyze, db: Session, settings: Settings) -> List[str]:
+  async def analyze_video(video: VideoAnalyze, db: Session, settings: Settings) -> VideoAnalyzeResponse:
     """
-    비디오 링크 -> tag_count 만큼의 태그 리스트 생성 후 반환
+    비디오 링크 -> tag_count 만큼의 태그 리스트 생성, db 저장 후 video_id 반환
     """
-    tags = []
-    return tags
+    return

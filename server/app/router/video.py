@@ -18,9 +18,9 @@ async def analyze(
   settings = Depends(get_settings),
 ):
   try:
-    tags = await VideoService.analyze_video(request, db, settings)
+    video_id = await VideoService.analyze_video(request, db, settings)
   
-    return {"message": "success", "tags": tags}
+    return {"message": "success", "video_id": video_id}
     
   except HTTPException as e:
     raise e
