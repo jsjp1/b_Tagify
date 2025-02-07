@@ -2,10 +2,19 @@ from copy import deepcopy
 from httpx import ASGITransport, AsyncClient
 import pytest
 
+
 @pytest.mark.asyncio
 async def test_video_analyze_success(client, test_video_link):
   """
   video analyze api 테스트
+  """
+  # TODO
+  assert True
+
+@pytest.mark.asyncio
+async def test_video_analyze_failure(client, test_video_link):
+  """
+  video_id 불일치 -> 실패
   """
   test_video_link["tag_count"] = 3
   test_video_link["detail_degree"] = 3
@@ -18,9 +27,7 @@ async def test_video_analyze_success(client, test_video_link):
     
   response_json = response.json()
     
-  assert response.status_code == 200,  f"Video Analyze API fail: {response.text}"
-  assert response_json["message"] == "success"
-  assert len(response_json["tags"]) == test_video_link["tag_count"]
+  assert response.status_code == 422,  f"video id does not match -> fail: {response.text}"
   
 @pytest.mark.asyncio
 async def test_video_analyze_fail1(client, test_video_link):

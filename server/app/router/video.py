@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.schemas.video import VideoAnalyze
+from app.schemas.video import VideoAnalyze, VideoAnalyzeResponse
 from config import get_settings
 from app.services.video import VideoService
 
@@ -16,11 +16,11 @@ async def analyze(
   request: VideoAnalyze,
   db: Session = Depends(get_db),
   settings = Depends(get_settings),
-):
+) -> VideoAnalyzeResponse:
   try:
     video_id = await VideoService.analyze_video(request, db, settings)
   
-    return {"message": "success", "video_id": video_id}
+    return VideoAnalyzeResponse.model_validate(video_id, from_attributes=True)
     
   except HTTPException as e:
     raise e
