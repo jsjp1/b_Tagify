@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, AnyHttpUrl
+from pydantic import BaseModel, EmailStr, AnyHttpUrl, field_serializer
 from typing import Optional
 
 class UserLogin(BaseModel):
@@ -12,6 +12,6 @@ class UserCreate(BaseModel):
     oauth_provider: str
     oauth_id: str
     email: Optional[EmailStr] = None
-    profile_image: Optional[AnyHttpUrl] = None
+    profile_image: Optional[str] = None
     
     model_config = {"from_attributes": True}

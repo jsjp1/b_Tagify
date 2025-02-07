@@ -82,6 +82,7 @@ async def test_signup_fail_oauth_null(client, test_user):
 @pytest.mark.asyncio
 async def test_signup_and_login_success(client, test_user):
   """
+  회원가입 후 로그인
   """
   async with AsyncClient(transport=ASGITransport(app=client.app), base_url="http://test") as async_client:
     response = await async_client.post(
@@ -113,6 +114,9 @@ async def test_signup_and_login_success(client, test_user):
   
 @pytest.mark.asyncio
 async def test_signup_and_login_fail(client, test_user):
+  """
+  회원가입 후, 회원가입 시 사용한 oauth_id와 다른 oauth_id로 로그인 -> 실패
+  """
   async with AsyncClient(transport=ASGITransport(app=client.app), base_url="http://test") as async_client:
     response = await async_client.post(
       "/api/users/signup",
