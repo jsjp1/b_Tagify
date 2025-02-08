@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import List, Optional
 
 class UserLogin(BaseModel):
     oauth_id: str
@@ -32,5 +32,20 @@ class UserCreate(BaseModel):
 class UserCreateResponse(BaseModel):
     oauth_id: str
     email: Optional[EmailStr] = None
+    
+    model_config = {"from_attributes": True}
+    
+class UserVideos(BaseModel):
+    oauth_id: str
+    
+    model_config = {"from_attributes": True}
+    
+class UserVideosResponse(BaseModel):
+    title: str
+    link: str
+    thumbnail: Optional[str]
+    summation: Optional[str]
+    video_length: int
+    tags: List[str]
     
     model_config = {"from_attributes": True}
