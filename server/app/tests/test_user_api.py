@@ -87,8 +87,8 @@ async def test_signup_and_login_success(client, test_user):
     )
     
     login_user = {
-      "oauth_id": response.json()["oauth_id"],
-      "email": response.json()["email"],
+      "oauth_id": test_user["oauth_id"],
+      "email": test_user["email"],
     }
     
     response = await async_client.post(
@@ -129,3 +129,27 @@ async def test_signup_and_login_fail(client, test_user):
     )
     
   assert response.status_code == 400, f"different oauth_id -> success error: {response.text}"
+  
+@pytest.mark.asyncio
+async def test_get_videos_success(auth_client, test_user):
+  """
+  get user videos api 테스트
+  """
+  async with AsyncClient(transport=ASGITransport(app=auth_client.app), base_url="http://test") as async_client:
+    response = await async_client.get(
+      f"/api/users/{test_user['oauth_id']}/videos",
+    )
+    
+    response_json = response.json()
+    
+    assert response.status_code == 200, f"Get User Videos API Failed: {response.text}"
+    assert isinstance(response_json, list)
+
+    if len(response_json) >= 1:
+      assert "title" in response_json
+      assert "link" in response_json
+      assert "thumbnail" in response_json
+      assert "summation" in response_json
+      assert "video_length" in response_json
+      assert "tags" in response_json
+      assert isinstance(response_json["tags"], list)

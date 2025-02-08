@@ -10,6 +10,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from app.models.base import Base
 from app.main import get_application
+from app.models.user import User
+from app.util.auth import create_access_token
 from app.db import get_db
 
 POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
@@ -17,13 +19,13 @@ POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
 engine = create_engine(POSTGRES_TEST_DB_URL)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def app() -> Generator[FastAPI, Any, None]:
     _app = get_application()
     yield _app 
     engine.dispose()
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def db_session() -> Generator[Session, Any, None]:
     Base.metadata.create_all(engine)
     connection = engine.connect()
@@ -36,7 +38,7 @@ def db_session() -> Generator[Session, Any, None]:
     connection.close()
     Base.metadata.drop_all(engine)
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
     def _get_test_db():
         try:
@@ -48,6 +50,11 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
     with TestClient(app) as client:
         yield client
         
+@pytest.fixture
+def auth_client(client):
+    access_token = create_access_token({"sub": test_user.email})
+    client.headers.update({"Authorization": f"Bearer {access_token}"})
+    return client
         
 f = faker.Faker("ko-KR")
         
@@ -74,6 +81,21 @@ def test_user(oauth_id, oauth_provider):
     
     return user
 
+@pytest.fixture(scope="function")
+def test_user_persist(db_session, oauth_id, oauth_provider):
+    user = User(
+        username=f.user_name(),
+        oauth_id=oauth_id,
+        oauth_provider=oauth_provider,
+        email=f.email(),
+        profile_image=f.url(),
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    
+    return user
+
 @pytest.fixture()
 def test_video_link():
     video = {
@@ -83,3 +105,5 @@ def test_video_link():
     }   
     
     return video
+
+# TODO: token authorization 부분 추가
