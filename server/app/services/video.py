@@ -19,6 +19,7 @@ class VideoService():
     ydl_opts = {
       "quiet": True,
       "skip_download": True,
+      "cookiefile": "cookie.txt"
     }
     
     with YoutubeDL(ydl_opts) as ydl:
