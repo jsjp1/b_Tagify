@@ -47,11 +47,11 @@ class VideoService():
       full_caption_text = " ".join(captions)
       
       video_info = {
-        "title": info.title,
-        "thumbnail": info.thumbnail,
-        "description": info.description,
-        "tags": info.tags,
-        "length": info.duration, # second
+        "title": info["title"],
+        "thumbnail": info["thumbnail"],
+        "description": info["description"],
+        "tags": info["tags"],
+        "length": info["duration"], # second
         "summation": full_caption_text,
       }
         
