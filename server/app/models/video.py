@@ -7,8 +7,8 @@ class Video(Base):
   __tablename__ = "videos"
   
   id = Column(BIGINT, primary_key=True, index=True)
+  url = Column(String, nullable=False)
   title = Column(String, nullable=False)
-  link = Column(String, nullable=False)
   thumbnail = Column(String, nullable=True)
   summation = Column(String, nullable=True)
   video_length = Column(String, nullable=False)

@@ -6,8 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from app.models.user import User
 from app.models.video import Video
-from app.models.video_tag import VideoTag
-from app.schemas.user import UserCreate, UserLogin, UserVideos
+from app.schemas.user import UserCreate, UserLogin
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,18 +53,3 @@ class UserService():
     except Exception as e:
       db.rollback()
       raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-    
-  @staticmethod
-  async def get_user_videos(user: UserVideos, db: Session) -> List[Video]:
-    """
-    유저가 소유한 비디오 정보를 모두 반환
-    """
-    videos = (
-        db.query(Video)
-        .join(User)
-        .filter(User.oauth_id == user.oauth_id)
-        .options(joinedload(Video.video_tags).joinedload(VideoTag.tag)) 
-        .all()
-    )
-      
-    return videos

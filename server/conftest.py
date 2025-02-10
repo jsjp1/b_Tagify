@@ -13,6 +13,7 @@ from app.main import get_application
 from app.models.user import User
 from app.util.auth import create_access_token
 from app.db import get_db
+from config import get_settings
 
 POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
 
@@ -51,8 +52,9 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
         yield client
         
 @pytest.fixture
-def auth_client(client):
-    access_token = create_access_token({"sub": test_user.email})
+def auth_client(client, test_user):
+    settings = get_settings()
+    access_token = create_access_token(settings, data={"sub": test_user["email"]})
     client.headers.update({"Authorization": f"Bearer {access_token}"})
     return client
         
@@ -97,7 +99,7 @@ def test_user_persist(db_session, oauth_id, oauth_provider):
     return user
 
 @pytest.fixture()
-def test_video_link():
+def test_video_url():
     video = {
         "url": "https://youtube.com/test_video_id", # TODO: 수정 필요, 진짜 video id로
         "tag_count": 0, # test code에서 수정
@@ -105,5 +107,3 @@ def test_video_link():
     }   
     
     return video
-
-# TODO: token authorization 부분 추가

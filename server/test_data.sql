@@ -10,7 +10,7 @@ VALUES
 (2, 'Flutter'),
 (3, 'Machine Learning');
 
-INSERT INTO videos (id, title, link, thumbnail, summation, video_length, user_id, created_at, updated_at)
+INSERT INTO videos (id, title, url, thumbnail, summation, video_length, user_id, created_at, updated_at)
 VALUES 
 (1, 'Learn Python Basics', 'https://example.com/python.mp4', 'https://example.com/python.jpg', 'Intro to Python', '120', 1, NOW(), NOW()),
 (2, 'Flutter for Beginners', 'https://example.com/flutter.mp4', 'https://example.com/flutter.jpg', 'Flutter UI Basics', '95', 2, NOW(), NOW()),
