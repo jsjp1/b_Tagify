@@ -1,6 +1,6 @@
 from http.client import HTTPException
 from typing import List
-from fastapi import requests
+import requests
 from requests import Session
 from sqlalchemy.exc import IntegrityError
 import isodate
