@@ -7,7 +7,7 @@ class UserTags(BaseModel):
   model_config = {"from_attributes": True}
     
 class UserTagsResponse(BaseModel):
-  tags: str
-  tag_ids: int
+  tag: str
+  tag_id: int
   
   model_config = {"from_attributes": True}
