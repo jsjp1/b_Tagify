@@ -101,7 +101,7 @@ def test_user_persist(db_session, oauth_id, oauth_provider):
 @pytest.fixture()
 def test_video_url():
     video = {
-        "url": "https://youtube.com/test_video_id", # TODO: 수정 필요, 진짜 video id로
+        "url": "https://youtu.be/rAE4tYftFfo?si=52kXe2o9wpk5VHnR",
         "tag_count": 0, # test code에서 수정
         "detail_degree": 0, # test code에서 수정
     }   

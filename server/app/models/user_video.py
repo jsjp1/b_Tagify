@@ -11,6 +11,6 @@ class UserVideo(Base):
   summation = Column(String, nullable=True)
   
   created_at = Column(TIMESTAMP, server_default=func.now())
-  
-  user = relationship("User", back_populates="user_videos")
-  video = relationship("Video", back_populates="user_videos")
+
+  user = relationship("User", back_populates="user_videos", overlaps="videos,users")
+  video = relationship("Video", back_populates="user_videos", overlaps="users,videos")

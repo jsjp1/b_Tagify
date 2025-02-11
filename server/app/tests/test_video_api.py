@@ -10,14 +10,16 @@ async def test_video_analyze_success(auth_client, test_user_persist, test_video_
   """
   # TODO
   test_video_url["oauth_id"] = test_user_persist.oauth_id
+  test_video_url["tag_count"] = 3
+  test_video_url["detail_degree"] = 3
   async with AsyncClient(transport=ASGITransport(app=auth_client.app), base_url="http://test") as async_client:
     response = await async_client.post(
       "/api/videos/analyze",
       json = test_video_url  
     )
     
-  assert response.json() == "123"
-  # assert response.status_code == 200
+  assert response.status_code == 200
+  assert "video_id" in response.json()
 
 @pytest.mark.asyncio
 async def test_video_analyze_fail1(auth_client, test_video_url):

@@ -17,5 +17,5 @@ class User(Base):
   updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)
   
   user_tags = relationship("UserTag", back_populates="user", cascade="all, delete-orphan")
-  user_videos = relationship("UserVideo", back_populates="user", cascade="all, delete-orphan")
-  videos = relationship("Video", secondary="user_videos", back_populates="users")
+  user_videos = relationship("UserVideo", back_populates="user", cascade="all, delete-orphan", overlaps="videos")
+  videos = relationship("Video", secondary="user_videos", back_populates="users", overlaps="user_videos")
