@@ -43,7 +43,6 @@ async def videos(
             title=video.title,
             url=video.url,
             thumbnail=video.thumbnail,
-            summation=video.summation,
             video_length=video.video_length,
             tags=[tag.tag.tagname for tag in video.video_tags] if video.video_tags else []
         )

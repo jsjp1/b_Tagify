@@ -24,7 +24,6 @@ class UserVideosResponse(BaseModel):
   url: str
   title: str
   thumbnail: Optional[str]
-  summation: Optional[str]
   video_length: int
   tags: List[str]
   
