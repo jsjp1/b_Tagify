@@ -62,7 +62,7 @@ class VideoService():
         "title": info["title"],
         "thumbnail": info["thumbnail"],
         "description": info["description"],
-        "tags": info["tags"],
+        "tags": info["tags"], # TODO: tag 생성 부분 -> llm 이용
         "length": info["duration"], # second
         "summation": full_caption_text,
       }
