@@ -1,5 +1,6 @@
 from http.client import HTTPException
 from typing import List
+from fastapi import requests
 from requests import Session
 from sqlalchemy.exc import IntegrityError
 import isodate
@@ -34,6 +35,23 @@ class VideoService():
         return int(isodate.parse_duration(duration).total_seconds())
     except:
         return 0
+      
+  @staticmethod
+  def _get_auto_captions(video_id: str, lang: str = "ko") -> str:
+      """
+      YouTube 자동 생성 자막 가져오기
+      """
+      caption_url = f"https://www.youtube.com/api/timedtext?v={video_id}&lang={lang}&fmt=srv3"
+      
+      response = requests.get(caption_url)
+      if response.status_code != 200:
+          return ""
+      
+      from xml.etree import ElementTree
+      root = ElementTree.fromstring(response.text)
+      captions = " ".join([elem.text for elem in root.findall(".//text") if elem.text])
+      
+      return captions
     
   @staticmethod
   def _extract_video_info(video_url: str, settings: Settings, lang: str = 'ko') -> dict:
@@ -56,6 +74,7 @@ class VideoService():
           "description": "",
           "tags": [],
           "length": 0,  # 초 단위
+          "summation": "",
       }
 
     video_data = response["items"][0]
@@ -68,6 +87,7 @@ class VideoService():
         "description": snippet.get("description", ""),
         "tags": snippet.get("tags", []),
         "length": VideoService._convert_duration_to_seconds(content_details.get("duration", "")),
+        "summation": VideoService._get_auto_captions(video_id, lang),
     }
 
     return video_info
