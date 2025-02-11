@@ -13,6 +13,7 @@ from app.models.user import User
 from app.models.video_tag import VideoTag
 from app.models.tag import Tag
 from app.models.user_video import UserVideo
+from app.models.user_tag import UserTag
 
 class VideoService():
   @staticmethod
@@ -105,6 +106,7 @@ class VideoService():
     
     tag_list = video_info.get("tags", [])[:video.tag_count]
     video_tags = []
+    user_tags = []
     
     for tag_name in tag_list:
       db_tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
@@ -119,10 +121,13 @@ class VideoService():
           db_tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
           
       video_tags.append(VideoTag(video_id=db_video.id, tag_id=db_tag.id))
+      user_tags.append(UserTag(user_id=db_user.id, tag_id=db_tag.id))
       
     if video_tags:
       db.add_all(video_tags)
-      db.commit()
+    if user_tags:
+      db.add_all(user_tags)
+    db.commit()
     
     return VideoAnalyzeResponse(video_id=db_video.id, tags=tag_list)
   
