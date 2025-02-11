@@ -118,7 +118,7 @@ class VideoService():
           db.rollback()
           db_tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
           
-      video_tags.append(VideoTag(video_id=db_video.id, tag_id=db_video.id))
+      video_tags.append(VideoTag(video_id=db_video.id, tag_id=db_tag.id))
       
     if video_tags:
       db.add_all(video_tags)
