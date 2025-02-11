@@ -23,7 +23,7 @@ async def tags(
     return [
         UserTagsResponse(
           tag=tag.tagname,
-          tag_ids=tag.id,
+          tag_id=tag.id,
         )
         for tag in tags
     ]
