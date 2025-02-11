@@ -10,13 +10,11 @@ class Video(Base):
   url = Column(String, nullable=False)
   title = Column(String, nullable=False)
   thumbnail = Column(String, nullable=True)
-  summation = Column(String, nullable=True)
   video_length = Column(String, nullable=False)
-  
-  user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
   
   created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
   updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)
   
   video_tags = relationship("VideoTag", back_populates="video", cascade="all, delete-orphan")
-  user = relationship("User", back_populates="videos")
+  user_videos = relationship("UserVideo", back_populates="video", cascade="all, delete-orphan")
+  users = relationship("User", secondary="user_videos", back_populates="videos")
