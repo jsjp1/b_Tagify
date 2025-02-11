@@ -1,11 +1,10 @@
 from http.client import HTTPException
 from typing import List
-import json
-import requests
 from requests import Session
-from yt_dlp import YoutubeDL
 from sqlalchemy.exc import IntegrityError
+import isodate
 from sqlalchemy.orm import joinedload
+from googleapiclient.discovery import build
 from app.schemas.video import UserVideos, VideoAnalyze, VideoAnalyzeResponse
 from config import Settings
 from app.models.video import Video
@@ -17,58 +16,61 @@ from app.models.user_tag import UserTag
 
 class VideoService():
   @staticmethod
-  def _extract_video_info(video_url: str, lang: str = 'ko') -> dict:
+  def _extract_video_id(video_url: str) -> str:
+    """YouTube URL에서 영상 ID 추출"""
+    from urllib.parse import urlparse, parse_qs
+    
+    parsed_url = urlparse(video_url)
+    if parsed_url.hostname in ["www.youtube.com", "youtube.com"]:
+        return parse_qs(parsed_url.query).get("v", [""])[0]
+    elif parsed_url.hostname in ["youtu.be"]:
+        return parsed_url.path.lstrip("/")
+    return ""
+
+  @staticmethod
+  def _convert_duration_to_seconds(duration: str) -> int:
+    """ISO 8601 형식의 동영상 길이를 초 단위로 변환"""
+    try:
+        return int(isodate.parse_duration(duration).total_seconds())
+    except:
+        return 0
+    
+  @staticmethod
+  def _extract_video_info(video_url: str, settings: Settings, lang: str = 'ko') -> dict:
     """
     유튜브 비디오 링크 -> 자막 반환
     """
-    ydl_opts = {
-      "quiet": True,
-      "skip_download": True,
-      "cookiefile": "cookie.txt"
-    }
+    video_id = VideoService._extract_video_id(video_url)
+    youtube = build("youtube", "v3", developerKey=settings.YOUTUBE_API_KEY)
     
-    with YoutubeDL(ydl_opts) as ydl:
-      info = ydl.extract_info(video_url, download=False)
-      
-      caption_url = ""
-      subtitles = info.get("subtitles", {}).get(lang, [])
-      if subtitles:
-        caption_url = subtitles[0]["url"]
-      else:
-        auto_captions = info.get("automatic_captions", {}).get(lang, [])
-        caption_url = auto_captions[0]["url"]
-        
-      response = requests.get(caption_url)
-      if response.status_code != 200:
-        return {
+    request = youtube.videos().list(
+      part="snippet,contentDetails",
+      id=video_id
+    )
+    response = request.execute()
+    
+    if not response["items"]:
+      return {
           "title": "",
           "thumbnail": "",
           "description": "",
-          "tags": "",
-          "length": "", # second
-          "summation": "",
-        }
-      
-      data = json.loads(response.text)
-      captions = []
-      for event in data.get("events", []):
-          for seg in event.get("segs", []):
-              text = seg.get("utf8", "").strip()
-              if text:
-                  captions.append(text)
-
-      full_caption_text = " ".join(captions)
-      
-      video_info = {
-        "title": info["title"],
-        "thumbnail": info["thumbnail"],
-        "description": info["description"],
-        "tags": info["tags"], # TODO: tag 생성 부분 -> llm 이용
-        "length": info["duration"], # second
-        "summation": full_caption_text,
+          "tags": [],
+          "length": 0,  # 초 단위
       }
-        
-      return video_info
+
+    video_data = response["items"][0]
+    snippet = video_data["snippet"]
+    content_details = video_data["contentDetails"]
+
+    video_info = {
+        "title": snippet.get("title", ""),
+        "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
+        "description": snippet.get("description", ""),
+        "tags": snippet.get("tags", []),
+        "length": VideoService._convert_duration_to_seconds(content_details.get("duration", "")),
+    }
+
+    return video_info
     
   @staticmethod
   async def analyze_video(video: VideoAnalyze, db: Session, settings: Settings) -> VideoAnalyzeResponse:
@@ -81,7 +83,7 @@ class VideoService():
       
     db_video = db.query(Video).filter(Video.url == video.url).first()
     if not db_video:
-      video_info = VideoService._extract_video_info(video.url)
+      video_info = VideoService._extract_video_info(video.url, settings)
       
       db_video = Video(
         url = video.url,

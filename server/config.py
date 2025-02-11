@@ -13,6 +13,8 @@ class Settings(BaseSettings):
   POSTGRES_HOST: str = "localhost"
   POSTGRES_DB: str = "test_db"
   
+  YOUTUBE_API_KEY: str = "youtube_api_key"
+  
   model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
   
 def get_settings():
