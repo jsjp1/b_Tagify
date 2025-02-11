@@ -102,8 +102,8 @@ class VideoService():
         raise HTTPException(status_code=404, detail="User not found")
       
     db_video = db.query(Video).filter(Video.url == video.url).first()
+    video_info = VideoService._extract_video_info(video.url, settings)
     if not db_video:
-      video_info = VideoService._extract_video_info(video.url, settings)
       
       db_video = Video(
         url = video.url,
