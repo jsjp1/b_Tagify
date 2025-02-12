@@ -1,8 +1,12 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents, UserContentsResponse)
+from app.schemas.content import (
+    ContentAnalyze,
+    ContentAnalyzeResponse,
+    UserContents,
+    UserContentsResponse,
+)
 from app.services.video import VideoService
 from config import get_settings
 from fastapi import APIRouter, Depends, HTTPException
@@ -64,15 +68,11 @@ async def videos(
                 url=content.url,
                 thumbnail=content.thumbnail,
                 **(
-                    {"video_length": content.video_length}
+                    {"video_length": content.video_metadata.video_length}
                     if content_type == "video"
                     else {}
                 ),
-                tags=(
-                    [tag.tag.tagname for tag in content.video_tags]
-                    if content.video_tags
-                    else []
-                ),
+                tags=([tag.tagname for tag in content.tags] if content.tags else []),
             )
             for content in contents
         ]

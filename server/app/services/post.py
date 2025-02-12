@@ -1,6 +1,4 @@
-
-
 class PostService:
-  @staticmethod
-  async def f():
-    pass
+    @staticmethod
+    async def f():
+        pass

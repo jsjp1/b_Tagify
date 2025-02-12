@@ -4,17 +4,18 @@ from typing import List
 import isodate
 from googleapiclient.discovery import build
 from requests import Session
+from sqlalchemy import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-from app.models.content import Content
+from app.models.content import Content, ContentTypeEnum
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.content_tag import content_tag_association
 from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
 from config import Settings
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse, UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 
 
 class VideoService:
@@ -100,42 +101,46 @@ class VideoService:
                 content_type=content_type,
                 user_id=db_user.id,
             )
-
             db.add(db_content)
-            db.commit()
-            db.refresh(db_content)
-            
+            db.flush()
+
             video_metadata = VideoMetadata(
                 content_id=db_content.id,
                 video_length=content_info.get("length", "0"),
             )
-            
             db.add(video_metadata)
-            db.commit()
-            
+
         tag_list = content_info.get("tags", [])[: content.tag_count]
-        content_tags = []
-        user_tags = []
+        existing_tags = {
+            tag.tagname: tag
+            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
+        }
 
+        new_tags = []
         for tag_name in tag_list:
-            db_tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
+            if tag_name not in existing_tags:
+                new_tag = Tag(tagname=tag_name)
+                db.add(new_tag)
+                new_tags.append(new_tag)
 
-            if not db_tag:
-                db_tag = Tag(tagname=tag_name)
-                db.add(db_tag)
-                try:
-                    db.commit()
-                except IntegrityError:
-                    db.rollback()
-                    db_tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
+        db.flush()
+        existing_tags.update({tag.tagname: tag for tag in new_tags})
 
-            content_tags.append(content_tag_association(content_id=db_content.id, tag_id=db_tag.id))
-            user_tags.append(user_tag_association(user_id=db_user.id, tag_id=db_tag.id))
+        db.execute(
+            insert(content_tag_association),
+            [
+                {"content_id": db_content.id, "tag_id": tag.id}
+                for tag in existing_tags.values()
+            ],
+        )
+        db.execute(
+            insert(user_tag_association),
+            [
+                {"user_id": db_user.id, "tag_id": tag.id}
+                for tag in existing_tags.values()
+            ],
+        )
 
-        if content_tags:
-            db.add_all(content_tags)
-        if user_tags:
-            db.add_all(user_tags)
         db.commit()
 
         return ContentAnalyzeResponse(content_id=db_content.id)
@@ -146,8 +151,11 @@ class VideoService:
         유저가 소유한 비디오 정보를 모두 반환
         """
         contents = (
-            db.query(Content, User)
-            .join(User, Content.user_id == User.id)
+            db.query(Content)
+            .filter(Content.user.has(oauth_id=user.oauth_id))
+            .filter(Content.content_type == ContentTypeEnum.VIDEO)
+            .options(joinedload(Content.tags))
+            .options(joinedload(Content.video_metadata))
             .all()
         )
 
