@@ -47,7 +47,7 @@ async def analyze(
 
 
 @router.get("/user")
-async def videos(
+async def contents(
     oauth_id: str,
     content_type: str,
     db: Session = Depends(get_db),
