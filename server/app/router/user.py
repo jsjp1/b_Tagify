@@ -1,6 +1,5 @@
 from app.db import get_db
-from app.schemas.user import (UserCreate, UserCreateResponse, UserLogin,
-                              UserLoginResponse)
+from app.schemas.user import (UserCreate, UserCreateResponse, UserLogin, UserLoginResponse)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
