@@ -33,15 +33,15 @@ class UserService:
         return db_user
     
     
-    async def get_all_users(db: Session) -> AllUsersResponse:
+    @staticmethod
+    async def get_all_users(db: Session) -> List[User]:
         """
         모든 사용자 정보를 가져오는 메서드
         """
         users = db.query(User).all()
         
-        return AllUsersResponse(
-            users=[User.model_validate(user, from_attributes=True) for user in users]
-        )
+        return users
+
 
     @staticmethod
     async def create_user(user: UserCreate, db: Session) -> User:

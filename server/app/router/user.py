@@ -1,9 +1,11 @@
 from app.db import get_db
 from app.schemas.user import (
+    User,
     UserCreate,
     UserCreateResponse,
     UserLogin,
     UserWithTokens,
+    AllUsersResponse,
 )
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
@@ -17,6 +19,24 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("/endpoint_test")
 def endpoint_test():
     return {"message": "ok"}
+
+
+@router.get("/")
+async def users(
+    db: Session = Depends(get_db),
+) -> AllUsersResponse:
+    try:
+        db_users = await UserService.get_all_users(db)
+
+        return AllUsersResponse(
+            users=[User.model_validate(user, from_attributes=True) for user in db_users]
+        )
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 
 
 @router.post("/login")
