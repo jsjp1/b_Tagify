@@ -60,7 +60,7 @@ async def contents(
             pass
             # contents = await PostService.get_user_posts(request, db)
         else:
-            pass
+            raise HTTPException(status_code=400, detail="Invalid content type")
 
         return [
             UserContentsResponse(

@@ -74,7 +74,7 @@ def oauth_id():
 
 @pytest.fixture()
 def oauth_provider():
-    providers = ["Google", "Apple"]
+    providers = ["Google", "Apple", "Kakao"]
     rand_idx = random.randrange(0, len(providers))
 
     return providers[rand_idx]
@@ -95,6 +95,8 @@ def test_user(oauth_id, oauth_provider):
 
 @pytest.fixture(scope="function")
 def test_user_persist(db_session, oauth_id, oauth_provider):
+    """
+    """
     user = User(
         username=f.user_name(),
         oauth_id=oauth_id,
