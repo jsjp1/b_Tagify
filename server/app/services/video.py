@@ -70,7 +70,7 @@ class VideoService:
             "title": snippet.get("title", ""),
             "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
             "description": snippet.get("description", ""),
-            "tags": snippet.get("tags", []),
+            "tags": snippet.get("tags", []), # TODO: tags 처리 -> llm api
             "length": VideoService._convert_duration_to_seconds(
                 content_details.get("duration", "")
             ),
@@ -112,6 +112,9 @@ class VideoService:
             db.add(video_metadata)
 
         tag_list = content_info.get("tags", [])[: content.tag_count]
+        if len(tag_list) == 0:
+            tag_list.append("None")
+            
         existing_tags = {
             tag.tagname: tag
             for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
@@ -125,8 +128,14 @@ class VideoService:
                 new_tags.append(new_tag)
 
         db.flush()
+        for i in new_tags:
+            print(i)
+            
         existing_tags.update({tag.tagname: tag for tag in new_tags})
 
+        for tag in existing_tags.values():
+            print("TAG ID: ", tag.id)
+            
         db.execute(
             insert(content_tag_association),
             [
