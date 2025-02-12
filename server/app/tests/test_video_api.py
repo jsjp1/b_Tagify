@@ -112,7 +112,7 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
 
 
 @pytest.mark.asyncio
-async def test_get_videos_success(auth_client, test_user):
+async def test_get_videos_success_with_no_data(auth_client, test_user):
     """
     get user videos api 테스트
     """
@@ -130,12 +130,36 @@ async def test_get_videos_success(auth_client, test_user):
             response.status_code == 200
         ), f"Get User Videos API Failed: {response.text}"
         assert isinstance(response_json, list)
+        assert len(response_json) == 0
+            
 
-        if len(response_json) >= 1:
-            assert "title" in response_json
-            assert "url" in response_json
-            assert "thumbnail" in response_json
-            assert "summation" in response_json
-            assert "video_length" in response_json
-            assert "tags" in response_json
-            assert isinstance(response_json["tags"], list)
+@pytest.mark.asyncio
+async def test_get_videos_success_with_exist_data(auth_client, test_user_with_video_and_tag):
+    """
+    get user videos api 테스트
+    """
+    test_user = test_user_with_video_and_tag
+    
+    async with AsyncClient(
+        transport=ASGITransport(app=auth_client.app), base_url="http://test"
+    ) as async_client:
+        response = await async_client.get(
+            f"/api/contents/user?content_type=video&oauth_id={test_user.oauth_id}",
+        )
+
+        response_json = response.json()
+
+        # 없는 user(없는 oauth_id)더라도 200 status code 반환
+        assert (
+            response.status_code == 200
+        ), f"Get User Videos API Failed: {response.text}"
+        assert isinstance(response_json, list)
+        assert len(response_json) >= 1
+        
+        assert "title" in response_json[0]
+        assert "url" in response_json[0]
+        assert "thumbnail" in response_json[0]
+        assert "video_length" in response_json[0]
+        assert "body" in response_json[0] and response_json[0]["body"] == ""
+        assert "tags" in response_json[0]
+        assert isinstance(response_json[0]["tags"], list)

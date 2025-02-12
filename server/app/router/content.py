@@ -72,6 +72,11 @@ async def contents(
                     if content_type == "video"
                     else {}
                 ),
+                **(
+                    {"body": content.post_metadata.body}
+                    if content_type == "post"
+                    else {}
+                ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
             )
             for content in contents
