@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.user import UserCreate, UserLogin
+from app.schemas.user import UserCreate, UserLogin, AllUsersResponse
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -31,6 +31,17 @@ class UserService:
             )
 
         return db_user
+    
+    
+    async def get_all_users(db: Session) -> AllUsersResponse:
+        """
+        모든 사용자 정보를 가져오는 메서드
+        """
+        users = db.query(User).all()
+        
+        return AllUsersResponse(
+            users=[User.model_validate(user, from_attributes=True) for user in users]
+        )
 
     @staticmethod
     async def create_user(user: UserCreate, db: Session) -> User:

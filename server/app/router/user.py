@@ -3,7 +3,7 @@ from app.schemas.user import (
     UserCreate,
     UserCreateResponse,
     UserLogin,
-    UserLoginResponse,
+    UserWithTokens,
 )
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
@@ -24,7 +24,7 @@ async def login(
     request: UserLogin,
     db: Session = Depends(get_db),
     settings=Depends(get_settings),
-) -> UserLoginResponse:
+) -> UserWithTokens:
     try:
         db_user = await UserService.get_user(request, db)
 
@@ -36,7 +36,7 @@ async def login(
         db_user.access_token = access_token
         db_user.refresh_token = refresh_token
 
-        return UserLoginResponse.model_validate(db_user, from_attributes=True)
+        return UserWithTokens.model_validate(db_user, from_attributes=True)
 
     except HTTPException as e:
         raise e
