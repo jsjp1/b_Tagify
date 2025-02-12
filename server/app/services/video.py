@@ -103,6 +103,7 @@ class VideoService:
             )
             db.add(db_content)
             db.flush()
+            db.refresh(db_content)
 
             video_metadata = VideoMetadata(
                 content_id=db_content.id,

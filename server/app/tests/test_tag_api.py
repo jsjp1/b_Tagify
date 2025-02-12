@@ -54,8 +54,8 @@ async def test_get_tags_success_with_exist_user(auth_client, test_user_with_vide
         if len(response_json) >= 1:
             assert "tag" in response_json[0]
             assert "tag_id" in response_json[0]
-
-
+            
+            
 @pytest.mark.asyncio
 async def test_get_tag_videos(auth_client, test_user_with_video_and_tag, db_session):
     """

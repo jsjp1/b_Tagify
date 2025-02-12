@@ -10,7 +10,7 @@ def test_users_endpoint(client):
     assert response.json() == {"message": "ok"}
 
 
-def test_videos_endpoint(client):
+def test_contents_endpoint(client):
     response = client.get("/api/contents/endpoint_test")
     assert response.status_code == 200
     assert response.json() == {"message": "ok"}

@@ -21,6 +21,33 @@ async def test_db_connection(client):
 
 
 @pytest.mark.asyncio
+async def test_get_all_users(auth_client, test_user_persist):
+    """
+    모든 유저 가져오는 api 테스트
+    """
+    async with AsyncClient(
+        transport=ASGITransport(app=auth_client.app), base_url="http://test"
+    ) as async_client:
+        response = await async_client.get(
+            "/api/users/",
+        )
+        
+        response_json = response.json()
+        response_users = response_json["users"]
+        
+        assert response.status_code == 200, f"Get All Users API Failed: {response.text}"
+        assert "users" in response_json
+        assert isinstance(response_users, list)
+        assert len(response_users) >= 1
+        
+        assert "username" in response_users[0]
+        assert "oauth_provider" in response_users[0]
+        assert "oauth_id" in response_users[0]
+        assert "email" in response_users[0]
+        assert "profile_image" in response_users[0]
+
+
+@pytest.mark.asyncio
 async def test_signup_success(client, test_user, db_session):
     """
     회원가입 api 테스트
