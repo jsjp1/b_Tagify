@@ -13,6 +13,11 @@ from app.db import get_db
 from app.main import get_application
 from app.models.base import Base
 from app.models.user import User
+from app.models.tag import Tag
+from app.models.content import Content, ContentTypeEnum
+from app.models.content_tag import content_tag_association
+from app.models.user_tag import user_tag_association
+from app.models.video_metadata import VideoMetadata
 from app.util.auth import create_access_token
 from config import get_settings
 
@@ -87,7 +92,7 @@ def test_user(oauth_id, oauth_provider):
         "oauth_id": oauth_id,
         "oauth_provider": oauth_provider,
         "email": f.email(),
-        "profile_image": f.url(),
+        "profile_image": f.image_url(),
     }
 
     return user
@@ -95,14 +100,12 @@ def test_user(oauth_id, oauth_provider):
 
 @pytest.fixture(scope="function")
 def test_user_persist(db_session, oauth_id, oauth_provider):
-    """
-    """
     user = User(
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
         email=f.email(),
-        profile_image=f.url(),
+        profile_image=f.image_url(),
     )
     db_session.add(user)
     db_session.commit()
@@ -120,3 +123,57 @@ def test_video_url():
     }
 
     return video
+
+
+@pytest.fixture(scope="function")
+def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_video_url):
+    """
+    비디오와 태그를 저장한 테스트 유저 반환
+    """
+    user = User(
+        username=f.user_name(),
+        oauth_id=oauth_id,
+        oauth_provider=oauth_provider,
+        email = f.email(),
+        profile_image=f.image_url(),
+    )
+    db_session.add(user)
+    db_session.flush()
+    
+    content = Content(
+        url = test_video_url["url"],
+        title=f.sentence(),
+        thumbnail=f.image_url(),
+        content_type=ContentTypeEnum.VIDEO,
+        user_id=user.id,
+    )
+    db_session.add(content)
+    db_session.flush()
+    
+    video_metadata = VideoMetadata(
+        content_id=content.id,
+        video_length="360",
+    )
+    db_session.add(video_metadata)
+
+    tag_names = ["AI", "Machine Learning", "Tech"]
+    tags = []
+    for tag_name in tag_names:
+        tag = db_session.query(Tag).filter(Tag.tagname == tag_name).first()
+        if not tag:
+            tag = Tag(tagname=tag_name)
+            db_session.add(tag)
+            db_session.flush()
+        tags.append(tag)
+
+    for tag in tags:
+        db_session.execute(
+            content_tag_association.insert().values(content_id=content.id, tag_id=tag.id)
+        )
+        db_session.execute(
+            user_tag_association.insert().values(user_id=user.id, tag_id=tag.id)
+        )
+    
+    db_session.commit()
+
+    return user
