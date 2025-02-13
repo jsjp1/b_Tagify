@@ -21,7 +21,8 @@ async def test_db_connection(client):
 
 
 @pytest.mark.asyncio
-async def test_get_all_users(auth_client, test_user_persist):
+@pytest.mark.parametrize("field", ["username", "oauth_provider", "oauth_id", "email", "profile_image"])
+async def test_get_all_users(field, auth_client, test_user_persist):
     """
     모든 유저 가져오는 api 테스트
     """
@@ -40,11 +41,7 @@ async def test_get_all_users(auth_client, test_user_persist):
         assert isinstance(response_users, list)
         assert len(response_users) >= 1
         
-        assert "username" in response_users[0]
-        assert "oauth_provider" in response_users[0]
-        assert "oauth_id" in response_users[0]
-        assert "email" in response_users[0]
-        assert "profile_image" in response_users[0]
+        assert field in response_users[0]
 
 
 @pytest.mark.asyncio
@@ -124,7 +121,8 @@ async def test_signup_fail_oauth_null(client, test_user):
 
 
 @pytest.mark.asyncio
-async def test_signup_and_login_success(client, test_user):
+@pytest.mark.parametrize("token", ["access_token", "refresh_token"])
+async def test_signup_and_login_success(token, client, test_user):
     """
     회원가입 후 로그인
     """
@@ -149,8 +147,8 @@ async def test_signup_and_login_success(client, test_user):
         response_json = response.json()
 
         assert response.status_code == 200, f"User Login API Failed: {response.text}"
-        assert "access_token" in response_json
-        assert "refresh_token" in response_json
+        assert token in response_json
+        
         assert response_json["username"] == test_user["username"]
         assert response_json["oauth_provider"] == test_user["oauth_provider"]
         assert response_json["profile_image"] == test_user["profile_image"]

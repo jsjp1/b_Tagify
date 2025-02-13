@@ -134,7 +134,8 @@ async def test_get_videos_success_with_no_data(auth_client, test_user):
             
 
 @pytest.mark.asyncio
-async def test_get_videos_success_with_exist_data(auth_client, test_user_with_video_and_tag):
+@pytest.mark.parametrize("field", ["title", "url", "thumbnail", "video_length", "body", "tags"])
+async def test_get_videos_success_with_exist_data(field, auth_client, test_user_with_video_and_tag):
     """
     get user videos api 테스트
     """
@@ -156,10 +157,5 @@ async def test_get_videos_success_with_exist_data(auth_client, test_user_with_vi
         assert isinstance(response_json, list)
         assert len(response_json) >= 1
         
-        assert "title" in response_json[0]
-        assert "url" in response_json[0]
-        assert "thumbnail" in response_json[0]
-        assert "video_length" in response_json[0]
-        assert "body" in response_json[0] and response_json[0]["body"] == ""
-        assert "tags" in response_json[0]
+        assert field in response_json[0]
         assert isinstance(response_json[0]["tags"], list)

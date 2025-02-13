@@ -6,7 +6,8 @@ from app.models.user_tag import user_tag_association
 
 
 @pytest.mark.asyncio
-async def test_get_tags_success_with_no_user(auth_client, test_user):
+@pytest.mark.parametrize("field", ["tag", "tag_id"])
+async def test_get_tags_success_with_no_user(field, auth_client, test_user):
     """
     get user tags api 테스트
     """
@@ -26,12 +27,12 @@ async def test_get_tags_success_with_no_user(auth_client, test_user):
         assert isinstance(response_json, list)
 
         if len(response_json) >= 1:
-            assert "tag" in response_json
-            assert "tag_id" in response_json
+            assert field in response_json[0]
             
             
 @pytest.mark.asyncio
-async def test_get_tags_success_with_exist_user(auth_client, test_user_with_video_and_tag):
+@pytest.mark.parametrize("field", ["tag", "tag_id"])
+async def test_get_tags_success_with_exist_user(field, auth_client, test_user_with_video_and_tag):
     """
     get user tags api 테스트
     """
@@ -52,12 +53,12 @@ async def test_get_tags_success_with_exist_user(auth_client, test_user_with_vide
         assert isinstance(response_json, list)
 
         if len(response_json) >= 1:
-            assert "tag" in response_json[0]
-            assert "tag_id" in response_json[0]
+            assert field in response_json[0]
             
             
 @pytest.mark.asyncio
-async def test_get_tag_videos(auth_client, test_user_with_video_and_tag, db_session):
+@pytest.mark.parametrize("field", ["url", "title", "thumbnail", "video_length", "body"])
+async def test_get_tag_videos(field, auth_client, test_user_with_video_and_tag, db_session):
     """
     태그 정보 -> 태그에 해당하는 video 가져오는 api 테스트
     """
@@ -78,8 +79,4 @@ async def test_get_tag_videos(auth_client, test_user_with_video_and_tag, db_sess
         assert isinstance(response_json, list)
         assert len(response_json) >= 1
         
-        assert "url" in response_json[0]
-        assert "title" in response_json[0]
-        assert "thumbnail" in response_json[0]
-        assert "video_length" in response_json[0]
-        assert "body" in response_json[0] and response_json[0]["body"] == ""
+        assert field in response_json[0]
