@@ -60,7 +60,7 @@ async def contents(
 
         return [
             UserContentsResponse(
-                id=content.id
+                id=content.id,
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
