@@ -165,7 +165,7 @@ async def bookmark(
     db: Session = Depends(get_db)
 ) -> dict:
     try:
-        await ContentService.toggle_bookmark(request, content_id, db)
+        await ContentService.toggle_bookmark(content_id, db)
         return DefaultSuccessResponse(message="success")
         
     except HTTPException as e:
