@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app.models.base import Base
 from app.models.content_tag import content_tag_association
-from sqlalchemy import BIGINT, Column, DateTime, Enum, ForeignKey, String, Boolean
+from sqlalchemy import BIGINT, Column, DateTime, Enum, ForeignKey, String, Boolean, Text
 from sqlalchemy.orm import relationship
 
 
