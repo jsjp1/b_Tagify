@@ -7,6 +7,8 @@ from app.schemas.content import (
     ContentAnalyzeResponse,
     UserContents,
     UserContentsResponse,
+    UserBookmark,
+    UserBookmarkResponse,
 )
 from app.services.video import VideoService
 from app.services.content import ContentService
@@ -119,6 +121,42 @@ async def contents(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.get("/bookmarks/user/{user_id}")
+async def bookmark(
+    user_id: int,
+    db: Session = Depends(get_db)
+) -> List[UserBookmarkResponse]:
+    try:
+        request = UserBookmark(id=user_id)
+        contents = await ConentService.get_bookmarked_contents(request, db)
+        
+        return [
+            UserBookmarkResponse(
+                id=content.id,
+                title=content.title,
+                url=content.url,
+                thumbnail=content.thumbnail,
+                description=content.description,
+                **(
+                    {"video_length": content.video_metadata.video_length}
+                    if getattr(content, "video_metadata", None) else {}
+                ),
+                **(
+                    {"body": content.post_metadata.body}
+                    if getattr(content, "post_metadata", None) else {}
+                ),
+                tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            )
+            for content in contents
+        ]
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 
 
 @router.post("/{content_id}/bookmark")

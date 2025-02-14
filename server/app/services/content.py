@@ -2,7 +2,7 @@ from http.client import HTTPException
 from typing import List
 from sqlalchemy.orm import joinedload, Session
 
-from app.schemas.content import UserContents
+from app.schemas.content import UserContents, UserBookmark
 from app.models.content import Content, ContentTypeEnum
 from app.services.video import VideoService
 from app.services.post import PostService
@@ -53,3 +53,17 @@ class ContentService:
         db.commit()
         
         return
+    
+    
+    @staticmethod
+    async def get_bookmarked_contents(user: UserBookmark, db: Session) -> List[Content]:
+        """
+        북마크로 저장돼있는 콘텐츠 반환
+        """
+        contents = (
+            db.query(Content)
+            .filter(Content.bookmark == True)
+            .all()
+        )
+        
+        return contents

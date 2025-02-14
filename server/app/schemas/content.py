@@ -3,6 +3,19 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class Content(BaseModel):
+    id: int
+    url: str
+    title: str
+    thumbnail: Optional[str]
+    description: Optional[str]
+    video_length: Optional[int] = Field(default=0)
+    body: Optional[str] = Field(default="")
+    tags: List[str]
+
+    model_config = {"from_attributes": True}
+
+
 class ContentAnalyze(BaseModel):
     oauth_id: str
     url: str
@@ -25,14 +38,15 @@ class UserContents(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UserContentsResponse(BaseModel):
-    id: int
-    url: str
-    title: str
-    thumbnail: Optional[str]
-    description: Optional[str]
-    video_length: Optional[int] = Field(default=0)
-    body: Optional[str] = Field(default="")
-    tags: List[str]
+class UserContentsResponse(Content):
+    pass
+    
 
+class UserBookmark(BaseModel):
+    id: int
+    
     model_config = {"from_attributes": True}
+    
+    
+class UserBookmarkResponse(Content):
+    pass
