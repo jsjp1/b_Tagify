@@ -16,7 +16,7 @@ class ContentService:
         """
         contents = (
             db.query(Content)
-            .filter(Content.user.has(oauth_id=user.oauth_id))
+            .filter(Content.user.has(id=user.id))
             .options(
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
