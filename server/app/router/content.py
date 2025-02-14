@@ -130,7 +130,7 @@ async def bookmark(
 ) -> List[UserBookmarkResponse]:
     try:
         request = UserBookmark(id=user_id)
-        contents = await ConentService.get_bookmarked_contents(request, db)
+        contents = await ContentService.get_bookmarked_contents(request, db)
         
         return [
             UserBookmarkResponse(
