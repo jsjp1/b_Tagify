@@ -52,11 +52,11 @@ async def analyze(
 
 @router.get("/user/all")
 async def contents(
-    oauth_id: str,
+    user_id: str,
     db: Session = Depends(get_db),
 ) -> List[UserContentsResponse]:
     try:
-        request = UserContents(oauth_id=oauth_id)
+        request = UserContents(id=user_id)
         contents = await ContentService.get_user_all_contents(request, db)
 
         return [
@@ -88,12 +88,12 @@ async def contents(
 
 @router.get("/user/sub")
 async def contents(
-    oauth_id: str,
+    user_id: str,
     content_type: str,
     db: Session = Depends(get_db),
 ) -> List[UserContentsResponse]:
     try:
-        request = UserContents(oauth_id=oauth_id)
+        request = UserContents(id=user_id)
         contents = await ContentService.get_user_all_sub_contents(request, content_type, db)
 
         return [

@@ -34,7 +34,7 @@ class ContentAnalyzeResponse(BaseModel):
 
 
 class UserContents(BaseModel):
-    oauth_id: str
+    id: str
 
     model_config = {"from_attributes": True}
 
