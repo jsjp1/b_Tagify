@@ -169,7 +169,7 @@ async def bookmark(
 ) -> dict:
     try:
         await ContentService.toggle_bookmark(content_id, db)
-        return DefaultSuccessResponse(message="success")
+        return DefaultSuccessResponse(message="success").model_dump()
         
     except HTTPException as e:
         raise e
