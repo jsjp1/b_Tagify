@@ -128,9 +128,6 @@ class VideoService:
                 new_tags.append(new_tag)
 
         db.flush()
-        for i in new_tags:
-            print(i)
-            
         existing_tags.update({tag.tagname: tag for tag in new_tags})
 
         for tag in existing_tags.values():
