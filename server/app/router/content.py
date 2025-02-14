@@ -7,8 +7,6 @@ from app.schemas.content import (
     ContentAnalyzeResponse,
     UserContents,
     UserContentsResponse,
-    UserBookmark,
-    UserBookmarkResponse,
 )
 from app.services.video import VideoService
 from app.services.content import ContentService
@@ -126,7 +124,6 @@ async def contents(
 @router.post("/{content_id}/bookmark")
 async def bookmark(
     content_id: str,
-    request: UserBookmark,
     db: Session = Depends(get_db)
 ) -> dict:
     try:
