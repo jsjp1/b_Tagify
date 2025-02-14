@@ -29,6 +29,7 @@ class UserContentsResponse(BaseModel):
     url: str
     title: str
     thumbnail: Optional[str]
+    description: Optional[str]
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]

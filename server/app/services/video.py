@@ -97,6 +97,7 @@ class VideoService:
                 url=content.url,
                 title=content_info["title"],
                 thumbnail=content_info["thumbnail"],
+                description=content_info["description"],
                 content_type=content_type,
                 user_id=db_user.id,
             )
