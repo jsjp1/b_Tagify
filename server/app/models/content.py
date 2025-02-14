@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from app.models.base import Base
 from app.models.content_tag import content_tag_association
-from sqlalchemy import BIGINT, Column, DateTime, Enum, ForeignKey, String
+from sqlalchemy import BIGINT, Column, DateTime, Enum, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
 
 
@@ -18,6 +18,8 @@ class Content(Base):
     id = Column(BIGINT, primary_key=True, index=True)
     url = Column(String, nullable=False)
     title = Column(String, nullable=False)
+    description = Column(Text, nullable=True, default="")
+    bookmark = Column(Boolean, nullable=False, default=False)
     thumbnail = Column(String, nullable=True)
     content_type = Column(Enum(ContentTypeEnum), nullable=False)
 
