@@ -45,7 +45,7 @@ class ContentService:
         """
         콘텐츠 북마크 등록 <-> 해제 토글
         """
-        content = db.query(Content).filter(Content.id == content_id).first()
+        content = db.query(Content).with_for_update().filter(Content.id == content_id).first()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
         

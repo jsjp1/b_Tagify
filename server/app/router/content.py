@@ -164,7 +164,7 @@ async def bookmark(
 
 @router.post("/{content_id}/bookmark")
 async def bookmark(
-    content_id: str,
+    content_id: int,
     db: Session = Depends(get_db)
 ) -> dict:
     try:
