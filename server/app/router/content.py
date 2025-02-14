@@ -8,6 +8,7 @@ from app.schemas.content import (
     UserContentsResponse,
 )
 from app.services.video import VideoService
+from app.services.content import ContentService
 from config import get_settings
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -46,7 +47,40 @@ async def analyze(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.get("/user")
+@router.get("/user/all")
+async def contents(
+    oauth_id: str,
+    db: Session = Depends(get_db),
+) -> List[UserContentsResponse]:
+    try:
+        request = UserContents(oauth_id=oauth_id)
+        contents = await ContentService.get_user_all_contents(request, db)
+
+        return [
+            UserContentsResponse(
+                title=content.title,
+                url=content.url,
+                thumbnail=content.thumbnail,
+                **(
+                    {"video_length": content.video_metadata.video_length}
+                    if getattr(content, "video_metadata", None) else {}
+                ),
+                **(
+                    {"body": content.post_metadata.body}
+                    if getattr(content, "post_metadata", None) else {}
+                ),
+                tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            )
+            for content in contents
+        ]
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.get("/user/sub")
 async def contents(
     oauth_id: str,
     content_type: str,
@@ -54,13 +88,7 @@ async def contents(
 ) -> List[UserContentsResponse]:
     try:
         request = UserContents(oauth_id=oauth_id)
-        if content_type == "video":
-            contents = await VideoService.get_user_videos(request, db)
-        elif content_type == "post":
-            pass
-            # contents = await PostService.get_user_posts(request, db)
-        else:
-            raise HTTPException(status_code=400, detail="Invalid content type")
+        contents = await ContentService.get_user_all_sub_contents(request, content_type, db)
 
         return [
             UserContentsResponse(
@@ -86,3 +114,5 @@ async def contents(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+

@@ -12,10 +12,10 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.db import get_db
 from app.main import get_application
 from app.models.base import Base
-from app.models.user import User
-from app.models.tag import Tag
 from app.models.content import Content, ContentTypeEnum
 from app.models.content_tag import content_tag_association
+from app.models.tag import Tag
+from app.models.user import User
 from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
 from app.util.auth import create_access_token
@@ -134,14 +134,14 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
-        email = f.email(),
+        email=f.email(),
         profile_image=f.image_url(),
     )
     db_session.add(user)
     db_session.flush()
-    
+
     content = Content(
-        url = test_video_url["url"],
+        url=test_video_url["url"],
         title=f.sentence(),
         thumbnail=f.image_url(),
         content_type=ContentTypeEnum.VIDEO,
@@ -149,7 +149,7 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
     )
     db_session.add(content)
     db_session.flush()
-    
+
     video_metadata = VideoMetadata(
         content_id=content.id,
         video_length="360",
@@ -168,12 +168,14 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
 
     for tag in tags:
         db_session.execute(
-            content_tag_association.insert().values(content_id=content.id, tag_id=tag.id)
+            content_tag_association.insert().values(
+                content_id=content.id, tag_id=tag.id
+            )
         )
         db_session.execute(
             user_tag_association.insert().values(user_id=user.id, tag_id=tag.id)
         )
-    
+
     db_session.commit()
 
     return user

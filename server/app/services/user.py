@@ -2,10 +2,9 @@ from typing import List
 
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from requests import Session
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata

@@ -3,10 +3,9 @@ from typing import List
 
 import isodate
 from googleapiclient.discovery import build
-from requests import Session
 from sqlalchemy import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 
 from app.models.content import Content, ContentTypeEnum
 from app.models.tag import Tag
@@ -156,7 +155,7 @@ class VideoService:
         return ContentAnalyzeResponse(content_id=db_content.id)
 
     @staticmethod
-    async def get_user_videos(user: UserContents, db: Session) -> List[Content]:
+    async def get_user_all_videos(user: UserContents, db: Session) -> List[Content]:
         """
         유저가 소유한 비디오 정보를 모두 반환
         """
@@ -164,8 +163,10 @@ class VideoService:
             db.query(Content)
             .filter(Content.user.has(oauth_id=user.oauth_id))
             .filter(Content.content_type == ContentTypeEnum.VIDEO)
-            .options(joinedload(Content.tags))
-            .options(joinedload(Content.video_metadata))
+            .options(
+                joinedload(Content.tags),
+                joinedload(Content.video_metadata),
+            )
             .all()
         )
 
