@@ -2,7 +2,7 @@ from http.client import HTTPException
 from typing import List
 from sqlalchemy.orm import joinedload, Session
 
-from app.schemas.content import UserContents
+from app.schemas.content import UserContents, UserBookmark
 from app.models.content import Content, ContentTypeEnum
 from app.services.video import VideoService
 from app.services.post import PostService
@@ -39,3 +39,18 @@ class ContentService:
         else:
             raise HTTPException(status_code=400, detail="Unsupported Content Type")
     
+    
+    @staticmethod
+    async def toggle_bookmark(user: UserBookmark, content_id: str, db: Session) -> int:
+        """
+        콘텐츠 북마크 등록
+        """
+        content = db.query(Content).filter(Content.id == content_id).first()
+        if not content:
+            raise HTTPException(status_code=404, detail="Content not found")
+        
+        content.bookmark = not content.bookmark
+        db.commit()
+        db.refresh(content)
+        
+        return content.id

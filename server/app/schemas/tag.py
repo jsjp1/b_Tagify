@@ -23,6 +23,7 @@ class TagContents(BaseModel):
 
 
 class TagContentsResponse(BaseModel):
+    id: int
     url: str
     title: str
     thumbnail: Optional[str]

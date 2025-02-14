@@ -21,6 +21,7 @@ class UserLogin(BaseModel):
 
 
 class UserWithTokens(User):
+    id: int
     access_token: str = Field(..., min_length=10, description="JWT access token")
     refresh_token: str = Field(..., min_length=10, description="JWT refresh token")
     token_type: str = "bearer"
@@ -31,6 +32,7 @@ class UserCreate(User):
 
 
 class UserCreateResponse(BaseModel):
+    id: int
     oauth_id: str
     email: Optional[EmailStr] = None
 

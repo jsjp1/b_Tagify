@@ -26,6 +26,7 @@ class UserContents(BaseModel):
 
 
 class UserContentsResponse(BaseModel):
+    id: int
     url: str
     title: str
     thumbnail: Optional[str]
@@ -34,4 +35,16 @@ class UserContentsResponse(BaseModel):
     body: Optional[str] = Field(default="")
     tags: List[str]
 
+    model_config = {"from_attributes": True}
+
+
+class UserBookmark(BaseModel):
+    oauth_id: str
+    
+    model_config = {"from_attributes": True}
+    
+    
+class UserBookmarkResponse(BaseModel):
+    content_id: str
+    
     model_config = {"from_attributes": True}

@@ -55,6 +55,7 @@ async def contents(
         
         return [
             TagContentsResponse(
+                id=content.id,
                 url=content.url,
                 title=content.title,
                 thumbnail=content.thumbnail,

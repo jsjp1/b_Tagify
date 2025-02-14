@@ -6,6 +6,8 @@ from app.schemas.content import (
     ContentAnalyzeResponse,
     UserContents,
     UserContentsResponse,
+    UserBookmark,
+    UserBookmarkResponse,
 )
 from app.services.video import VideoService
 from app.services.content import ContentService
@@ -58,6 +60,7 @@ async def contents(
 
         return [
             UserContentsResponse(
+                id=content.id
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
@@ -93,6 +96,7 @@ async def contents(
 
         return [
             UserContentsResponse(
+                id=content.id,
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
@@ -118,3 +122,17 @@ async def contents(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+@router.post("/{content_id}/bookmark")
+async def bookmark(
+    content_id: str,
+    request: UserBookmark,
+    db: Session = Depends(get_db)
+) -> dict:
+    try:
+        content_id = await ConentService.toggle_bookmark(request, content_id, db)
+        return UserBookmarkResponse.model_validate(content_id, from_attributes=True)
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
