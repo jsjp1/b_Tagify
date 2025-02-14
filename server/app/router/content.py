@@ -61,6 +61,7 @@ async def contents(
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
+                description=content.description,
                 **(
                     {"video_length": content.video_metadata.video_length}
                     if getattr(content, "video_metadata", None) else {}
