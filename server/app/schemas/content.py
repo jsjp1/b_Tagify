@@ -36,15 +36,3 @@ class UserContentsResponse(BaseModel):
     tags: List[str]
 
     model_config = {"from_attributes": True}
-
-
-class UserBookmark(BaseModel):
-    oauth_id: str
-    
-    model_config = {"from_attributes": True}
-    
-    
-class UserBookmarkResponse(BaseModel):
-    content_id: str
-    
-    model_config = {"from_attributes": True}

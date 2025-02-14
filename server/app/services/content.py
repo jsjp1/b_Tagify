@@ -41,9 +41,9 @@ class ContentService:
     
     
     @staticmethod
-    async def toggle_bookmark(user: UserBookmark, content_id: str, db: Session) -> int:
+    async def toggle_bookmark(content_id: str, db: Session):
         """
-        콘텐츠 북마크 등록
+        콘텐츠 북마크 등록 <-> 해제 토글
         """
         content = db.query(Content).filter(Content.id == content_id).first()
         if not content:
@@ -51,6 +51,5 @@ class ContentService:
         
         content.bookmark = not content.bookmark
         db.commit()
-        db.refresh(content)
         
-        return content.id
+        return

@@ -1,6 +1,7 @@
 from typing import List
 
 from app.db import get_db
+from app.schemas.common import DefaultSuccessResponse
 from app.schemas.content import (
     ContentAnalyze,
     ContentAnalyzeResponse,
@@ -129,8 +130,8 @@ async def bookmark(
     db: Session = Depends(get_db)
 ) -> dict:
     try:
-        content_id = await ConentService.toggle_bookmark(request, content_id, db)
-        return UserBookmarkResponse.model_validate(content_id, from_attributes=True)
+        await ConentService.toggle_bookmark(request, content_id, db)
+        return DefaultSuccessResponse(message="success")
         
     except HTTPException as e:
         raise e
