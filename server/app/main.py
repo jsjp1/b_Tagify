@@ -1,8 +1,10 @@
-from fastapi import Depends, FastAPI
-from sqlalchemy.orm import Session
-
 from app.db import get_db, init_db
+from app.middleware.auth import AuthMiddleware
 from app.router import router
+from config import get_settings
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 
 
 def get_application() -> FastAPI:
@@ -11,6 +13,8 @@ def get_application() -> FastAPI:
 
     app.include_router(router=router)
 
+    app.add_middleware(AuthMiddleware, settings=get_settings())
+
     @app.get("/")
     def get_root():
         return {"message": "FastAPI Version 0.115.6"}
@@ -18,10 +22,10 @@ def get_application() -> FastAPI:
     @app.get("/health/db")
     async def health_check(db: Session = Depends(get_db)):
         try:
-            db.execute("SELECT 1")
+            db.execute(text("SELECT 1"))
             return {"status": "ok"}
-        except Exception:
-            return {"status": "error"}, 500
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
     return app
 

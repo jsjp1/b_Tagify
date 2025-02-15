@@ -1,8 +1,7 @@
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from app.models.tag import Tag
 from app.models.user_tag import user_tag_association
+from httpx import ASGITransport, AsyncClient
 
 
 @pytest.mark.asyncio
@@ -16,6 +15,7 @@ async def test_get_tags_success_with_no_user(field, auth_client, test_user):
     ) as async_client:
         response = await async_client.get(
             f"/api/tags/user?oauth_id={test_user['oauth_id']}",
+            headers=auth_client.headers,
         )
 
         response_json = response.json()
@@ -42,6 +42,7 @@ async def test_get_tags_success_with_exist_user(field, auth_client, test_user_wi
     ) as async_client:
         response = await async_client.get(
             f"/api/tags/user?oauth_id={test_user.oauth_id}",
+            headers=auth_client.headers,
         )
 
         response_json = response.json()
@@ -70,7 +71,8 @@ async def test_get_tag_videos(field, auth_client, test_user_with_video_and_tag, 
         transport=ASGITransport(app=auth_client.app), base_url="http://test"
     ) as async_client:
         response = await async_client.get(
-            f"/api/tags/{str(tag_id)}/contents?content_type=video"
+            f"/api/tags/{str(tag_id)}/contents?content_type=video",
+            headers=auth_client.headers,
         )
         
         response_json = response.json()

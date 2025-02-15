@@ -1,13 +1,11 @@
 from typing import List
 
-from sqlalchemy.orm import Session
-
+from app.models.content import Content
+from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.models.content import Content
-from app.models.user_tag import user_tag_association
-from app.models.content_tag import content_tag_association
-from app.schemas.tag import UserTags, TagContents
+from app.schemas.tag import TagContents, UserTags
+from sqlalchemy.orm import Session
 
 
 class TagService:
@@ -21,7 +19,6 @@ class TagService:
             return []
 
         return db_user.tags
-    
 
     @staticmethod
     async def get_tag_videos(tag: TagContents, db: Session) -> List[Content]:
@@ -32,14 +29,14 @@ class TagService:
             db.query(Content)
             .join(content_tag_association)
             .filter(content_tag_association.c.tag_id == tag.tag_id)
-            .all()            
+            .all()
         )
-        
+
         if not db_videos:
             return []
-        
-        return db_videos        
-    
+
+        return db_videos
+
     @staticmethod
     async def get_tag_posts(tag: TagContents, db: Session) -> List[Content]:
         """

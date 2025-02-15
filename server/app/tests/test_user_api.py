@@ -1,20 +1,19 @@
 from copy import deepcopy
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from app.models.user import User
+from httpx import ASGITransport, AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_db_connection(client):
+async def test_db_connection(auth_client):
     """
     db connection api 테스트
     """
     async with AsyncClient(
-        transport=ASGITransport(app=client.app), base_url="http://test"
+        transport=ASGITransport(app=auth_client.app), base_url="http://test"
     ) as async_client:
-        response = await async_client.get("/health/db")
+        response = await async_client.get("/health/db", headers=auth_client.headers)
 
         assert response.status_code == 200, f"DB Health Check Failed: {response.text}"
         assert response.json() == {"status": "ok"}
@@ -22,7 +21,7 @@ async def test_db_connection(client):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field", ["username", "oauth_provider", "oauth_id", "email", "profile_image"])
-async def test_get_all_users(field, auth_client, test_user_persist):
+async def test_get_all_users(field, auth_client):
     """
     모든 유저 가져오는 api 테스트
     """
@@ -31,6 +30,7 @@ async def test_get_all_users(field, auth_client, test_user_persist):
     ) as async_client:
         response = await async_client.get(
             "/api/users/",
+            headers=auth_client.headers,
         )
         
         response_json = response.json()

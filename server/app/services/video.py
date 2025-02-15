@@ -2,19 +2,18 @@ from http.client import HTTPException
 from typing import List
 
 import isodate
-from googleapiclient.discovery import build
-from sqlalchemy import insert
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload, Session
-
 from app.models.content import Content, ContentTypeEnum
+from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.models.content_tag import content_tag_association
 from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from config import Settings
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from googleapiclient.discovery import build
+from sqlalchemy import insert
+from sqlalchemy.orm import Session, joinedload
 
 
 class VideoService:
@@ -69,7 +68,7 @@ class VideoService:
             "title": snippet.get("title", ""),
             "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
             "description": snippet.get("description", ""),
-            "tags": snippet.get("tags", []), # TODO: tags 처리 -> llm api
+            "tags": snippet.get("tags", []),  # TODO: tags 처리 -> llm api
             "length": VideoService._convert_duration_to_seconds(
                 content_details.get("duration", "")
             ),
@@ -85,11 +84,13 @@ class VideoService:
         """
         유저 oauth id + 콘텐츠 링크 + ... -> tag_count 만큼의 태그 리스트 생성, db 저장 후 content_id 반환
         """
-        db_user = db.query(User).filter(User.oauth_id == content.oauth_id).first()
+        db_user = db.query(User).filter(
+            User.oauth_id == content.oauth_id).first()
         if not db_user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        db_content = db.query(Content).filter(Content.url == content.url).first()
+        db_content = db.query(Content).filter(
+            Content.url == content.url).first()
         content_info = VideoService._extract_video_info(content.url, settings)
 
         if not db_content:
@@ -114,7 +115,7 @@ class VideoService:
         tag_list = content_info.get("tags", [])[: content.tag_count]
         if len(tag_list) == 0:
             tag_list.append("None")
-            
+
         existing_tags = {
             tag.tagname: tag
             for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
@@ -132,7 +133,7 @@ class VideoService:
 
         for tag in existing_tags.values():
             print("TAG ID: ", tag.id)
-            
+
         db.execute(
             insert(content_tag_association),
             [
@@ -159,7 +160,7 @@ class VideoService:
         """
         contents = (
             db.query(Content)
-            .filter(Content.user.has(oauth_id=user.oauth_id))
+            .filter(Content.user.has(id=user.id))
             .filter(Content.content_type == ContentTypeEnum.VIDEO)
             .options(
                 joinedload(Content.tags),
