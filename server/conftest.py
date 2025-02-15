@@ -4,11 +4,6 @@ from typing import Any, Generator
 
 import faker
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-
 from app.db import get_db
 from app.main import get_application
 from app.models.base import Base
@@ -20,6 +15,10 @@ from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
 from app.util.auth import create_access_token
 from config import get_settings
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
 
@@ -62,11 +61,15 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
 
 
 @pytest.fixture
-def auth_client(client, test_user):
+def auth_client(client):
     settings = get_settings()
-    access_token = create_access_token(settings, data={"sub": test_user["email"]})
-    client.headers.update({"Authorization": f"Bearer {access_token}"})
-    return client
+    access_token = create_access_token(settings, data={"sub": "test@example.com"})
+
+    client.headers.update({
+        "Authorization": f"Bearer {access_token}",
+    })
+
+    yield client
 
 
 f = faker.Faker("ko-KR")
@@ -91,7 +94,7 @@ def test_user(oauth_id, oauth_provider):
         "username": f.user_name(),
         "oauth_id": oauth_id,
         "oauth_provider": oauth_provider,
-        "email": f.email(),
+        "email": "test@example.com", # token 로직 때문에 고정
         "profile_image": f.image_url(),
     }
 
@@ -104,7 +107,7 @@ def test_user_persist(db_session, oauth_id, oauth_provider):
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
-        email=f.email(),
+        email="test@example.com", 
         profile_image=f.image_url(),
     )
     db_session.add(user)
@@ -134,7 +137,7 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
-        email=f.email(),
+        email="test@example.com",
         profile_image=f.image_url(),
     )
     db_session.add(user)
@@ -144,6 +147,8 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
         url=test_video_url["url"],
         title=f.sentence(),
         thumbnail=f.image_url(),
+        description=f.sentence(),
+        bookmark=False,
         content_type=ContentTypeEnum.VIDEO,
         user_id=user.id,
     )

@@ -1,12 +1,6 @@
 from app.db import get_db
-from app.schemas.user import (
-    User,
-    UserCreate,
-    UserCreateResponse,
-    UserLogin,
-    UserWithTokens,
-    AllUsersResponse,
-)
+from app.schemas.user import (AllUsersResponse, User, UserCreate,
+                              UserCreateResponse, UserLogin, UserWithTokens)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -36,7 +30,6 @@ async def users(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
 
 
 @router.post("/login")
