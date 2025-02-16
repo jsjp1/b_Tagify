@@ -21,7 +21,7 @@ async def test_db_connection(auth_client):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field", ["username", "oauth_provider", "oauth_id", "email", "profile_image"])
-async def test_get_all_users(field, auth_client):
+async def test_get_all_users(field, auth_client, test_user_persist):
     """
     모든 유저 가져오는 api 테스트
     """
