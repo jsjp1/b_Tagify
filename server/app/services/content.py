@@ -1,11 +1,11 @@
 from http.client import HTTPException
 from typing import List
-from sqlalchemy.orm import joinedload, Session
 
-from app.schemas.content import UserContents, UserBookmark
 from app.models.content import Content, ContentTypeEnum
-from app.services.video import VideoService
+from app.schemas.content import UserBookmark, UserContents
 from app.services.post import PostService
+from app.services.video import VideoService
+from sqlalchemy.orm import Session, joinedload
 
 
 class ContentService:

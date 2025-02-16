@@ -91,6 +91,7 @@ def oauth_provider():
 @pytest.fixture()
 def test_user(oauth_id, oauth_provider):
     user = {
+        "id": f.random_int(min=1, max=100),
         "username": f.user_name(),
         "oauth_id": oauth_id,
         "oauth_provider": oauth_provider,
@@ -148,7 +149,7 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
         title=f.sentence(),
         thumbnail=f.image_url(),
         description=f.sentence(),
-        bookmark=False,
+        bookmark=True,
         content_type=ContentTypeEnum.VIDEO,
         user_id=user.id,
     )
