@@ -75,8 +75,10 @@ class ContentService:
         특정 콘텐츠 삭제
         """
         content = db.query(Content).filter(Content.id == content_id).first()
-        if content:
-            db.delete(content)
-            db.commit()
+        if not content:
+            raise HTTPException(status_code=404, detail="Content not found")
+
+        db.delete(content)
+        db.commit()
 
         return
