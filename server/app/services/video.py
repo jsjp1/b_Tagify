@@ -130,9 +130,6 @@ class VideoService:
         db.flush()
         existing_tags.update({tag.tagname: tag for tag in new_tags})
 
-        for tag in existing_tags.values():
-            print("TAG ID: ", tag.id)
-
         db.execute(
             insert(content_tag_association),
             [
