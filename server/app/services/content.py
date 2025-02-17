@@ -67,3 +67,16 @@ class ContentService:
         )
         
         return contents
+
+    
+    @staticmethod
+    async def delete_content(content_id: str, db: Session):
+        """
+        특정 콘텐츠 삭제
+        """
+        content = db.query(Content).filter(Content.id == content_id).first()
+        if content:
+            db.delete(content)
+            db.commit()
+
+        return

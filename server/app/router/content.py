@@ -2,16 +2,11 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (
-    ContentAnalyze,
-    ContentAnalyzeResponse,
-    UserContents,
-    UserContentsResponse,
-    UserBookmark,
-    UserBookmarkResponse,
-)
-from app.services.video import VideoService
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserBookmark, UserBookmarkResponse,
+                                 UserContents, UserContentsResponse)
 from app.services.content import ContentService
+from app.services.video import VideoService
 from config import get_settings
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -44,6 +39,21 @@ async def analyze(
 
         return content_id
 
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.delete("/{content_id}")
+async def delete(
+    content_id: str,
+    db: Session = Depends(get_db),
+) -> DefaultSuccessResponse:
+    try:
+        await ContentService.delete_content(content_id, db)
+        return DefaultSuccessResponse(message="success").model_dump()
+        
     except HTTPException as e:
         raise e
     except Exception as e:
