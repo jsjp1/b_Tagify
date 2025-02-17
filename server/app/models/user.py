@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
 from app.models.base import Base
-from app.models.user_tag import user_tag_association
 from sqlalchemy import BIGINT, Column, DateTime, String
 from sqlalchemy.orm import relationship
 
@@ -30,6 +29,6 @@ class User(Base):
     )
     tags = relationship(
         "Tag",
-        secondary=user_tag_association,
-        back_populates="users",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

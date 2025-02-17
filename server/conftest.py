@@ -11,7 +11,6 @@ from app.models.content import Content, ContentTypeEnum
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
 from app.util.auth import create_access_token
 from config import get_settings
@@ -167,7 +166,7 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
     for tag_name in tag_names:
         tag = db_session.query(Tag).filter(Tag.tagname == tag_name).first()
         if not tag:
-            tag = Tag(tagname=tag_name)
+            tag = Tag(tagname=tag_name, user_id=user.id)
             db_session.add(tag)
             db_session.flush()
         tags.append(tag)
@@ -177,9 +176,6 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
             content_tag_association.insert().values(
                 content_id=content.id, tag_id=tag.id
             )
-        )
-        db_session.execute(
-            user_tag_association.insert().values(user_id=user.id, tag_id=tag.id)
         )
 
     db_session.commit()

@@ -6,7 +6,6 @@ from app.models.content import Content, ContentTypeEnum
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.models.user_tag import user_tag_association
 from app.models.video_metadata import VideoMetadata
 from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
                                  UserContents)
@@ -124,7 +123,7 @@ class VideoService:
         new_tags = []
         for tag_name in tag_list:
             if tag_name not in existing_tags:
-                new_tag = Tag(tagname=tag_name)
+                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
@@ -138,13 +137,6 @@ class VideoService:
             insert(content_tag_association),
             [
                 {"content_id": db_content.id, "tag_id": tag.id}
-                for tag in existing_tags.values()
-            ],
-        )
-        db.execute(
-            insert(user_tag_association),
-            [
-                {"user_id": db_user.id, "tag_id": tag.id}
                 for tag in existing_tags.values()
             ],
         )
