@@ -47,7 +47,7 @@ async def analyze(
 
 @router.delete("/{content_id}")
 async def delete(
-    content_id: str,
+    content_id: int,
     db: Session = Depends(get_db),
 ) -> DefaultSuccessResponse:
     try:
@@ -62,7 +62,7 @@ async def delete(
 
 @router.get("/user/all")
 async def contents(
-    user_id: str,
+    user_id: int,
     db: Session = Depends(get_db),
 ) -> List[UserContentsResponse]:
     try:
@@ -98,7 +98,7 @@ async def contents(
 
 @router.get("/user/sub")
 async def contents(
-    user_id: str,
+    user_id: int,
     content_type: str,
     db: Session = Depends(get_db),
 ) -> List[UserContentsResponse]:

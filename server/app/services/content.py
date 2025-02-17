@@ -70,7 +70,7 @@ class ContentService:
 
     
     @staticmethod
-    async def delete_content(content_id: str, db: Session):
+    async def delete_content(content_id: int, db: Session):
         """
         특정 콘텐츠 삭제
         """
