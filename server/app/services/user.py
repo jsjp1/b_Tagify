@@ -1,14 +1,16 @@
 from typing import List
 
+from app.models.user import User
+from app.models.video_metadata import VideoMetadata
+from app.schemas.user import (AllUsersResponse, TokenRefresh, UserCreate,
+                              UserLogin)
+from app.util.auth import create_access_token, decode_token
+from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload, Session
-
-from app.models.user import User
-from app.models.video_metadata import VideoMetadata
-from app.schemas.user import UserCreate, UserLogin, AllUsersResponse
+from sqlalchemy.orm import Session, joinedload
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -78,3 +80,25 @@ class UserService:
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+    @staticmethod
+    async def token_refresh(refresh_token: TokenRefresh, settings: Settings) -> str:
+        """
+        refresh 토큰 검증 후 access token 새로 발급
+        """
+        try:
+            payload = decode_token(settings, refresh_token)
+
+            if not email:
+                raise jwt.InvalidTokenError(status_code=401)
+
+            # TODO : 저장된 refresh_token 과 비교해서 존재하면 create access token
+            new_access_token = create_access_token(settings, data={"sub": f"{payload}"})
+
+            return new_access_token
+
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")

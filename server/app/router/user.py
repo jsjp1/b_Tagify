@@ -1,5 +1,6 @@
 from app.db import get_db
-from app.schemas.user import (AllUsersResponse, User, UserCreate,
+from app.schemas.user import (AllUsersResponse, TokenRefresh,
+                              TokenRefreshResponse, User, UserCreate,
                               UserCreateResponse, UserLogin, UserWithTokens)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
@@ -70,3 +71,18 @@ async def signup(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.post("/token/refresh")
+async def refresh(
+    request: TokenRefresh,
+    settings=Depends(get_settings),
+) -> TokenRefreshResponse:
+    try:
+        new_access_token = await UserService.token_refresh(request, settings)
+        return TokenRefreshResponse.model_validate(new_access_token, from_attributes=True)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}") 

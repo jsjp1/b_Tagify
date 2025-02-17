@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -41,5 +41,15 @@ class UserCreateResponse(BaseModel):
 
 class AllUsersResponse(BaseModel):
     users: List[User]
+
+    model_config = {"from_attributes": True}
+
+
+class TokenRefresh(BaseModel):
+    refresh_token: str
+
+
+class TokenRefreshResponse(BaseModel):
+    access_token: str
 
     model_config = {"from_attributes": True}
