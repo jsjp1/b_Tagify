@@ -34,7 +34,7 @@ class ContentAnalyzeResponse(BaseModel):
 
 
 class UserContents(BaseModel):
-    id: str
+    id: int
 
     model_config = {"from_attributes": True}
 
