@@ -1,11 +1,128 @@
 from typing import List
 
-from sqlalchemy.orm import joinedload, Session
+import requests
 from app.models.content import Content, ContentTypeEnum
-from app.schemas.content import UserContents
+from app.models.post_metadata import PostMetadata
+from app.models.user import User
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
+from bs4 import BeautifulSoup
+from config import Settings
+from sqlalchemy.orm import Session, joinedload
 
 
 class PostService:
+    @staticmethod
+    def _extract_tag(body: str) -> List[str]: # TODO: async? llama
+        """
+        텍스트 내용을 바탕으로 태그 list 추출 후 반환
+        """
+        return ["None"]
+
+
+    @staticmethod
+    def _analyze(url: str) -> dict:
+        """
+        db에 저장할 Content 데이터 추출 후 반환
+        """
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        html = response.text
+
+        bs = BeautifulSoup(html, "html.parser")
+
+        title = bs.find("title")
+        thumbnail = bs.find("meta", property="og:image")
+        description = bs.find("meta", property="og:description")
+            
+        possible_selectors = [
+            "article",  # 일반적인 블로그 글
+            "div.post-content",  # Velog, Tistory 일부
+            "div.notion-page-content",  # Notion
+            "div.tt_article_useless_p_margin",  # Tistory
+            "div.se-main-container",  # Naver Blog
+        ]
+        body = None
+        for selector in possible_selectors:
+            body = bs.select_one(selector)
+            if body:
+                break
+
+        tags = PostService._extract_tag(body)
+
+        return {
+            "title": title,
+            "thumbnail": thumbnail,
+            "description": description, 
+            "body": body,
+            "tags": tags,
+        }
+
+    @staticmethod
+    async def analyze_post(
+        content_type: str, content: ContentAnalyze, db: Session, settings: Settings
+    ) -> ContentAnalyzeResponse:
+        """
+        post url -> tag값 추출, \
+        정보(title, thumbnail, description, bookmark, body, ...) 추출 후 db 저장
+        """
+        db_user = db.query(User).filter(User.id == content.user_id).first()
+        if not db_user:
+            raise ValueError(f"User with id {content.user_id} not found")
+
+        db_content = db.query(Content).filter(Content.url == content.url).first()
+        post_info = PostService._analyze(content.url)
+
+        if not db_content:
+            db_content = Content(
+                url=content.url,
+                title=post_info["title"],
+                description=post_infp["description"],
+                bookmark=False,
+                thumbnail=post_info["thumbnail"],
+                content_type=content_type,
+            )
+            db.add(db_content)
+            db.flush()
+            db.refresh(db_content)
+
+            post_metadata = PostMetadata(
+                content_id=db_content.id,
+                body=post_info["body"],
+            )
+            db.add(post_metadata)
+        
+        tag_list = content_info.get("tags", [])[: content.tag_count]
+        if len(tag_list) == 0:
+            tag_list.append("None")
+
+        existing_tags = {
+            tag.tagname: tag
+            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
+        }
+
+        new_tags = []
+        for tag_name in tag_list:
+            if tag_name not in existing_tags:
+                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
+                db.add(new_tag)
+                new_tags.append(new_tag)
+
+        db.flush()
+        existing_tags.update({tag.tagname: tag for tag in new_tags})
+
+        db.execute(
+            insert(content_tag_association),
+            [
+                {"content_id": db_content.id, "tag_id": tag.id}
+                for tag in existing_tags.values()
+            ],
+        )
+
+        db.commit()
+
+        return ContentAnalyzeResponse(content_id=db_content.id)
+
+
     @staticmethod
     async def get_user_all_posts(user: UserContents, db: Session) -> List[Content]:
         """

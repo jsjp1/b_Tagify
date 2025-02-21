@@ -6,6 +6,7 @@ from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
                                  UserBookmark, UserBookmarkResponse,
                                  UserContents, UserContentsResponse)
 from app.services.content import ContentService
+from app.services.post import PostService
 from app.services.video import VideoService
 from config import get_settings
 from fastapi import APIRouter, Depends, HTTPException
@@ -32,8 +33,7 @@ async def analyze(
                 content_type, request, db, settings
             )
         elif content_type == "post":
-            pass
-            # content_id = await PostService.analyze_post(request, db, settings)
+            content_id = await PostService.analyze_post(content_type, request, db, settings)
         else:
             raise HTTPException(status_code=400, detail="Invalid content type")
 
