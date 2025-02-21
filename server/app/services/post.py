@@ -74,11 +74,11 @@ class PostService:
 
         if not db_content:
             db_content = Content(
+                user_id=db_user.id,
                 url=content.url,
                 title=post_info["title"],
-                description=post_infp["description"],
-                bookmark=False,
                 thumbnail=post_info["thumbnail"],
+                description=post_infp["description"],
                 content_type=content_type,
             )
             db.add(db_content)
@@ -87,7 +87,7 @@ class PostService:
 
             post_metadata = PostMetadata(
                 content_id=db_content.id,
-                body=post_info["body"],
+                body=post_info.get("body", ""),
             )
             db.add(post_metadata)
         
