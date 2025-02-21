@@ -40,8 +40,7 @@ class UserContents(BaseModel):
 
 
 class UserContentsResponse(Content):
-    pass
-    
+    type: str
 
 class UserBookmark(BaseModel):
     id: int

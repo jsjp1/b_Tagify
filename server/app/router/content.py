@@ -86,6 +86,7 @@ async def contents(
                     if getattr(content, "post_metadata", None) else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
+                type="video" if getattr(content, "video_metadata", None) else "post",
             )
             for content in contents
         ]
@@ -125,6 +126,7 @@ async def contents(
                     else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
+                type="video" if getattr(content, "video_metadata", None) else "post",
             )
             for content in contents
         ]
