@@ -18,7 +18,7 @@ class Content(BaseModel):
 
 
 class ContentAnalyze(BaseModel):
-    oauth_id: str
+    user_id: str
     url: str
     lang: Literal["en", "ko"] = Field(default="en")  # TODO: 추후 추가
     tag_count: Optional[int] = Field(default=3, ge=1, lt=10)

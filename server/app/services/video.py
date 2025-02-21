@@ -84,9 +84,9 @@ class VideoService:
         유저 oauth id + 콘텐츠 링크 + ... -> tag_count 만큼의 태그 리스트 생성, db 저장 후 content_id 반환
         """
         db_user = db.query(User).filter(
-            User.oauth_id == content.oauth_id).first()
+            User.id == content.user_id).first()
         if not db_user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise ValueError(f"User with id {content.user_id} not found")
 
         db_content = db.query(Content).filter(
             Content.url == content.url).first()
