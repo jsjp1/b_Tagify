@@ -12,7 +12,6 @@ class PostMetadata(Base):
         BIGINT,
         ForeignKey("contents.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
     )
 
     content = relationship("Content", back_populates="post_metadata")

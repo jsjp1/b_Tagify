@@ -2,12 +2,15 @@ from typing import List
 
 import requests
 from app.models.content import Content, ContentTypeEnum
+from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
+from app.models.tag import Tag
 from app.models.user import User
 from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
                                  UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
+from sqlalchemy import insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -17,7 +20,7 @@ class PostService:
         """
         텍스트 내용을 바탕으로 태그 list 추출 후 반환
         """
-        return ["None"]
+        return []
 
 
     @staticmethod
@@ -25,12 +28,14 @@ class PostService:
         """
         db에 저장할 Content 데이터 추출 후 반환
         """
-        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        response = requests.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        })
         html = response.text
 
         bs = BeautifulSoup(html, "html.parser")
 
-        title = bs.find("title")
+        title = bs.find("title").text
         thumbnail = bs.find("meta", property="og:image")
         description = bs.find("meta", property="og:description")
             
@@ -47,15 +52,16 @@ class PostService:
             if body:
                 break
 
-        tags = PostService._extract_tag(body)
+        tags = PostService._extract_tag(body if body else "")
 
         return {
             "title": title,
-            "thumbnail": thumbnail,
-            "description": description, 
-            "body": body,
+            "thumbnail": thumbnail.get("content"),
+            "description": description.get("content"), 
+            "body": body.text,
             "tags": tags,
         }
+
 
     @staticmethod
     async def analyze_post(
@@ -78,7 +84,7 @@ class PostService:
                 url=content.url,
                 title=post_info["title"],
                 thumbnail=post_info["thumbnail"],
-                description=post_infp["description"],
+                description=post_info["description"],
                 content_type=content_type,
             )
             db.add(db_content)
@@ -91,7 +97,7 @@ class PostService:
             )
             db.add(post_metadata)
         
-        tag_list = content_info.get("tags", [])[: content.tag_count]
+        tag_list = post_info.get("tags", [])[: content.tag_count]
         if len(tag_list) == 0:
             tag_list.append("None")
 

@@ -90,15 +90,15 @@ class VideoService:
 
         db_content = db.query(Content).filter(
             Content.url == content.url).first()
-        content_info = VideoService._extract_video_info(content.url, settings)
+        video_info = VideoService._extract_video_info(content.url, settings)
 
         if not db_content:
             db_content = Content(
                 user_id=db_user.id,
                 url=content.url,
-                title=content_info["title"],
-                thumbnail=content_info["thumbnail"],
-                description=content_info["description"],
+                title=video_info["title"],
+                thumbnail=video_info["thumbnail"],
+                description=video_info["description"],
                 content_type=content_type,
             )
             db.add(db_content)
@@ -107,11 +107,11 @@ class VideoService:
 
             video_metadata = VideoMetadata(
                 content_id=db_content.id,
-                video_length=content_info.get("length", "0"),
+                video_length=video_info.get("length", "0"),
             )
             db.add(video_metadata)
 
-        tag_list = content_info.get("tags", [])[: content.tag_count]
+        tag_list = video_info.get("tags", [])[: content.tag_count]
         if len(tag_list) == 0:
             tag_list.append("None")
 

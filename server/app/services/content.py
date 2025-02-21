@@ -2,6 +2,7 @@ from http.client import HTTPException
 from typing import List
 
 from app.models.content import Content, ContentTypeEnum
+from app.models.post_metadata import PostMetadata
 from app.models.video_metadata import VideoMetadata
 from app.schemas.content import UserBookmark, UserContents
 from app.services.post import PostService
@@ -76,6 +77,8 @@ class ContentService:
         특정 콘텐츠 삭제
         """
         video_metadata = db.query(VideoMetadata).filter(VideoMetadata.content_id == content_id).delete()
+        post_metadata = db.query(PostMetadata).filter(PostMetadata.content_id == content_id).delete()
+        
         content = db.query(Content).filter(Content.id == content_id).first()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
