@@ -7,6 +7,7 @@ from app.models.video_metadata import VideoMetadata
 from app.schemas.content import UserBookmark, UserContents
 from app.services.post import PostService
 from app.services.video import VideoService
+from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
 

@@ -10,7 +10,7 @@ from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
                                  UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
-from sqlalchemy import insert
+from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
