@@ -49,4 +49,4 @@ class UserBookmark(BaseModel):
     
     
 class UserBookmarkResponse(Content):
-    pass
+    type: str
