@@ -35,7 +35,7 @@ class PostService:
 
         bs = BeautifulSoup(html, "html.parser")
 
-        title = bs.find("title").text
+        title = bs.find("title")
         thumbnail = bs.find("meta", property="og:image")
         description = bs.find("meta", property="og:description")
             
@@ -55,10 +55,10 @@ class PostService:
         tags = PostService._extract_tag(body if body else "")
 
         return {
-            "title": title,
+            "title": title.text if title is not None else "",
             "thumbnail": thumbnail.get("content"),
             "description": description.get("content"), 
-            "body": body.text,
+            "body": body.text if body is not None else "",
             "tags": tags,
         }
 
@@ -142,6 +142,7 @@ class PostService:
                 joinedload(Content.tags),
                 joinedload(Content.post_metadata),
             )
+            .order_by(desc(Content.created_at)) 
             .all()
         )
         

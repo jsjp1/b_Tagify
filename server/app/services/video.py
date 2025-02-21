@@ -155,6 +155,7 @@ class VideoService:
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
             )
+            .order_by(desc(Content.created_at)) 
             .all()
         )
 

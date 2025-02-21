@@ -24,6 +24,7 @@ class ContentService:
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
+            .order_by(desc(Content.created_at)) 
             .all()
         )
 
@@ -65,6 +66,7 @@ class ContentService:
         contents = (
             db.query(Content)
             .filter(Content.bookmark == True)
+            .order_by(desc(Content.created_at)) 
             .all()
         )
         
