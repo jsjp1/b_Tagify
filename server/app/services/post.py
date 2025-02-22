@@ -65,68 +65,28 @@ class PostService:
 
     @staticmethod
     async def analyze_post(
-        content_type: str, content: ContentAnalyze, db: Session, settings: Settings
+        content_type: str, content: ContentAnalyze, db: Session
     ) -> ContentAnalyzeResponse:
         """
-        post url -> tag값 추출, \
-        정보(title, thumbnail, description, bookmark, body, ...) 추출 후 db 저장
+        post 정보 추출 후 반환
         """
-        db_user = db.query(User).filter(User.id == content.user_id).first()
-        if not db_user:
-            raise ValueError(f"User with id {content.user_id} not found")
+        db_content = db.query(Content).filter(
+            Content.url == content.url).first()
+        if db_content:
+            raise HTTPException(status_code=400, detail="Content already exists")
 
-        db_content = db.query(Content).filter(Content.url == content.url).first()
         post_info = PostService._analyze(content.url)
-
-        if not db_content:
-            db_content = Content(
-                user_id=db_user.id,
-                url=content.url,
-                title=post_info["title"],
-                thumbnail=post_info["thumbnail"],
-                description=post_info["description"],
-                content_type=content_type,
-            )
-            db.add(db_content)
-            db.flush()
-            db.refresh(db_content)
-
-            post_metadata = PostMetadata(
-                content_id=db_content.id,
-                body=post_info.get("body", ""),
-            )
-            db.add(post_metadata)
         
-        tag_list = post_info.get("tags", [])[: content.tag_count]
-        if len(tag_list) == 0:
-            tag_list.append("None")
-
-        existing_tags = {
-            tag.tagname: tag
-            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
-        }
-
-        new_tags = []
-        for tag_name in tag_list:
-            if tag_name not in existing_tags:
-                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
-                db.add(new_tag)
-                new_tags.append(new_tag)
-
-        db.flush()
-        existing_tags.update({tag.tagname: tag for tag in new_tags})
-
-        db.execute(
-            insert(content_tag_association),
-            [
-                {"content_id": db_content.id, "tag_id": tag.id}
-                for tag in existing_tags.values()
-            ],
+        content = ContentAnalyzeResponse(
+            url=content.url,
+            title=post_info["title"],
+            thumbnail=post_info["thumbnail"],
+            description=post_info["description"],
+            body=post_info["body"],
+            tags=post_info["tags"],
         )
 
-        db.commit()
-
-        return ContentAnalyzeResponse(content_id=db_content.id)
+        return content
 
 
     @staticmethod

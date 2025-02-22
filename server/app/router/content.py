@@ -34,7 +34,7 @@ async def analyze(
                 content_type, request, db, settings
             )
         elif content_type == "post":
-            content = await PostService.analyze_post(content_type, request, db, settings)
+            content = await PostService.analyze_post(content_type, request, db)
         else:
             raise HTTPException(status_code=400, detail="Invalid content type")
 
