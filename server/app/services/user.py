@@ -1,5 +1,6 @@
 from typing import List
 
+import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.user import (AllUsersResponse, TokenRefresh, UserCreate,
@@ -83,21 +84,23 @@ class UserService:
 
 
     @staticmethod
-    async def token_refresh(refresh_token: TokenRefresh, settings: Settings) -> str:
+    async def token_refresh(token: TokenRefresh, settings: Settings) -> str:
         """
         refresh 토큰 검증 후 access token 새로 발급
         """
         try:
-            payload = decode_token(settings, refresh_token)
+            payload = decode_token(settings, token.refresh_token)
 
-            if not email:
-                raise jwt.InvalidTokenError(status_code=401)
+            if not payload:
+                raise jwt.InvalidTokenError(status_code=401, detail="Invalid token")
 
             # TODO : 저장된 refresh_token 과 비교해서 존재하면 create access token
             new_access_token = create_access_token(settings, data={"sub": f"{payload}"})
 
             return new_access_token
 
+        except jwt.InvalidSignatureError:
+            raise HTTPException(status_code=401, detail="Invalid token signature")
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token has expired")
         except jwt.InvalidTokenError:

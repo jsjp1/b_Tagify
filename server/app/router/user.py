@@ -44,7 +44,7 @@ async def login(
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
         refresh_token = create_refresh_token(
-            settings, data={"sub": db_user.email + "refresh"}
+            settings, data={"sub": db_user.email}
         )
 
         db_user.access_token = access_token
@@ -80,7 +80,7 @@ async def refresh(
 ) -> TokenRefreshResponse:
     try:
         new_access_token = await UserService.token_refresh(request, settings)
-        return TokenRefreshResponse.model_validate(new_access_token, from_attributes=True)
+        return TokenRefreshResponse(access_token=new_access_token)
 
     except HTTPException as e:
         raise e

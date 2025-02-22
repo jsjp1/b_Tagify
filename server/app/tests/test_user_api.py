@@ -2,6 +2,8 @@ from copy import deepcopy
 
 import pytest
 from app.models.user import User
+from app.util.auth import decode_token
+from config import get_settings
 from httpx import ASGITransport, AsyncClient
 
 
@@ -179,6 +181,44 @@ async def test_signup_and_login_fail(client, test_user):
             json=login_user,
         )
 
-        assert (
-            response.status_code == 400
-        ), f"different oauth_id -> success error: {response.text}"
+        assert response.status_code == 400, f"different oauth_id -> success error: {response.text}"
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_success(client, test_user):
+    """
+    토큰 재발급 후 토큰 검증 -> 성공
+    """
+    async with AsyncClient(
+        transport=ASGITransport(app=client.app), base_url="http://test"
+    ) as async_client:
+        response = await async_client.post(
+            "/api/users/signup",
+            json=test_user,
+        )
+
+        login_user = {
+            "oauth_id": test_user["oauth_id"],
+            "email": test_user["email"],
+        }
+
+        response = await async_client.post(
+            "/api/users/login",
+            json=login_user,
+        )
+
+        # 로그인 이후 access token 이용해 refresh token 재발급
+        response = await async_client.post(
+            "/api/users/token/refresh",
+            json={
+                "refresh_token": response.json()["refresh_token"],
+            }
+        )
+
+        assert response.status_code == 200, "Refresh token api fail"
+        response_json = response.json()
+        
+        settings = get_settings()
+        token_extracted_email = decode_token(settings, response_json["access_token"])
+
+        assert token_extracted_email == test_user["email"], "Token Refresh api return Invalid token"
