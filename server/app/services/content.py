@@ -11,7 +11,7 @@ from app.schemas.content import (ContentPost, ContentPostResponse,
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
-from sqlalchemy import asc, insert
+from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -29,7 +29,7 @@ class ContentService:
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
-            .order_by(asc(Content.id)) 
+            .order_by(desc(Content.id)) 
             .all()
         )
 
@@ -144,7 +144,7 @@ class ContentService:
         contents = (
             db.query(Content)
             .filter(Content.bookmark == True)
-            .order_by(asc(Content.id)) 
+            .order_by(desc(Content.id)) 
             .all()
         )
         

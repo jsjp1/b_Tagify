@@ -11,7 +11,7 @@ from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
-from sqlalchemy import asc, insert
+from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -116,7 +116,7 @@ class VideoService:
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
             )
-            .order_by(asc(Content.id)) 
+            .order_by(desc(Content.id)) 
             .all()
         )
 

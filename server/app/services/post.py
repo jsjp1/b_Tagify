@@ -11,7 +11,7 @@ from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
-from sqlalchemy import asc, insert
+from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -103,7 +103,7 @@ class PostService:
                 joinedload(Content.tags),
                 joinedload(Content.post_metadata),
             )
-            .order_by(asc(Content.id)) 
+            .order_by(desc(Content.id)) 
             .all()
         )
         
