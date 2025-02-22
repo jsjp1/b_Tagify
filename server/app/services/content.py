@@ -117,8 +117,7 @@ class ContentService:
 
         db.commit()
 
-        return ContentPostResponse(id=new_content.id)
-
+        return new_content.id
     
     
     @staticmethod
