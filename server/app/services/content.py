@@ -11,7 +11,7 @@ from app.schemas.content import (ContentPost, ContentPostResponse,
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -62,6 +62,7 @@ class ContentService:
             raise HTTPException(status_code=400, detail="Content already exists")
 
         new_content = Content(
+            user_id=content.user_id,
             url=content.url,
             title=content.title,
             description=content.description,
