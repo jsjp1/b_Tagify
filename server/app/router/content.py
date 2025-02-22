@@ -54,7 +54,7 @@ async def save(
 ) -> ContentPostResponse:
     try:
         content_id = ContentService.post_content(content_type, request, db)
-        return ContentPostResponse.model_validate(id=content_id, from_attributes=True)
+        return ContentPostResponse.model_validate({"id": content_id}, from_attributes=True)
 
     except HTTPException as e:
         raise e
