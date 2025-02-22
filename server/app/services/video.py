@@ -1,4 +1,3 @@
-from http.client import HTTPException
 from typing import List
 
 import isodate
@@ -10,6 +9,7 @@ from app.models.video_metadata import VideoMetadata
 from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
                                  UserContents)
 from config import Settings
+from fastapi import HTTPException
 from googleapiclient.discovery import build
 from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload

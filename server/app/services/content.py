@@ -1,4 +1,3 @@
-from http.client import HTTPException
 from typing import List
 
 from app.models.content import Content, ContentTypeEnum
@@ -11,6 +10,7 @@ from app.schemas.content import (ContentPost, ContentPostResponse,
                                  UserBookmark, UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
+from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
