@@ -3,6 +3,7 @@ from typing import List
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
 from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 ContentPost, ContentPostResponse,
                                  UserBookmark, UserBookmarkResponse,
                                  UserContents, UserContentsResponse)
 from app.services.content import ContentService
@@ -29,21 +30,36 @@ async def analyze(
 ) -> ContentAnalyzeResponse:
     try:
         if content_type == "video":
-            content_id = await VideoService.analyze_video(
+            content = await VideoService.analyze_video(
                 content_type, request, db, settings
             )
         elif content_type == "post":
-            content_id = await PostService.analyze_post(content_type, request, db, settings)
+            content = await PostService.analyze_post(content_type, request, db, settings)
         else:
             raise HTTPException(status_code=400, detail="Invalid content type")
 
-        return content_id
+        return content
 
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+
+@router.post("/save")
+async def save(
+    content_type: str,
+    request: ContentPost,
+    db: Session = Depends(get_db),
+) -> ContentPostResponse:
+    try:
+        content_id = ContentService.post_content(content_type, request, db)
+        return ContentPostResponse.model_validate(id=content_id, from_attributes=True)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 @router.delete("/{content_id}")
 async def delete(

@@ -76,71 +76,32 @@ class VideoService:
 
         return video_info
 
+
     @staticmethod
     async def analyze_video(
         content_type: str, content: ContentAnalyze, db: Session, settings: Settings
     ) -> ContentAnalyzeResponse:
         """
-        유저 oauth id + 콘텐츠 링크 + ... -> tag_count 만큼의 태그 리스트 생성, db 저장 후 content_id 반환
+        video 정보 추출 후 반환
         """
-        db_user = db.query(User).filter(
-            User.id == content.user_id).first()
-        if not db_user:
-            raise ValueError(f"User with id {content.user_id} not found")
-
         db_content = db.query(Content).filter(
             Content.url == content.url).first()
+        if db_content:
+            raise HTTPException(status_code=400, detail="Content already exists")
+
         video_info = VideoService._extract_video_info(content.url, settings)
-
-        if not db_content:
-            db_content = Content(
-                user_id=db_user.id,
-                url=content.url,
-                title=video_info["title"],
-                thumbnail=video_info["thumbnail"],
-                description=video_info["description"],
-                content_type=content_type,
-            )
-            db.add(db_content)
-            db.flush()
-            db.refresh(db_content)
-
-            video_metadata = VideoMetadata(
-                content_id=db_content.id,
-                video_length=video_info.get("length", "0"),
-            )
-            db.add(video_metadata)
-
-        tag_list = video_info.get("tags", [])[: content.tag_count]
-        if len(tag_list) == 0:
-            tag_list.append("None")
-
-        existing_tags = {
-            tag.tagname: tag
-            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
-        }
-
-        new_tags = []
-        for tag_name in tag_list:
-            if tag_name not in existing_tags:
-                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
-                db.add(new_tag)
-                new_tags.append(new_tag)
-
-        db.flush()
-        existing_tags.update({tag.tagname: tag for tag in new_tags})
-
-        db.execute(
-            insert(content_tag_association),
-            [
-                {"content_id": db_content.id, "tag_id": tag.id}
-                for tag in existing_tags.values()
-            ],
+        
+        content = ContentAnalyzeResponse(
+            url=content.url,
+            title=video_info["title"],
+            thumbnail=video_info["thumbnail"],
+            description=video_info["description"],
+            video_length=video_info["length"],
+            tags=video_info["tags"],
         )
 
-        db.commit()
+        return content
 
-        return ContentAnalyzeResponse(content_id=db_content.id)
 
     @staticmethod
     async def get_user_all_videos(user: UserContents, db: Session) -> List[Content]:

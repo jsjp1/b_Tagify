@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 
 class Content(BaseModel):
-    id: int
     url: str
     title: str
     thumbnail: Optional[str]
@@ -28,7 +27,13 @@ class ContentAnalyze(BaseModel):
 
 
 class ContentAnalyzeResponse(BaseModel):
-    content_id: int
+    url: str
+    title: str
+    thumbnail: Optional[str]
+    description: Optional[str]
+    video_length: Optional[int] = Field(default=0)
+    body: Optional[str] = Field(default="")
+    tags: List[str]
 
     model_config = {"from_attributes": True}
 
@@ -40,7 +45,9 @@ class UserContents(BaseModel):
 
 
 class UserContentsResponse(Content):
+    id: int
     type: str
+
 
 class UserBookmark(BaseModel):
     id: int
@@ -49,4 +56,16 @@ class UserBookmark(BaseModel):
     
     
 class UserBookmarkResponse(Content):
+    id: int
     type: str
+
+
+class ContentPost(Content): 
+    user_id: int
+    bookmark: bool
+
+
+class ContentPostResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

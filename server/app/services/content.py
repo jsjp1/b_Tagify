@@ -2,9 +2,13 @@ from http.client import HTTPException
 from typing import List
 
 from app.models.content import Content, ContentTypeEnum
+from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
+from app.models.tag import Tag
+from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import UserBookmark, UserContents
+from app.schemas.content import (ContentPost, ContentPostResponse,
+                                 UserBookmark, UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from sqlalchemy import desc
@@ -42,6 +46,79 @@ class ContentService:
             return await PostService.get_user_all_posts(user, db)
         else:
             raise HTTPException(status_code=400, detail="Unsupported Content Type")
+
+    
+    @staticmethod
+    async def post_content(content_type: str, content: ContentPost, db: Session) -> int:
+        """
+        content 정보 db에 저장 (content, metadata, tag, content_tag)
+        """
+        db_user = db.query(User).filter(User.id == content.user_id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail=f"User with id {content.user_id} not found")
+
+        db_content = db.query(Content).filter(Content.url == content.url).first()
+        if db_content:
+            raise HTTPException(status_code=400, detail="Content already exists")
+
+        new_content = Content(
+            url=content.url,
+            title=content.title,
+            description=content.description,
+            bookmark=content.bookmark,
+            thumbnail=content.thumbnail,
+            content_type=content_type,
+        )
+        db.add(new_content)
+        db.flush()
+        db.refresh(new_content)
+
+        if content_type == "video":
+            video_metadata = VideoMetadata(
+                video_length=content.video_length,
+                content_id=new_content.id,
+            )
+            db.add(video_metadata)
+        elif content_type == "post":
+            post_metadata = PostMetadata(
+                body=content.body,
+                content_id=new_content.id,
+            )
+            db.add(post_metadata)
+        else:
+            raise HTTPException(status_code=404, detail="Unsupported content type")
+        
+        tag_list = content.tags
+        if len(tag_list) == 0:
+            tag_list.append("None")
+
+        existing_tags = {
+            tag.tagname: tag
+            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
+        }
+
+        new_tags = []
+        for tag_name in tag_list:
+            if tag_name not in existing_tags:
+                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
+                db.add(new_tag)
+                new_tags.append(new_tag)
+
+        db.flush()
+        existing_tags.update({tag.tagname: tag for tag in new_tags})
+
+        db.execute(
+            insert(content_tag_association),
+            [
+                {"content_id": new_content.id, "tag_id": tag.id}
+                for tag in existing_tags.values()
+            ],
+        )
+
+        db.commit()
+
+        return ContentPostResponse(id=new_content.id)
+
     
     
     @staticmethod
