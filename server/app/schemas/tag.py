@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class UserTags(BaseModel):
-    oauth_id: str
+    user_id: int
 
     model_config = {"from_attributes": True}
 

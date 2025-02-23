@@ -1,7 +1,8 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import UserTags, UserTagsResponse, TagContents, TagContentsResponse
+from app.schemas.tag import (TagContents, TagContentsResponse, UserTags,
+                             UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -16,11 +17,11 @@ def endpoint_test():
 
 @router.get("/user")
 async def tags(
-    oauth_id: str,
+    user_id: int,
     db: Session = Depends(get_db),
 ) -> List[UserTagsResponse]:
     try:
-        request = UserTags(oauth_id=oauth_id)
+        request = UserTags(user_id=user_id)
         tags = await TagService.get_user_tags(request, db)
 
         return [

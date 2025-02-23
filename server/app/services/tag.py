@@ -14,7 +14,7 @@ class TagService:
         """
         유저가 가지고 있는 모든 태그 반환
         """
-        db_user = db.query(User).filter(User.oauth_id == user.oauth_id).first()
+        db_user = db.query(User).filter(User.id == user.user_id).first()
         if not db_user:
             return []
 
