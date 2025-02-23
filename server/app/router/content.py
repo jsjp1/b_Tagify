@@ -91,6 +91,7 @@ async def contents(
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
+                favicon=content.favicon,
                 description=content.description,
                 bookmark=content.bookmark,
                 **(
@@ -129,6 +130,7 @@ async def contents(
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
+                favicon=content.favicon,
                 description=content.description,
                 bookmark=content.bookmark,
                 **(
@@ -168,6 +170,7 @@ async def bookmark(
                 title=content.title,
                 url=content.url,
                 thumbnail=content.thumbnail,
+                favicon=content.favicon,
                 description=content.description,
                 bookmark=content.bookmark,
                 **(
