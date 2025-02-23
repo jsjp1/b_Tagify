@@ -91,6 +91,8 @@ class ContentService:
             raise HTTPException(status_code=404, detail="Unsupported content type")
         
         tag_list = content.tags
+        if len(tag_list) == 0:
+            tag_list.append("None")
 
         existing_tags = {
             tag.tagname: tag
