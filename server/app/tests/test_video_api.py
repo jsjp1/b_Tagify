@@ -136,6 +136,7 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
         "url",
         "title",
         "thumbnail",
+        "favicon",
         "description",
         "bookmark",
         "video_length",

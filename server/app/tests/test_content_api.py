@@ -5,7 +5,7 @@ from httpx import ASGITransport, AsyncClient
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "description", "bookmark", "video_length", "body", "tags"])
+@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "favicon", "description", "bookmark", "video_length", "body", "tags"])
 async def test_get_all_contents(field, auth_client, test_user_with_video_and_tag):
     """
     get all contents api 테스트
@@ -59,7 +59,7 @@ async def test_toggle_bookmark(auth_client, db_session, test_user_with_video_and
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "description", "bookmark", "video_length", "body", "tags"])
+@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "favicon", "description", "bookmark", "video_length", "body", "tags"])
 async def test_get_all_bookmarked_contents_with_exist_data(field, auth_client, test_user_with_video_and_tag):
     """
     content와 tag 데이터가 존재하는 user -> get bookmarked contents api 테스트
@@ -84,7 +84,7 @@ async def test_get_all_bookmarked_contents_with_exist_data(field, auth_client, t
   
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "description", "bookmark", "video_length", "body", "tags"])
+@pytest.mark.parametrize("field", ["id", "url", "title", "thumbnail", "favicon", "description", "bookmark", "video_length", "body", "tags"])
 async def test_get_all_bookmarked_contents_with_no_data(field, auth_client, test_user_persist):
     """
     content와 tag 데이터가 없는 user -> get bookmarked contents api 테스트

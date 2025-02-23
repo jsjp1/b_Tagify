@@ -23,6 +23,23 @@ class PostService:
         """
         return []
 
+    
+    @staticmethod
+    def _get_favicon(bs: BeautifulSoup) -> str:
+        """
+        url로부터 favicon 추출 후 반환
+        """
+        icon_link = bs.find("link", rel="shortcut icon")
+        if icon_link is None:
+            icon_link = bs.find("link", rel="icon")
+        if icon_link is None:
+            return domain + '/favicon.ico'
+
+        if icon_link["href"].startswith("/"):
+            return domain + icon_link["href"]
+        else:
+            return icon_link["href"]
+
 
     @staticmethod
     def _analyze(url: str) -> dict:
@@ -54,11 +71,13 @@ class PostService:
                 break
 
         tags = PostService._extract_tag(body if body else "")
+        favicon = PostService._get_favicon(bs)
 
         return {
             "title": title.text if title is not None else "",
             "thumbnail": thumbnail.get("content") if thumbnail is not None else "",
             "description": description.get("content") if description is not None else "", 
+            "favicon": favicon if favicon is not None else "",
             "body": body.text if body is not None else "",
             "tags": tags,
         }
@@ -82,6 +101,7 @@ class PostService:
             url=content.url,
             title=post_info["title"],
             thumbnail=post_info["thumbnail"],
+            favicon=post_info["favicon"],
             description=post_info["description"],
             body=post_info["body"],
             tags=post_info["tags"],

@@ -68,6 +68,7 @@ class ContentService:
             description=content.description,
             bookmark=content.bookmark,
             thumbnail=content.thumbnail,
+            favicon=content.favicon,
             content_type=content_type,
         )
         db.add(new_content)

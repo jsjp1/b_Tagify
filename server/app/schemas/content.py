@@ -7,6 +7,7 @@ class Content(BaseModel):
     url: str
     title: str
     thumbnail: Optional[str]
+    favicon: Optional[str]
     description: Optional[str]
     bookmark: bool
     video_length: Optional[int] = Field(default=0)
@@ -30,6 +31,7 @@ class ContentAnalyzeResponse(BaseModel):
     url: str
     title: str
     thumbnail: Optional[str]
+    favicon: Optional[str]
     description: Optional[str]
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")

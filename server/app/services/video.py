@@ -70,6 +70,7 @@ class VideoService:
         video_info = {
             "title": snippet.get("title", ""),
             "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
+            "favicon": "https://www.youtube.com/favicon.ico",
             "description": snippet.get("description", ""),
             "tags": snippet.get("tags", []),  # TODO: tags 처리 -> llm api
             "length": VideoService._convert_duration_to_seconds(
@@ -99,6 +100,7 @@ class VideoService:
             url=content.url,
             title=video_info["title"],
             thumbnail=video_info["thumbnail"],
+            favicon=video_info["favicon"],
             description=video_info["description"],
             video_length=video_info["length"],
             tags=video_info["tags"],
