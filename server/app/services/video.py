@@ -18,7 +18,9 @@ from sqlalchemy.orm import Session, joinedload
 class VideoService:
     @staticmethod
     def _extract_video_id(video_url: str) -> str:
-        """YouTube URL에서 영상 ID 추출"""
+        """
+        YouTube URL에서 영상 ID 추출
+        """
         from urllib.parse import parse_qs, urlparse
 
         parsed_url = urlparse(video_url)
@@ -30,7 +32,9 @@ class VideoService:
 
     @staticmethod
     def _convert_duration_to_seconds(duration: str) -> int:
-        """ISO 8601 형식의 동영상 길이를 초 단위로 변환"""
+        """
+        ISO 8601 형식의 동영상 길이를 초 단위로 변환
+        """
         try:
             return int(isodate.parse_duration(duration).total_seconds())
         except:

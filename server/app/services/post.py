@@ -57,8 +57,8 @@ class PostService:
 
         return {
             "title": title.text if title is not None else "",
-            "thumbnail": thumbnail.get("content"),
-            "description": description.get("content"), 
+            "thumbnail": thumbnail.get("content") if thumbnail is not None else "",
+            "description": description.get("content") if description is not None else "", 
             "body": body.text if body is not None else "",
             "tags": tags,
         }
