@@ -30,13 +30,14 @@ class TagService:
             db.query(Content)
             .join(content_tag_association)
             .filter(content_tag_association.c.tag_id == tag.tag_id)
+            .order_by(desc(Content.id))
             .all()
         )
 
         if not db_videos:
             return []
 
-        return db_videos.order_by(desc(Content.id))
+        return db_videos
 
     @staticmethod
     async def get_tag_posts(tag: TagContents, db: Session) -> List[Content]:
