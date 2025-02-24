@@ -35,7 +35,7 @@ class PostService:
         if icon_link is None:
             return domain + '/favicon.ico'
 
-        if icon_link["href"].startswith("/"):
+        if icon_link["href"].startswith("/") or not icon_link["href"].startswith("http"):
             return domain + icon_link["href"]
         else:
             return icon_link["href"]
