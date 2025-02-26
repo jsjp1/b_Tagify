@@ -13,6 +13,7 @@ from app.services.video import VideoService
 from fastapi import HTTPException
 from sqlalchemy import desc, insert
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.sql import func
 
 
 class ContentService:
@@ -163,6 +164,19 @@ class ContentService:
         content = db.query(Content).filter(Content.id == content_id).first()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
+
+        # 해당 콘텐츠와 관계된, 다른 콘텐츠와는 관계되지 않은 모든 태그 삭제
+        orphan_tags = (
+            db.query(Tag)
+            .join(content_tag_association)
+            .filter(content_tag_association.c.content_id == content_id)
+            .group_by(Tag.id)
+            .having(func.count(content_tag_association.c.content_id) == 1) 
+            .all()
+        )
+
+        for tag in orphan_tags:
+            db.delete(tag)
 
         db.delete(content)
         db.commit()

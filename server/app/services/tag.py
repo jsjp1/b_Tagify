@@ -19,7 +19,15 @@ class TagService:
         if not db_user:
             return []
 
-        return db_user.tags.order_by(desc(Tag.id)).all()
+        ordered_tags = (
+            db.query(Tag).filter(Tag.id.in_([tag.id for tag in db_user.tags]))
+            .order_by(desc(Tag.id))
+            .all()
+        )
+
+        # return db_user.tags? 
+        return ordered_tags
+
 
     @staticmethod
     async def get_tag_videos(tag: TagContents, db: Session) -> List[Content]:
@@ -38,6 +46,7 @@ class TagService:
             return []
 
         return db_videos
+
 
     @staticmethod
     async def get_tag_posts(tag: TagContents, db: Session) -> List[Content]:

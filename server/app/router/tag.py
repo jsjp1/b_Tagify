@@ -33,6 +33,7 @@ async def tags(
         ]
 
     except HTTPException as e:
+        print(e)
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
