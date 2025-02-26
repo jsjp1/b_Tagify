@@ -1,4 +1,5 @@
 from typing import List
+from urllib.parse import urlparse
 
 import requests
 from app.models.content import Content, ContentTypeEnum
@@ -23,10 +24,12 @@ class PostService:
         return []
 
     @staticmethod
-    def _get_favicon(bs: BeautifulSoup) -> str:
+    def _get_favicon(url: str, bs: BeautifulSoup) -> str:
         """
         url로부터 favicon 추출 후 반환
         """
+        domain = urlparsed(url).netloc
+
         icon_link = bs.find("link", rel="shortcut icon")
         if icon_link is None:
             icon_link = bs.find("link", rel="icon")
@@ -74,7 +77,7 @@ class PostService:
                 break
 
         tags = PostService._extract_tag(body if body else "")
-        favicon = PostService._get_favicon(bs)
+        favicon = PostService._get_favicon(url, bs)
 
         return {
             "title": title.text if title is not None else "",
@@ -129,4 +132,13 @@ class PostService:
             .all()
         )
 
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
         return contents
