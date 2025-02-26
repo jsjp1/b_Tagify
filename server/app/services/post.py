@@ -7,7 +7,8 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
@@ -28,7 +29,7 @@ class PostService:
         """
         url로부터 favicon 추출 후 반환
         """
-        domain = urlparsed(url).netloc
+        domain = urlparse(url).netloc
 
         icon_link = bs.find("link", rel="shortcut icon")
         if icon_link is None:
@@ -132,6 +133,15 @@ class PostService:
             .all()
         )
 
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
         return contents
         return contents
         return contents
