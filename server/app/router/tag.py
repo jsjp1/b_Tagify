@@ -15,7 +15,7 @@ def endpoint_test():
     return {"message": "ok"}
 
 
-@router.get("/user")
+@router.get("/user/{user_id}")
 async def tags(
     user_id: int,
     db: Session = Depends(get_db),
