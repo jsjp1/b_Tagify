@@ -3,8 +3,7 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.user import (AllUsersResponse, TokenRefresh, UserCreate,
-                              UserLogin)
+from app.schemas.user import AllUsersResponse, TokenRefresh, UserCreate, UserLogin
 from app.util.auth import create_access_token, decode_token
 from config import Settings
 from fastapi import HTTPException
@@ -33,17 +32,15 @@ class UserService:
             )
 
         return db_user
-    
-    
+
     @staticmethod
     async def get_all_users(db: Session) -> List[User]:
         """
         모든 사용자 정보를 가져오는 메서드
         """
         users = db.query(User).all()
-        
-        return users
 
+        return users
 
     @staticmethod
     async def create_user(user: UserCreate, db: Session) -> User:
@@ -81,7 +78,6 @@ class UserService:
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
 
     @staticmethod
     async def token_refresh(token: TokenRefresh, settings: Settings) -> str:

@@ -22,7 +22,9 @@ async def test_db_connection(auth_client):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("field", ["username", "oauth_provider", "oauth_id", "email", "profile_image"])
+@pytest.mark.parametrize(
+    "field", ["username", "oauth_provider", "oauth_id", "email", "profile_image"]
+)
 async def test_get_all_users(field, auth_client, test_user_persist):
     """
     모든 유저 가져오는 api 테스트
@@ -34,15 +36,15 @@ async def test_get_all_users(field, auth_client, test_user_persist):
             "/api/users/",
             headers=auth_client.headers,
         )
-        
+
         response_json = response.json()
         response_users = response_json["users"]
-        
+
         assert response.status_code == 200, f"Get All Users API Failed: {response.text}"
         assert "users" in response_json
         assert isinstance(response_users, list)
         assert len(response_users) >= 1
-        
+
         assert field in response_users[0]
 
 
@@ -64,8 +66,12 @@ async def test_signup_success(client, test_user, db_session):
         assert response.status_code == 200, f"User Sign Up API Failed: {response.text}"
         assert response_json["oauth_id"] == test_user["oauth_id"]
         assert response_json["email"] == test_user["email"]
-        
-        db_user = db_session.query(User).filter(User.oauth_id == test_user["oauth_id"]).first()
+
+        db_user = (
+            db_session.query(User)
+            .filter(User.oauth_id == test_user["oauth_id"])
+            .first()
+        )
         assert db_user is not None, "User Signup fail"
 
 
@@ -150,7 +156,7 @@ async def test_signup_and_login_success(token, client, test_user):
 
         assert response.status_code == 200, f"User Login API Failed: {response.text}"
         assert token in response_json
-        
+
         assert response_json["username"] == test_user["username"]
         assert response_json["oauth_provider"] == test_user["oauth_provider"]
         assert response_json["profile_image"] == test_user["profile_image"]
@@ -181,7 +187,9 @@ async def test_signup_and_login_fail(client, test_user):
             json=login_user,
         )
 
-        assert response.status_code == 400, f"different oauth_id -> success error: {response.text}"
+        assert (
+            response.status_code == 400
+        ), f"different oauth_id -> success error: {response.text}"
 
 
 @pytest.mark.asyncio
@@ -212,13 +220,15 @@ async def test_refresh_token_success(client, test_user):
             "/api/users/token/refresh",
             json={
                 "refresh_token": response.json()["refresh_token"],
-            }
+            },
         )
 
         assert response.status_code == 200, "Refresh token api fail"
         response_json = response.json()
-        
+
         settings = get_settings()
         token_extracted_email = decode_token(settings, response_json["access_token"])
 
-        assert token_extracted_email == test_user["email"], "Token Refresh api return Invalid token"
+        assert (
+            token_extracted_email == test_user["email"]
+        ), "Token Refresh api return Invalid token"

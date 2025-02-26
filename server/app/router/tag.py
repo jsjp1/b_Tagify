@@ -1,8 +1,7 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (TagContents, TagContentsResponse, UserTags,
-                             UserTagsResponse)
+from app.schemas.tag import TagContents, TagContentsResponse, UserTags, UserTagsResponse
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -49,12 +48,12 @@ async def contents(
         request = TagContents(tag_id=tag_id)
         if content_type == "video":
             contents = await TagService.get_tag_videos(request, db)
-        elif content_type == "post": 
+        elif content_type == "post":
             pass
             # contents = await TagService.get_tag_posts(request, db)
         else:
             raise HTTPException(status_code=400, detail="Invalid content type")
-        
+
         return [
             TagContentsResponse(
                 id=content.id,
@@ -70,11 +69,11 @@ async def contents(
                     {"body": content.post_metadata.body}
                     if content_type == "post"
                     else {}
-                )
+                ),
             )
             for content in contents
         ]
-        
+
     except HTTPException as e:
         raise e
     except Exception as e:

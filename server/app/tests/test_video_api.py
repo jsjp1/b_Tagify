@@ -23,7 +23,8 @@ async def test_video_analyze_success(
         transport=ASGITransport(app=auth_client.app), base_url="http://test"
     ) as async_client:
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url,
             headers=auth_client.headers,
         )
 
@@ -67,7 +68,8 @@ async def test_video_analyze_fail1(auth_client, test_video_url):
         transport=ASGITransport(app=auth_client.app), base_url="http://test"
     ) as async_client:
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url,
             headers=auth_client.headers,
         )
 
@@ -90,7 +92,8 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
         test_video_url_tmp = deepcopy(test_video_url)
         test_video_url_tmp["tag_count"] = 0
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url_tmp,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url_tmp,
             headers=auth_client.headers,
         )
         assert (
@@ -100,7 +103,8 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
         test_video_url_tmp = deepcopy(test_video_url)
         test_video_url_tmp["tag_count"] = 10
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url_tmp,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url_tmp,
             headers=auth_client.headers,
         )
         assert (
@@ -110,7 +114,8 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
         test_video_url_tmp = deepcopy(test_video_url)
         test_video_url_tmp["detail_degree"] = 0
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url_tmp,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url_tmp,
             headers=auth_client.headers,
         )
         assert (
@@ -120,7 +125,8 @@ async def test_video_analyze_fail2(auth_client, test_video_url):
         test_video_url_tmp = deepcopy(test_video_url)
         test_video_url_tmp["detail_degree"] = 6
         response = await async_client.post(
-            "/api/contents/analyze?content_type=video", json=test_video_url_tmp,
+            "/api/contents/analyze?content_type=video",
+            json=test_video_url_tmp,
             headers=auth_client.headers,
         )
         assert (

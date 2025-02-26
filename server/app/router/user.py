@@ -1,7 +1,14 @@
 from app.db import get_db
-from app.schemas.user import (AllUsersResponse, TokenRefresh,
-                              TokenRefreshResponse, User, UserCreate,
-                              UserCreateResponse, UserLogin, UserWithTokens)
+from app.schemas.user import (
+    AllUsersResponse,
+    TokenRefresh,
+    TokenRefreshResponse,
+    User,
+    UserCreate,
+    UserCreateResponse,
+    UserLogin,
+    UserWithTokens,
+)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -43,9 +50,7 @@ async def login(
         db_user = await UserService.get_user(request, db)
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
-        refresh_token = create_refresh_token(
-            settings, data={"sub": db_user.email}
-        )
+        refresh_token = create_refresh_token(settings, data={"sub": db_user.email})
 
         db_user.access_token = access_token
         db_user.refresh_token = refresh_token
@@ -85,4 +90,4 @@ async def refresh(
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

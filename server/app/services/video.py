@@ -6,8 +6,7 @@ from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
@@ -81,7 +80,6 @@ class VideoService:
 
         return video_info
 
-
     @staticmethod
     async def analyze_video(
         content_type: str, content: ContentAnalyze, db: Session, settings: Settings
@@ -89,13 +87,12 @@ class VideoService:
         """
         video 정보 추출 후 반환
         """
-        db_content = db.query(Content).filter(
-            Content.url == content.url).first()
+        db_content = db.query(Content).filter(Content.url == content.url).first()
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 
         video_info = VideoService._extract_video_info(content.url, settings)
-        
+
         content = ContentAnalyzeResponse(
             url=content.url,
             title=video_info["title"],
@@ -107,7 +104,6 @@ class VideoService:
         )
 
         return content
-
 
     @staticmethod
     async def get_user_all_videos(user: UserContents, db: Session) -> List[Content]:
@@ -122,7 +118,7 @@ class VideoService:
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
             )
-            .order_by(desc(Content.id)) 
+            .order_by(desc(Content.id))
             .all()
         )
 

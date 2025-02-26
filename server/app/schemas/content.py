@@ -53,16 +53,16 @@ class UserContentsResponse(Content):
 
 class UserBookmark(BaseModel):
     id: int
-    
+
     model_config = {"from_attributes": True}
-    
-    
+
+
 class UserBookmarkResponse(Content):
     id: int
     type: str
 
 
-class ContentPost(Content): 
+class ContentPost(Content):
     user_id: int
     bookmark: bool
 

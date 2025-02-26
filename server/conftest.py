@@ -64,9 +64,11 @@ def auth_client(client):
     settings = get_settings()
     access_token = create_access_token(settings, data={"sub": "test@example.com"})
 
-    client.headers.update({
-        "Authorization": f"Bearer {access_token}",
-    })
+    client.headers.update(
+        {
+            "Authorization": f"Bearer {access_token}",
+        }
+    )
 
     yield client
 
@@ -94,7 +96,7 @@ def test_user(oauth_id, oauth_provider):
         "username": f.user_name(),
         "oauth_id": oauth_id,
         "oauth_provider": oauth_provider,
-        "email": "test@example.com", # token 로직 때문에 고정
+        "email": "test@example.com",  # token 로직 때문에 고정
         "profile_image": f.image_url(),
     }
 
@@ -107,7 +109,7 @@ def test_user_persist(db_session, oauth_id, oauth_provider):
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
-        email="test@example.com", 
+        email="test@example.com",
         profile_image=f.image_url(),
     )
     db_session.add(user)

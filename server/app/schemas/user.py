@@ -11,7 +11,7 @@ class User(BaseModel):
     profile_image: Optional[str] = None
 
     model_config = {"from_attributes": True}
-    
+
 
 class UserLogin(BaseModel):
     oauth_id: str

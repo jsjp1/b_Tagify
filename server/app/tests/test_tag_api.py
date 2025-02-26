@@ -27,11 +27,13 @@ async def test_get_tags_success_with_no_user(field, auth_client, test_user):
 
         if len(response_json) >= 1:
             assert field in response_json[0]
-            
-            
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field", ["tag", "tag_id"])
-async def test_get_tags_success_with_exist_user(field, auth_client, test_user_with_video_and_tag):
+async def test_get_tags_success_with_exist_user(
+    field, auth_client, test_user_with_video_and_tag
+):
     """
     get user tags api 테스트
     """
@@ -54,17 +56,19 @@ async def test_get_tags_success_with_exist_user(field, auth_client, test_user_wi
 
         if len(response_json) >= 1:
             assert field in response_json[0]
-            
-            
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field", ["url", "title", "thumbnail", "video_length", "body"])
-async def test_get_tag_videos(field, auth_client, test_user_with_video_and_tag, db_session):
+async def test_get_tag_videos(
+    field, auth_client, test_user_with_video_and_tag, db_session
+):
     """
     태그 정보 -> 태그에 해당하는 video 가져오는 api 테스트
     """
     test_user = test_user_with_video_and_tag
     tag = db_session.query(Tag).filter(Tag.user_id == test_user.id).first()
-    
+
     async with AsyncClient(
         transport=ASGITransport(app=auth_client.app), base_url="http://test"
     ) as async_client:
@@ -72,11 +76,13 @@ async def test_get_tag_videos(field, auth_client, test_user_with_video_and_tag, 
             f"/api/tags/{str(tag.id)}/contents?content_type=video",
             headers=auth_client.headers,
         )
-        
+
         response_json = response.json()
-        
-        assert response.status_code == 200, f"Get Tag Videos API Failed: {response.text}"
+
+        assert (
+            response.status_code == 200
+        ), f"Get Tag Videos API Failed: {response.text}"
         assert isinstance(response_json, list)
         assert len(response_json) >= 1
-        
+
         assert field in response_json[0]

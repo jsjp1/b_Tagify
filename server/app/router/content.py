@@ -2,10 +2,16 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 ContentPost, ContentPostResponse,
-                                 UserBookmark, UserBookmarkResponse,
-                                 UserContents, UserContentsResponse)
+from app.schemas.content import (
+    ContentAnalyze,
+    ContentAnalyzeResponse,
+    ContentPost,
+    ContentPostResponse,
+    UserBookmark,
+    UserBookmarkResponse,
+    UserContents,
+    UserContentsResponse,
+)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -54,12 +60,15 @@ async def save(
 ) -> ContentPostResponse:
     try:
         content_id = await ContentService.post_content(content_type, request, db)
-        return ContentPostResponse.model_validate({"id": content_id}, from_attributes=True)
+        return ContentPostResponse.model_validate(
+            {"id": content_id}, from_attributes=True
+        )
 
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 
 @router.delete("/{content_id}")
 async def delete(
@@ -69,7 +78,7 @@ async def delete(
     try:
         await ContentService.delete_content(content_id, db)
         return DefaultSuccessResponse(message="success").model_dump()
-        
+
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -96,11 +105,13 @@ async def contents(
                 bookmark=content.bookmark,
                 **(
                     {"video_length": content.video_metadata.video_length}
-                    if getattr(content, "video_metadata", None) else {}
+                    if getattr(content, "video_metadata", None)
+                    else {}
                 ),
                 **(
                     {"body": content.post_metadata.body}
-                    if getattr(content, "post_metadata", None) else {}
+                    if getattr(content, "post_metadata", None)
+                    else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
                 type="video" if getattr(content, "video_metadata", None) else "post",
@@ -122,7 +133,9 @@ async def contents(
 ) -> List[UserContentsResponse]:
     try:
         request = UserContents(id=user_id)
-        contents = await ContentService.get_user_all_sub_contents(request, content_type, db)
+        contents = await ContentService.get_user_all_sub_contents(
+            request, content_type, db
+        )
 
         return [
             UserContentsResponse(
@@ -157,13 +170,12 @@ async def contents(
 
 @router.get("/bookmarks/user/{user_id}")
 async def bookmark(
-    user_id: int,
-    db: Session = Depends(get_db)
+    user_id: int, db: Session = Depends(get_db)
 ) -> List[UserBookmarkResponse]:
     try:
         request = UserBookmark(id=user_id)
         contents = await ContentService.get_bookmarked_contents(request, db)
-        
+
         return [
             UserBookmarkResponse(
                 id=content.id,
@@ -175,34 +187,32 @@ async def bookmark(
                 bookmark=content.bookmark,
                 **(
                     {"video_length": content.video_metadata.video_length}
-                    if getattr(content, "video_metadata", None) else {}
+                    if getattr(content, "video_metadata", None)
+                    else {}
                 ),
                 **(
                     {"body": content.post_metadata.body}
-                    if getattr(content, "post_metadata", None) else {}
+                    if getattr(content, "post_metadata", None)
+                    else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
                 type="video" if getattr(content, "video_metadata", None) else "post",
             )
             for content in contents
         ]
-        
+
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-
 @router.post("/{content_id}/bookmark")
-async def bookmark(
-    content_id: int,
-    db: Session = Depends(get_db)
-) -> dict:
+async def bookmark(content_id: int, db: Session = Depends(get_db)) -> dict:
     try:
         await ContentService.toggle_bookmark(content_id, db)
         return DefaultSuccessResponse(message="success").model_dump()
-        
+
     except HTTPException as e:
         raise e
     except Exception as e:
