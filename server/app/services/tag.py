@@ -5,6 +5,7 @@ from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.schemas.tag import TagContents, TagDelete, TagPost, TagPut, UserTags
+from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
