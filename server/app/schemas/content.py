@@ -1,20 +1,7 @@
 from typing import List, Literal, Optional
 
+from app.schemas.common import Content
 from pydantic import BaseModel, Field
-
-
-class Content(BaseModel):
-    url: str
-    title: str
-    thumbnail: Optional[str]
-    favicon: Optional[str]
-    description: Optional[str]
-    bookmark: bool
-    video_length: Optional[int] = Field(default=0)
-    body: Optional[str] = Field(default="")
-    tags: List[str]
-
-    model_config = {"from_attributes": True}
 
 
 class ContentAnalyze(BaseModel):

@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from content import Content
+from app.schemas.common import Content
 from pydantic import BaseModel, Field
 
 
