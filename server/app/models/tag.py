@@ -9,7 +9,7 @@ class Tag(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     tagname = Column(String, unique=True, nullable=False, index=True)
-    color = Column(Integer, nullable=True, default=2672422558)  # default = Colors.grey
+    color = Column(BIGINT, nullable=True, default=2672422558)  # default = Colors.grey
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
