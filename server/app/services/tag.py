@@ -84,7 +84,7 @@ class TagService:
         except IntegrityError:
             db.rollback()
             raise HTTPException(
-                status_code=500, detail="Database error while creating tag"
+                status_code=500, detail="DB error while creating tag"
             )
 
         return new_tag.id
