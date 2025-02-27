@@ -45,6 +45,19 @@ class TagPostResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TagPut(BaseModel):
+    tagname: str
+    color: int
+
+    model_config = {"from_attributes": True}
+
+
+class TagPutResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
 class TagDelete(BaseModel):
     tagname: str
 

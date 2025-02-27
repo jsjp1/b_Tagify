@@ -1,9 +1,18 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
-                             TagDeleteResponse, TagPost, TagPostResponse,
-                             UserTags, UserTagsResponse)
+from app.schemas.tag import (
+    TagContents,
+    TagContentsResponse,
+    TagDelete,
+    TagDeleteResponse,
+    TagPost,
+    TagPostResponse,
+    TagPut,
+    TagPutResponse,
+    UserTags,
+    UserTagsResponse,
+)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -49,6 +58,23 @@ async def create(
     try:
         tag_id = await TagService.post_tag(user_id, request, db)
         return TagPostResponse.model_validate({"id": tag_id}, from_attributes=True)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.put("/user/{user_id}/{tag_id}/update")
+async def update_tag(
+    user_id: int,
+    tag_id: int,
+    request: TagPut,
+    db: Session = Depends(get_db),
+) -> TagPutResponse:
+    try:
+        tag = await TagService.update_tag(user_id, tag_id, request, db)
+        return TagPutResponse.model_validate({"id": tag.id}, from_attributes=True)
 
     except HTTPException as e:
         raise e
@@ -111,13 +137,4 @@ async def contents(
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
