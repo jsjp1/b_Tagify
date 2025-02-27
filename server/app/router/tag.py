@@ -1,18 +1,10 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (
-    TagContents,
-    TagContentsResponse,
-    TagDelete,
-    TagDeleteResponse,
-    TagPost,
-    TagPostResponse,
-    TagPut,
-    TagPutResponse,
-    UserTags,
-    UserTagsResponse,
-)
+from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
+                             TagDeleteResponse, TagPost, TagPostResponse,
+                             TagPut, TagPutResponse, UserTags,
+                             UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -118,12 +110,12 @@ async def contents(
                 description=content.description,
                 **(
                     {"video_length": content.video_metadata.video_length}
-                    if content_type == "video"
+                    if getattr(content, "video_metadata", None)
                     else {}
                 ),
                 **(
                     {"body": content.post_metadata.body}
-                    if content_type == "post"
+                    if getattr(content, "post_metadata", None)
                     else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
