@@ -101,10 +101,10 @@ class TagService:
                 detail=f"Tag name '{tag.tagname}' does not exist for user id '{user_id}'",
             )
 
-        if request.tagname:
-            db_tag.tagname = request.tagname
-        if request.color is not None:
-            db_tag.color = request.color
+        if tag.tagname:
+            db_tag.tagname = tag.tagname
+        if tag.color is not None:
+            db_tag.color = tag.color
 
         db.commit()
         db.refresh(db_tag)
