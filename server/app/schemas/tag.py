@@ -43,3 +43,15 @@ class TagPostResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class TagDelete(BaseModel):
+    tagname: str
+
+    model_config = {"from_attributes": True}
+
+
+class TagDeleteResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

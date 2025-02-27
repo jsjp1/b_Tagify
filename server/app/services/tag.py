@@ -4,9 +4,11 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.tag import TagContents, TagPost, UserTags
+from app.schemas.tag import TagContents, TagDelete, TagPost, UserTags
 from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import exists
 
 
 class TagService:
@@ -54,15 +56,19 @@ class TagService:
         """
         pass
 
+
     @staticmethod
     async def post_tag(user_id: int, tag: TagPost, db: Session) -> int:
         """
-        콘텐츠 없는 빈 태그 생성 후 tag id 반환
+        특정 사용자가 동일한 태그를 생성했는지 검사 후, 태그 생성 및 ID 반환
         """
-        db_post = db.query(Tag).filter(Tag.tagname == tag.tagname).first()
-        if db_post:
+        tag_exists = db.query(
+            exists().where(Tag.tagname == tag.tagname, Tag.user_id == user_id)
+        ).scalar()
+
+        if tag_exists:
             raise HTTPException(
-                status_code=400, detail=f"Tag name {tag.tagname} already exists"
+                status_code=400, detail=f"Tag name '{tag.tagname}' already exists for this user"
             )
 
         new_tag = Tag(
@@ -70,7 +76,44 @@ class TagService:
             user_id=user_id,
         )
 
-        db.add(new_tag)
-        db.commit()
+        try:
+            db.add(new_tag)
+            db.commit()
+            db.refresh(new_tag)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Database error while creating tag")
 
         return new_tag.id
+
+
+    @staticmethod
+    async def delete_tag(user_id: int, tag: TagDelete, db: Session) -> int:
+        """
+        콘텐츠 없는 빈 태그 삭제, 연관된 콘텐츠가 하나라도 있을시 예외 반환
+        """
+        db_tag = db.query(Tag).filter(Tag.tagname == tag.tagname, Tag.user_id == user_id).first()
+
+        if not db_tag:
+            raise HTTPException(
+                status_code=400, detail=f"Tag name '{tag.tagname}' does not exist for this user"
+            )
+
+        related_content_exists = db.query(
+            exists().where(content_tag_association.c.tag_id == db_tag.id)
+        ).scalar()
+
+        if related_content_exists:
+            raise HTTPException(
+                status_code=400, detail=f"Tag '{tag.tagname}' has associated content and cannot be deleted"
+            )
+
+        try:
+            db.delete(db_tag)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="DB error while deleting tag")
+
+        return db_tag.id
+        
