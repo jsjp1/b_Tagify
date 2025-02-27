@@ -66,8 +66,8 @@ async def update_tag(
     db: Session = Depends(get_db),
 ) -> TagPutResponse:
     try:
-        tag = await TagService.update_tag(user_id, tag_id, request, db)
-        return TagPutResponse.model_validate({"id": tag.id}, from_attributes=True)
+        tag_id = await TagService.update_tag(user_id, tag_id, request, db)
+        return TagPutResponse.model_validate({"id": tag_id}, from_attributes=True)
 
     except HTTPException as e:
         raise e
