@@ -32,6 +32,24 @@ class TagService:
         return ordered_tags
 
     @staticmethod
+    async def get_tag_all_contents(tag: TagContents, db: Session) -> List[Content]:
+        """
+        태그와 매치되는 모든 콘텐츠 반환
+        """
+        db_contents = (
+            db.query(Content)
+            .join(content_tag_association)
+            .filter(content_tag_association.c.tag_id == tag.tag_id)
+            .order_by(desc(Content.id))
+            .all()
+        )
+
+        if not db_contents:
+            return []
+
+        return db_contents
+
+    @staticmethod
     async def get_tag_videos(tag: TagContents, db: Session) -> List[Content]:
         """
         태그와 매치되는 video 반환
@@ -39,6 +57,7 @@ class TagService:
         db_videos = (
             db.query(Content)
             .join(content_tag_association)
+            .filter(Content.content_type == "VIDEO")
             .filter(content_tag_association.c.tag_id == tag.tag_id)
             .order_by(desc(Content.id))
             .all()
@@ -54,8 +73,19 @@ class TagService:
         """
         태그와 매치되는 post 반환
         """
-        # TODO
-        pass
+        db_posts = (
+            db.query(Content)
+            .join(content_tag_association)
+            .filter(Content.content_type == "POST")
+            .filter(content_tag_association.c.tag_id == tag.tag_id)
+            .order_by(desc(Content.id))
+            .all()
+        )
+
+        if not db_posts:
+            return []
+
+        return db_posts
 
     @staticmethod
     async def post_tag(user_id: int, tag: TagPost, db: Session) -> int:
@@ -83,9 +113,7 @@ class TagService:
             db.refresh(new_tag)
         except IntegrityError:
             db.rollback()
-            raise HTTPException(
-                status_code=500, detail="DB error while creating tag"
-            )
+            raise HTTPException(status_code=500, detail="DB error while creating tag")
 
         return new_tag.id
 

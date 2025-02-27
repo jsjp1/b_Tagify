@@ -30,9 +30,9 @@ class ContentAnalyze(BaseModel):
 class ContentAnalyzeResponse(BaseModel):
     url: str
     title: str
-    thumbnail: Optional[str]
-    favicon: Optional[str]
-    description: Optional[str]
+    thumbnail: Optional[str] = Field(default="")
+    favicon: Optional[str] = Field(default="")
+    description: Optional[str] = Field(default="")
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]

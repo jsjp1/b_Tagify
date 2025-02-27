@@ -1,5 +1,6 @@
 from typing import List, Literal, Optional
 
+from content import Content
 from pydantic import BaseModel, Field
 
 
@@ -23,13 +24,9 @@ class TagContents(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class TagContentsResponse(BaseModel):
+class TagContentsResponse(Content):
     id: int
-    url: str
-    title: str
-    thumbnail: Optional[str]
-    video_length: Optional[int] = Field(default=0)
-    body: Optional[str] = Field(default="")
+    type: str
 
     model_config = {"from_attributes": True}
 
