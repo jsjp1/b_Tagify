@@ -4,7 +4,7 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.tag import TagContents, UserTags
+from app.schemas.tag import TagContents, TagPost, UserTags
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -53,3 +53,24 @@ class TagService:
         태그와 매치되는 post 반환
         """
         pass
+
+    @staticmethod
+    async def post_tag(user_id: int, tag: TagPost, db: Session) -> int:
+        """
+        콘텐츠 없는 빈 태그 생성 후 tag id 반환
+        """
+        db_post = db.query(Tag).filter(Tag.tagname == tag.tagname).first()
+        if db_post:
+            raise HTTPException(
+                status_code=400, detail=f"Tag name {tag.tagname} already exists"
+            )
+
+        new_tag = Tag(
+            tagname=tag.tagname,
+            user_id=user_id,
+        )
+
+        db.add(new_tag)
+        db.commit()
+
+        return new_tag.id

@@ -1,5 +1,5 @@
 from typing import List
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 from app.models.content import Content, ContentTypeEnum
@@ -7,8 +7,7 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
@@ -30,19 +29,22 @@ class PostService:
         url로부터 favicon 추출 후 반환
         """
         domain = urlparse(url).netloc
+        scheme = urlparse(url).scheme
 
         icon_link = bs.find("link", rel="shortcut icon")
         if icon_link is None:
             icon_link = bs.find("link", rel="icon")
         if icon_link is None:
-            return domain + "/favicon.ico"
+            return f"{scheme}://{domain}/favicon.ico"
 
-        if icon_link["href"].startswith("http"):
-            return icon_link["href"]
-        elif icon_link["href"].startswith("/"):
-            return domain + icon_link["href"]
+        icon_href = icon_link.get("href")
+
+        if icon_href.startswith("http"):
+            return icon_href
+        elif icon_href.startswith("/"):
+            return urljoin(f"{scheme}://{domain}", icon_href)
         else:
-            # TODO: logging, 예외 처리 필요
+            # TODO: 기타 예외 처리
             return ""
 
     @staticmethod
@@ -133,22 +135,4 @@ class PostService:
             .all()
         )
 
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
         return contents

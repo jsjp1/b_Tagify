@@ -31,3 +31,15 @@ class TagContentsResponse(BaseModel):
     body: Optional[str] = Field(default="")
 
     model_config = {"from_attributes": True}
+
+
+class TagPost(BaseModel):
+    tagname: str
+
+    model_config = {"from_attributes": True}
+
+
+class TagPostResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

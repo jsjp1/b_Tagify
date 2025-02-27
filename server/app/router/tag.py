@@ -1,7 +1,8 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import TagContents, TagContentsResponse, UserTags, UserTagsResponse
+from app.schemas.tag import (TagContents, TagContentsResponse, TagPost,
+                             TagPostResponse, UserTags, UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -33,6 +34,22 @@ async def tags(
 
     except HTTPException as e:
         print(e)
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.post("/user/{user_id}/create")
+async def create(
+    user_id: int,
+    request: TagPost,
+    db: Session = Depends(get_db),
+) -> TagPostResponse:
+    try:
+        tag_id = await TagService.post_tag(user_id, request, db)
+        return TagPostResponse.model_validate({"id": tag_id}, from_attributes=True)
+
+    except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
