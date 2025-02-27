@@ -1,8 +1,11 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
 class DefaultSuccessResponse(BaseModel):
     message: str
+
 
 class Content(BaseModel):
     url: str
