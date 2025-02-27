@@ -1,6 +1,6 @@
-from typing import Field, List, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DefaultSuccessResponse(BaseModel):
