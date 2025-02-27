@@ -12,7 +12,7 @@ class UserTags(BaseModel):
 class UserTagsResponse(BaseModel):
     tag: str
     tag_id: int
-    colof: int
+    color: int
 
     model_config = {"from_attributes": True}
 
