@@ -108,6 +108,7 @@ async def contents(
                 thumbnail=content.thumbnail,
                 favicon=content.favicon,
                 description=content.description,
+                bookmark=content.bookmark,
                 **(
                     {"video_length": content.video_metadata.video_length}
                     if getattr(content, "video_metadata", None)
@@ -153,6 +154,7 @@ async def contents(
                 thumbnail=content.thumbnail,
                 favicon=content.favicon,
                 description=content.description,
+                bookmark=content.bookmark,
                 **(
                     {"video_length": content.video_metadata.video_length}
                     if content_type == "video"
