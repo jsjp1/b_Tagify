@@ -28,7 +28,6 @@ class TagService:
             .all()
         )
 
-        # return db_user.tags?
         return ordered_tags
 
     @staticmethod
@@ -54,6 +53,7 @@ class TagService:
         """
         태그와 매치되는 post 반환
         """
+        # TODO
         pass
 
     @staticmethod
