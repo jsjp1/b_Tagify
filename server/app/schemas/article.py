@@ -20,7 +20,7 @@ class ArticleModel(BaseModel):
 
 
 class AllArticlesLimitResponse(BaseModel):
-    articles: List[Article]
+    articles: List[ArticleModel]
 
     model_config = {"from_attributes": True}
 
