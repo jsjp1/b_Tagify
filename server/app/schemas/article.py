@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class ArticleCreate(BaseModel):
     user_id: int
     title: str = Field(default="")
-    body: Option[str] = Field(default="")
+    body: Optional[str] = Field(default="")
     encoded_content: str
 
 
