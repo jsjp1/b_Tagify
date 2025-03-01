@@ -18,14 +18,14 @@ class ArticleService:
                 status_code=400, detail=f"User id {article.user_id} does not exists"
             )
 
-            new_article = Article(
-                title=article.title,
-                body=article.body,
-                encoded_content=article.encoded_content,
-                up_count=0,
-                down_count=0,
-                user_id=article.user_id,
-            )
+        new_article = Article(
+            title=article.title,
+            body=article.body,
+            encoded_content=article.encoded_content,
+            up_count=0,
+            down_count=0,
+            user_id=article.user_id,
+        )
 
         try:
             db.add(new_article)
