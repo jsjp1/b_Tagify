@@ -36,7 +36,7 @@ async def get_all_articles_limit(
     db: Session = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     try:
-        articles = await ArticleService.get_all_articles_limit(request, db)
+        articles = await ArticleService.get_all_articles_limit(limit, offset, db)
         response = AllArticlesLimitResponse(
             articles=[ArticleResponse.model_validate(article) for article in articles]
         )
