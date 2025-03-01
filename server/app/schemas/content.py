@@ -11,8 +11,6 @@ class ContentAnalyze(BaseModel):
     tag_count: Optional[int] = Field(default=3, ge=1, lt=10)
     detail_degree: Literal[1, 2, 3, 4, 5] = Field(default=3)
 
-    model_config = {"from_attributes": True}
-
 
 class ContentAnalyzeResponse(BaseModel):
     url: str
@@ -30,8 +28,6 @@ class ContentAnalyzeResponse(BaseModel):
 class UserContents(BaseModel):
     id: int
 
-    model_config = {"from_attributes": True}
-
 
 class UserContentsResponse(Content):
     id: int
@@ -40,8 +36,6 @@ class UserContentsResponse(Content):
 
 class UserBookmark(BaseModel):
     id: int
-
-    model_config = {"from_attributes": True}
 
 
 class UserBookmarkResponse(Content):

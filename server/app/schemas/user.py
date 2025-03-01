@@ -17,8 +17,6 @@ class UserLogin(BaseModel):
     oauth_id: str
     email: Optional[EmailStr] = None
 
-    model_config = {"from_attributes": True}
-
 
 class UserWithTokens(User):
     id: int

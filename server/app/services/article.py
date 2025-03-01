@@ -38,3 +38,12 @@ class ArticleService:
             )
 
         return new_article.id
+
+    @staticmethod
+    async def get_all_articles_limit(limit: int, offset: int, db: Session) -> List[Article]:
+        """
+        offset으로부터 limit 개수의 article 반환
+        """
+        db_articles = db.query(Article).limit(limit).offset(offset).all()
+
+        return db_articles

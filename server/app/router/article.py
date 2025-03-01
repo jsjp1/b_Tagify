@@ -26,3 +26,22 @@ async def create_article(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+
+@router.get("/all")
+async def get_all_articles_limit(
+    limit: int,
+    offset: int,
+    db: Session = Depends(get_db),
+) -> AllArticlesLimitResponse:
+    try:
+        articles = await ArticleService.get_all_articles_limit(request, db)
+        response = AllArticlesLimitResponse(
+            articles=[ArticleResponse.model_validate(article) for article in articles]
+        )
+        return response
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")

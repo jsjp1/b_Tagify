@@ -7,8 +7,6 @@ from pydantic import BaseModel, Field
 class UserTags(BaseModel):
     user_id: int
 
-    model_config = {"from_attributes": True}
-
 
 class UserTagsResponse(BaseModel):
     tag: str
@@ -21,8 +19,6 @@ class UserTagsResponse(BaseModel):
 class TagContents(BaseModel):
     tag_id: int
 
-    model_config = {"from_attributes": True}
-
 
 class TagContentsResponse(Content):
     id: int
@@ -33,8 +29,6 @@ class TagContentsResponse(Content):
 
 class TagPost(BaseModel):
     tagname: str
-
-    model_config = {"from_attributes": True}
 
 
 class TagPostResponse(BaseModel):
@@ -47,8 +41,6 @@ class TagPut(BaseModel):
     tagname: str
     color: int
 
-    model_config = {"from_attributes": True}
-
 
 class TagPutResponse(BaseModel):
     id: int
@@ -58,8 +50,6 @@ class TagPutResponse(BaseModel):
 
 class TagDelete(BaseModel):
     tagname: str
-
-    model_config = {"from_attributes": True}
 
 
 class TagDeleteResponse(BaseModel):
