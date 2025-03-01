@@ -1,3 +1,5 @@
+from typing import List
+
 from app.models.article import Article
 from app.models.user import User
 from app.schemas.article import ArticleCreate
@@ -46,4 +48,13 @@ class ArticleService:
         """
         db_articles = db.query(Article).limit(limit).offset(offset).all()
 
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
+        return db_articles
         return db_articles
