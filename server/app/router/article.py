@@ -21,7 +21,7 @@ async def create_article(
         article_id = await ArticleService.post_article(request, db)
         return ArticleCreateResponse({id: article_id}, from_attributes=True)
 
-    except Except as e:
-        raise e
     except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
