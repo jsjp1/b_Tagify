@@ -10,4 +10,3 @@ router = APIRouter(prefix="/comments", tags=["comments"])
 @router.get("/endpoint_test")
 def endpoint_test():
     return {"message": "ok"}
-
