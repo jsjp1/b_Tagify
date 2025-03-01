@@ -2,6 +2,7 @@ from app.models.article import Article
 from app.models.user import User
 from app.schemas.article import ArticleCreate
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 
