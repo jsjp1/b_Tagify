@@ -25,4 +25,4 @@ class Article(Base):
         nullable=False,
     )
 
-    user = relationship("User", back_populates="contents")
+    user = relationship("User", back_populates="articles")
