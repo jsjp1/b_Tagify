@@ -30,7 +30,7 @@ class ArticleService:
         try:
             db.add(new_article)
             db.commit()
-            db.refresh()
+            db.refresh(new_article)
         except IntegrityError:
             db.rollback()
             raise HTTPException(
