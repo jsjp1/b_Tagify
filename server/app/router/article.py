@@ -2,7 +2,7 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleCreateResponse)
+                                 ArticleCreateResponse, ArticleModel)
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -38,7 +38,7 @@ async def get_all_articles_limit(
     try:
         articles = await ArticleService.get_all_articles_limit(limit, offset, db)
         response = AllArticlesLimitResponse(
-            articles=[ArticleResponse.model_validate(article) for article in articles]
+            articles=[ArticleModel.model_validate(article) for article in articles]
         )
         return response
 

@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class Article(BaseModel):
+class ArticleModel(BaseModel):
     id: int
     user_id: int
     title: str = ""
@@ -15,6 +15,8 @@ class Article(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class AllArticlesLimitResponse(BaseModel):
