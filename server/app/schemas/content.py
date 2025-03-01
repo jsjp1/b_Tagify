@@ -33,6 +33,8 @@ class UserContentsResponse(Content):
     id: int
     type: str
 
+    model_config = {"from_attributes": True}
+
 
 class UserBookmark(BaseModel):
     id: int
@@ -41,6 +43,8 @@ class UserBookmark(BaseModel):
 class UserBookmarkResponse(Content):
     id: int
     type: str
+
+    model_config = {"from_attributes": True}
 
 
 class ContentPost(Content):
