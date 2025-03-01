@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.models.base import Base
-from sqlalchemy import BIGINT, Column, DateTime, Integer, String
+from sqlalchemy import BIGINT, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 
