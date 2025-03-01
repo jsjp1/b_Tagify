@@ -7,7 +7,9 @@ class ArticleCreate(BaseModel):
     user_id: int
     title: str = Field(default="")
     body: Optional[str] = Field(default="")
-    encoded_content: str
+    encoded_content: 
+    
+    model_config = {"from_attributes": True}
 
 
 class ArticleCreateResponse(BaseModel):

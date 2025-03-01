@@ -20,7 +20,7 @@ async def create_article(
 ) -> ArticleCreateResponse:
     try:
         article_id = await ArticleService.post_article(request, db)
-        return ArticleCreateResponse({id: article_id}, from_attributes=True)
+        return ArticleCreateResponse(id=article_id)
 
     except HTTPException as e:
         raise e
