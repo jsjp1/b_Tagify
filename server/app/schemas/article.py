@@ -36,21 +36,3 @@ class ArticleCreateResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}
-
-    model_config = {"from_attributes": True}

@@ -49,12 +49,3 @@ class ArticleService:
         db_articles = db.query(Article).limit(limit).offset(offset).all()
 
         return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
-        return db_articles
