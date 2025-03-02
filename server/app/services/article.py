@@ -49,6 +49,6 @@ class ArticleService:
         """
         offset으로부터 limit 개수의 article 반환
         """
-        db_articles = db.query(Article).order_by(desc(Article.id)).limit(limit).offset(offset).all()
+        db_articles = db.query(Article).order_by(desc(Article.updated_at)).limit(limit).offset(offset).all()
 
         return db_articles
