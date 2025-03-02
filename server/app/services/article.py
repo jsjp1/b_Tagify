@@ -4,6 +4,7 @@ from app.models.article import Article
 from app.models.user import User
 from app.schemas.article import ArticleCreate
 from fastapi import HTTPException
+from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -48,6 +49,6 @@ class ArticleService:
         """
         offset으로부터 limit 개수의 article 반환
         """
-        db_articles = db.query(Article).limit(limit).offset(offset).all()
+        db_articles = db.query(Article).order_by(desc(Article.id)).limit(limit).offset(offset).all()
 
         return db_articles
