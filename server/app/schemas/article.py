@@ -7,6 +7,8 @@ from pydantic import BaseModel
 class ArticleModel(BaseModel):
     id: int
     user_id: int
+    user_name: str
+    user_profile_image: Optional[str]
     title: str = ""
     body: Optional[str] = None
     encoded_content: str

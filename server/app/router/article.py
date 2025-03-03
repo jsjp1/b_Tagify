@@ -1,12 +1,8 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleCreateResponse,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleCreateResponse, ArticleModel)
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -41,10 +37,7 @@ async def get_all_articles_limit(
 ) -> AllArticlesLimitResponse:
     try:
         articles = await ArticleService.get_all_articles_limit(limit, offset, db)
-        response = AllArticlesLimitResponse(
-            articles=[ArticleModel.model_validate(article) for article in articles]
-        )
-        return response
+        return articles
 
     except HTTPException as e:
         raise e

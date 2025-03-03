@@ -2,11 +2,13 @@ from typing import List
 
 from app.models.article import Article
 from app.models.user import User
-from app.schemas.article import ArticleCreate
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.future import select
+from sqlalchemy.orm import Session, joinedload
 
 
 class ArticleService:
@@ -43,12 +45,27 @@ class ArticleService:
         return new_article.id
 
     @staticmethod
-    async def get_all_articles_limit(
-        limit: int, offset: int, db: Session
-    ) -> List[Article]:
+    async def get_all_articles_limit(limit: int, offset: int, db: Session) -> AllArticlesLimitResponse:
         """
         offset으로부터 limit 개수의 article 반환
         """
-        db_articles = db.query(Article).order_by(desc(Article.updated_at)).limit(limit).offset(offset).all()
+        db_articles = (
+            db.query(Article)
+            .join(User, User.id == Article.user_id)
+            .options(joinedload(Article.user)) 
+            .order_by(desc(Article.updated_at))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
 
-        return db_articles
+        articles = [
+            ArticleModel(
+                **article.__dict__,
+                user_name=article.user.username,
+                user_profile_image=article.user.profile_image,
+            )
+            for article in db_articles
+        ]
+
+        return AllArticlesLimitResponse(articles=articles)
