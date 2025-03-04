@@ -3,8 +3,7 @@ from datetime import datetime, timezone
 
 from app.models.base import Base
 from app.models.content_tag import content_tag_association
-from sqlalchemy import (BIGINT, Boolean, Column, DateTime, Enum, ForeignKey,
-                        String, Text)
+from sqlalchemy import BIGINT, Boolean, Column, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 
 
@@ -27,7 +26,9 @@ class Content(Base):
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     updated_at = Column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

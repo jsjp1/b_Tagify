@@ -15,7 +15,9 @@ class User(Base):
     email = Column(String, nullable=True)
     profile_image = Column(String, nullable=True)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     updated_at = Column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

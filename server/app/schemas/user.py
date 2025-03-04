@@ -14,8 +14,7 @@ class User(BaseModel):
 
 
 class UserLogin(BaseModel):
-    oauth_id: str
-    email: Optional[EmailStr] = None
+    id_token: str
 
 
 class UserWithTokens(User):

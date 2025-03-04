@@ -4,7 +4,12 @@ import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.user import AllUsersResponse, TokenRefresh, UserCreate, UserLogin
-from app.util.auth import create_access_token, decode_token
+from app.util.auth import (
+    create_access_token,
+    decode_token,
+    verify_apple_token,
+    verify_google_token,
+)
 from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
@@ -17,15 +22,32 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserService:
     @staticmethod
-    async def get_user(user: UserLogin, db: Session) -> User:
-        """
-        존재하는 사용자 확인 및 반환
-        """
-        db_user = (
-            db.query(User)
-            .filter(and_(User.email == user.email, User.oauth_id == user.oauth_id))
-            .first()
+    async def login_google(user: UserLogin, db: Session, settings: Settings) -> User:
+        google_user_info = await verify_google_token(
+            user.id_token, settings.GOOGLE_CLIENT_ID
         )
+        google_id = google_user_info.get("sub")
+
+        if not google_id:
+            raise HTTPException(status_code=400, detail="Invalid Google ID Token")
+
+        db_user = db.query(User).filter(User.oauth_id == google_id).first()
+        if not db_user:
+            raise HTTPException(
+                status_code=400, detail=f"Cannot find user {user.email}"
+            )
+
+        return db_user
+
+    @staticmethod
+    async def login_apple(user: UserLogin, db: Session) -> User:
+        apple_user_info = await UserService.verify_apple_token(user.id_token)
+        apple_id = apple_user_info.get("sub")
+
+        if not apple_id:
+            raise HTTPException(status_code=400, detail="Invalid Apple ID Token")
+
+        db_user = db.query(User).filter(User.oauth_id == apple_id).first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"Cannot find user {user.email}"

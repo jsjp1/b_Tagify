@@ -40,14 +40,18 @@ async def users(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.post("/login")
+@router.post("/login/{provider}")
 async def login(
     request: UserLogin,
+    provider: str,
     db: Session = Depends(get_db),
     settings=Depends(get_settings),
 ) -> UserWithTokens:
     try:
-        db_user = await UserService.get_user(request, db)
+        if provider in ("google", "Google"):
+            db_user = await UserService.login_google(request, db, settings)
+        elif provider in ("apple", "Apple"):
+            db_user = await UserService.login_apple(request, db)
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
         refresh_token = create_refresh_token(settings, data={"sub": db_user.email})

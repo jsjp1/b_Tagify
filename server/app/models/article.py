@@ -17,7 +17,9 @@ class Article(Base):
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     updated_at = Column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),
