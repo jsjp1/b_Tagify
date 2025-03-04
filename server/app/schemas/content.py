@@ -37,7 +37,7 @@ class UserContentsResponse(Content):
 
 
 class UserBookmark(BaseModel):
-    id: int
+    user_id: int
 
 
 class UserBookmarkResponse(Content):

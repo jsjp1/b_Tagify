@@ -2,16 +2,10 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (
-    ContentAnalyze,
-    ContentAnalyzeResponse,
-    ContentPost,
-    ContentPostResponse,
-    UserBookmark,
-    UserBookmarkResponse,
-    UserContents,
-    UserContentsResponse,
-)
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 ContentPost, ContentPostResponse,
+                                 UserBookmark, UserBookmarkResponse,
+                                 UserContents, UserContentsResponse)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -173,7 +167,7 @@ async def bookmark(
     user_id: int, db: Session = Depends(get_db)
 ) -> List[UserBookmarkResponse]:
     try:
-        request = UserBookmark(id=user_id)
+        request = UserBookmark(user_id=user_id)
         contents = await ContentService.get_bookmarked_contents(request, db)
 
         return [
