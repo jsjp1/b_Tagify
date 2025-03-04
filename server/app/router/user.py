@@ -1,14 +1,7 @@
 from app.db import get_db
-from app.schemas.user import (
-    AllUsersResponse,
-    TokenRefresh,
-    TokenRefreshResponse,
-    User,
-    UserCreate,
-    UserCreateResponse,
-    UserLogin,
-    UserWithTokens,
-)
+from app.schemas.user import (AllUsersResponse, TokenRefresh,
+                              TokenRefreshResponse, User, UserCreate,
+                              UserCreateResponse, UserLogin, UserWithTokens)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -50,8 +43,8 @@ async def login(
     try:
         if provider in ("google", "Google"):
             db_user = await UserService.login_google(request, db, settings)
-        elif provider in ("apple", "Apple"):
-            db_user = await UserService.login_apple(request, db)
+        # elif provider in ("apple", "Apple"):
+        #     db_user = await UserService.login_apple(request, db)
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
         refresh_token = create_refresh_token(settings, data={"sub": db_user.email})
