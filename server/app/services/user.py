@@ -4,7 +4,12 @@ import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.user import AllUsersResponse, TokenRefresh, UserCreate, UserLogin
-from app.util.auth import create_access_token, decode_token, verify_google_token
+from app.util.auth import (
+    create_access_token,
+    decode_token,
+    verify_apple_token,
+    verify_google_token,
+)
 from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
@@ -43,6 +48,32 @@ class UserService:
         return db_user
 
     @staticmethod
+    async def login_google(user: UserLogin, db: Session, settings: Settings) -> User:
+        """
+        Apple OAuth 로그인 처리 -> 없을 경우 db에 저장
+        """
+        apple_user_info = await verify_apple_token(user.id_token, settings)
+        apple_id = apple_user_info.get("sub")
+
+        if not apple_id:
+            raise HTTPException(status_code=400, detail="Invalid Apple ID Token")
+
+        db_user = db.query(User).filter(User.oauth_id == apple_id).first()
+        if not db_user:
+            db_user = User(
+                user_name=user.username,
+                oauth_provider=user.oauth_provider,
+                oauth_id=apple_id,
+                email=apple_user_info.get("email", ""),
+                profile_image=user.profile_image,
+            )
+            db.add(db_user)
+            db.commit()
+            db.refresh(db_user)
+
+        return db_user
+
+    @staticmethod
     async def get_all_users(db: Session) -> List[User]:
         """
         모든 사용자 정보를 가져오는 메서드
@@ -71,5 +102,23 @@ class UserService:
             raise HTTPException(status_code=401, detail="Invalid token signature")
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="Invalid token")

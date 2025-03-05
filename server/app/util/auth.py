@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 import jwt
+import requests as apple_requests
 from config import Settings
 from fastapi import HTTPException
 from google.auth.transport import requests
@@ -32,11 +33,11 @@ def decode_token(settings, token: str):
         return payload["sub"]
 
     except jwt.ExpiredSignatureError as e:
-        raise HTTPException(status_code=401, detail=f"Token expired: {e}")
+        raise HTTPException(status_code=401, detail=f"Token expired: {str(e)}")
     except jwt.DecodeError as e:
-        raise HTTPException(status_code=401, detail=f"Token decode error: {e}")
+        raise HTTPException(status_code=401, detail=f"Token decode error: {str(e)}")
     except jwt.InvalidTokenError as e:
-        raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=e)
 
@@ -59,6 +60,45 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
             return id_info
 
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid Google ID token: {e}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid Google ID token: {str(e)}"
+            )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
+    try:
+        apple_keys = apple_requests.get("https://appleid.apple.com/auth/keys").json()
+
+        headers = jwt.get_unverified_header(id_token_str)
+        key_id = headers.get("kid")
+
+        if not key_id:
+            raise HTTPException(status_code=400, detail="Invalid Apple ID Token header")
+
+        public_key = None
+        for key in apple_keys["keys"]:
+            if key["kid"] == key_id:
+                public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
+                break
+
+        if not public_key:
+            raise HTTPException(status_code=400, detail="Invalid Apple public key")
+
+        id_info = jwt.decode(
+            id_token_str,
+            public_key,
+            algorithms=["RS256"],
+            audience=settings.APPLE_CLIENT_ID,
+            issuer="https://appleid.apple.com",
+        )
+
+        return id_info
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Apple ID Token has expired")
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid Apple ID Token: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

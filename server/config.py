@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     GOOGLE_IOS_CLIENT_ID: str = "GOOGLE_IOS_CLIENT_ID"
     GOOGLE_ANDROID_CLIENT_ID: str = "GOOGLE_ANDROID_CLIENT_ID"
 
+    APPLE_CLIENT_ID: str = "com.ellipsoid.tagi"
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )

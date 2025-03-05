@@ -24,18 +24,6 @@ class UserWithTokens(User):
     token_type: str = "bearer"
 
 
-class UserCreate(User):
-    pass
-
-
-class UserCreateResponse(BaseModel):
-    id: int
-    oauth_id: str
-    email: Optional[EmailStr] = None
-
-    model_config = {"from_attributes": True}
-
-
 class AllUsersResponse(BaseModel):
     users: List[User]
 

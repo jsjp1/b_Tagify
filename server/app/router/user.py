@@ -49,8 +49,8 @@ async def login(
     try:
         if request.oauth_provider in ("google", "Google"):
             db_user = await UserService.login_google(request, db, settings)
-        # elif provider in ("apple", "Apple"):
-        #     db_user = await UserService.login_apple(request, db)
+        elif provider in ("apple", "Apple"):
+            db_user = await UserService.login_apple(request, db)
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
         refresh_token = create_refresh_token(settings, data={"sub": db_user.email})
@@ -59,21 +59,6 @@ async def login(
         db_user.refresh_token = refresh_token
 
         return UserWithTokens.model_validate(db_user, from_attributes=True)
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
-
-@router.post("/signup")
-async def signup(
-    request: UserCreate,
-    db: Session = Depends(get_db),
-) -> UserCreateResponse:
-    try:
-        new_user = await UserService.create_user(request, db)
-        return UserCreateResponse.model_validate(new_user, from_attributes=True)
 
     except HTTPException as e:
         raise e

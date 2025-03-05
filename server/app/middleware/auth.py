@@ -17,7 +17,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/docs",
             "/openapi.json",
             "/api/users/login",
-            "/api/users/signup",
             "/api/users/token/refresh",
         ]:
             authorization: str = request.headers.get("Authorization")
