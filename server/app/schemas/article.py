@@ -47,7 +47,7 @@ class ArticleDelete(BaseModel):
     article_id: int
 
 
-class ArticleDeleteRsesponse(BaseModel):
+class ArticleDeleteResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
