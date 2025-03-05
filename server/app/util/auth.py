@@ -59,6 +59,6 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
             return id_info
 
         except ValueError as e:
-            raise HTTPException(status_code=400, detail="Invalid Google ID token")
+            raise HTTPException(status_code=400, detail=f"Invalid Google ID token: {e}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
