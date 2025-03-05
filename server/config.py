@@ -17,7 +17,8 @@ class Settings(BaseSettings):
 
     YOUTUBE_API_KEY: str = "REAL_YOUTUBE_API_KEY"
 
-    GOOGLE_CLIENT_ID: str = "GOOGLE_CLIENT_ID"
+    GOOGLE_IOS_CLIENT_ID: str = "GOOGLE_IOS_CLIENT_ID"
+    GOOGLE_ANDROID_CLIENT_ID: str = "GOOGLE_ANDROID_CLIENT_ID"
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"

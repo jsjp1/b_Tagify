@@ -2,11 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 import jwt
+from config import Settings
 from fastapi import HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
-
-# from jose import JWTError, jwt
 
 
 def create_access_token(settings, data: dict, expires_delta: timedelta = None):
@@ -42,13 +41,24 @@ def decode_token(settings, token: str):
         raise HTTPException(status_code=500, detail=e)
 
 
-async def verify_google_token(id_token_str: str, google_client_id: str) -> dict:
+async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
     try:
         id_info = id_token.verify_oauth2_token(
             id_token_str,
             requests.Request(),
-            google_client_id,
+            settings.GOOGLE_IOS_CLIENT_ID,
         )
         return id_info
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid Google ID token")
+        try:
+            id_info = id_token.verify_oauth2_token(
+                id_token_str,
+                request.Request(),
+                settings.GOOGLE_ANDROID_CLIENT_ID,
+            )
+            return id_info
+
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail="Invalid Google ID token")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
