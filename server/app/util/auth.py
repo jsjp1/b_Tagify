@@ -73,7 +73,7 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
 async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
     try:
         apple_keys_url = "https://appleid.apple.com/auth/keys"
-        response = requests.get(apple_keys_url)
+        response = apple_requests.get(apple_keys_url)
         apple_keys = response.json().get("keys", [])
 
         if not apple_keys:
