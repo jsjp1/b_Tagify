@@ -43,7 +43,7 @@ async def login(
         if request.oauth_provider in ("google", "Google"):
             db_user = await UserService.login_google(request, db, settings)
         elif request.oauth_provider in ("apple", "Apple"):
-            db_user = await UserService.login_apple(request, db)
+            db_user = await UserService.login_apple(request, db, settings)
         else:
             raise HTTPException(status_code=400, detail="Unsupported oauth provider")
 
