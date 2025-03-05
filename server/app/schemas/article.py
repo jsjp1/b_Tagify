@@ -51,3 +51,14 @@ class ArticleDeleteResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class ArticleDownload(BaseModel):
+    user_id: int
+    tag_name: str
+
+
+class ArticleDownloadResponse(BaseModel):
+    tag_id: int
+
+    model_config = {"from_attributes": True}

@@ -1,9 +1,16 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleCreateResponse, ArticleDelete,
-                                 ArticleDeleteResponse, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleCreateResponse,
+    ArticleDelete,
+    ArticleDeleteResponse,
+    ArticleDownload,
+    ArticleDownloadResponse,
+    ArticleModel,
+)
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -58,12 +65,19 @@ async def get_all_articles_limit(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.post("/download/{article_id}")
+async def download_article(
+    request: ArticleDownload,
+    article_id: int,
+    db: Session = Depends(get_db),
+) -> ArticleDownloadResponse:
+    try:
+        tag_id = await ArticleService.download_article(request, article_id, db)
+        return ArticleDownloadResponse(tag_id=tag_id)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
