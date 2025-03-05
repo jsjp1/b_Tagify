@@ -6,11 +6,12 @@ from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
-from sqlalchemy import desc, insert
+from sqlalchemy import and_, desc, insert
 from sqlalchemy.orm import Session, joinedload
 
 
@@ -87,7 +88,7 @@ class VideoService:
         """
         video 정보 추출 후 반환
         """
-        db_content = db.query(Content).filter(Content.url == content.url).first()
+        db_content = db.query(Content).filter(and_(Content.url == content.url, Content.user_id == content.user_id)).first()
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 
@@ -122,4 +123,13 @@ class VideoService:
             .all()
         )
 
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
+        return contents
         return contents
