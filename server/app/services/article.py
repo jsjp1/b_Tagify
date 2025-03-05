@@ -145,14 +145,13 @@ class ArticleService:
             # TODO: content.type에 따른 metadata 저장
             db_content = Content(
                 user_id=db_user.id,
-                url=content.url,
-                title=content.title,
-                thumbnail=content.thumbnail,
-                favicon=content.favicon,
-                description=content.description,
+                url=content["url"],
+                title=content["title"],
+                thumbnail=content["thumbnail"],
+                favicon=content["favicon"],
+                description=content["description"],
                 bookmark=False,
-                tags=[article.tag_name],
-                type=content.type,
+                content_type=content["type"],
             )
 
             db.add(db_content)
