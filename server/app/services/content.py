@@ -11,7 +11,7 @@ from app.schemas.content import (ContentPost, ContentPostResponse,
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
-from sqlalchemy import desc, insert
+from sqlalchemy import and_, desc, insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
@@ -62,7 +62,7 @@ class ContentService:
                 status_code=404, detail=f"User with id {content.user_id} not found"
             )
 
-        db_content = db.query(Content).filter(Content.url == content.url, Content.user_id == content.user_id).first()
+        db_content = db.query(Content).filter(and_(Content.url == content.url, Content.user_id == content.user_id)).first()
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 
