@@ -13,7 +13,7 @@ class User(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UserLogin(BaseModel):
+class UserLogin(User):
     id_token: str
 
 

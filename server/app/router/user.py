@@ -1,7 +1,14 @@
 from app.db import get_db
-from app.schemas.user import (AllUsersResponse, TokenRefresh,
-                              TokenRefreshResponse, User, UserCreate,
-                              UserCreateResponse, UserLogin, UserWithTokens)
+from app.schemas.user import (
+    AllUsersResponse,
+    TokenRefresh,
+    TokenRefreshResponse,
+    User,
+    UserCreate,
+    UserCreateResponse,
+    UserLogin,
+    UserWithTokens,
+)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -33,15 +40,14 @@ async def users(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.post("/login/{provider}")
+@router.post("/login")
 async def login(
     request: UserLogin,
-    provider: str,
     db: Session = Depends(get_db),
     settings=Depends(get_settings),
 ) -> UserWithTokens:
     try:
-        if provider in ("google", "Google"):
+        if request.oauth_provider in ("google", "Google"):
             db_user = await UserService.login_google(request, db, settings)
         # elif provider in ("apple", "Apple"):
         #     db_user = await UserService.login_apple(request, db)
