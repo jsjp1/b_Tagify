@@ -21,7 +21,7 @@ class UserService:
     @staticmethod
     async def login_google(user: UserLogin, db: Session, settings: Settings) -> User:
         google_user_info = await verify_google_token(
-            user.id_token, settings.GOOGLE_CLIENT_ID
+            user.id_token, settings
         )
         google_id = google_user_info.get("sub")
 
