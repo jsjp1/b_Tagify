@@ -44,7 +44,7 @@ class UserService:
         return db_user
 
     @staticmethod
-    async def login_google(user: UserLogin, db: Session, settings: Settings) -> User:
+    async def login_apple(user: UserLogin, db: Session, settings: Settings) -> User:
         """
         Apple OAuth 로그인 처리 -> 없을 경우 db에 저장
         """
