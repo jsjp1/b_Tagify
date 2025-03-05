@@ -49,7 +49,6 @@ class UserService:
         Apple OAuth 로그인 처리 -> 없을 경우 db에 저장
         """
         apple_user_info = await verify_apple_token(user.id_token, settings)
-        print(apple_user_info, "\n\n\n")
         apple_id = apple_user_info.get("sub")
 
         if not apple_id:
