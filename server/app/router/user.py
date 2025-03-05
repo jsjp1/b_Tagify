@@ -42,8 +42,10 @@ async def login(
     try:
         if request.oauth_provider in ("google", "Google"):
             db_user = await UserService.login_google(request, db, settings)
-        elif provider in ("apple", "Apple"):
+        elif request.oauth_provider in ("apple", "Apple"):
             db_user = await UserService.login_apple(request, db)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported oauth provider")
 
         access_token = create_access_token(settings, data={"sub": db_user.email})
         refresh_token = create_refresh_token(settings, data={"sub": db_user.email})
