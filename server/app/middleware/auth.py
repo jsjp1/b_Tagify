@@ -16,8 +16,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/",
             "/docs",
             "/openapi.json",
-            "/api/users/login/google",
-            "/api/users/login/apple",
+            "/api/users/login",
             "/api/users/signup",
             "/api/users/token/refresh",
         ]:
