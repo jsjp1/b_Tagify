@@ -69,26 +69,14 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
 
 async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
     try:
-        apple_keys = apple_requests.get("https://appleid.apple.com/auth/keys").json()
+        apple_keys_url = "https://appleid.apple.com/auth/keys"
+        jwks_client = jwt.PyJWKClient(apple_keys_url)
 
-        headers = jwt.get_unverified_header(id_token_str)
-        key_id = headers.get("kid")
-
-        if not key_id:
-            raise HTTPException(status_code=400, detail="Invalid Apple ID Token header")
-
-        public_key = None
-        for key in apple_keys["keys"]:
-            if key["kid"] == key_id:
-                public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
-                break
-
-        if not public_key:
-            raise HTTPException(status_code=400, detail="Invalid Apple public key")
+        signing_key = jwks_client.get_signing_key_from_jwt(id_token_str).key
 
         id_info = jwt.decode(
             id_token_str,
-            public_key,
+            signing_key,
             algorithms=["RS256"],
             audience=settings.APPLE_CLIENT_ID,
             issuer="https://appleid.apple.com",
