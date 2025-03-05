@@ -57,7 +57,7 @@ class UserService:
         db_user = db.query(User).filter(User.oauth_id == apple_id).first()
         if not db_user:
             db_user = User(
-                user_name=user.username,
+                username=user.username,
                 oauth_provider=user.oauth_provider,
                 oauth_id=apple_id,
                 email=apple_user_info.get("email", ""),
