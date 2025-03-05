@@ -1,9 +1,12 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 import httpx
 import jwt
 import requests as apple_requests
 from config import Settings
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
@@ -70,13 +73,24 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
 async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
     try:
         apple_keys_url = "https://appleid.apple.com/auth/keys"
-        jwks_client = jwt.PyJWKClient(apple_keys_url)
+        response = requests.get(apple_keys_url)
+        apple_keys = response.json().get("keys", [])
 
-        signing_key = jwks_client.get_signing_key_from_jwt(id_token_str).key
+        if not apple_keys:
+            raise HTTPException(status_code=500, detail="Unable to fetch Apple public keys")
+
+        unverified_header = jwt.get_unverified_header(id_token_str)
+        key_id = unverified_header.get("kid")
+
+        apple_key = next((key for key in apple_keys if key["kid"] == key_id), None)
+        if not apple_key:
+            raise HTTPException(status_code=400, detail="Apple public key not found")
+
+        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(apple_key))
 
         id_info = jwt.decode(
             id_token_str,
-            signing_key,
+            public_key,
             algorithms=["RS256"],
             audience=settings.APPLE_CLIENT_ID,
             issuer="https://appleid.apple.com",
