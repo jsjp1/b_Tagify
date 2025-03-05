@@ -142,6 +142,7 @@ class ArticleService:
             db.refresh(db_tag)
         
         for content in contents:
+            # TODO: content.type에 따른 metadata 저장
             db_content = Content(
                 user_id=db_user.id,
                 url=content.url,
@@ -149,7 +150,7 @@ class ArticleService:
                 thumbnail=content.thumbnail,
                 favicon=content.favicon,
                 description=content.description,
-                bookmark=false,
+                bookmark=False,
                 tags=[article.tag_name],
                 type=content.type,
             )
