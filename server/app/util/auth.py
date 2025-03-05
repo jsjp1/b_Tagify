@@ -53,7 +53,7 @@ async def verify_google_token(id_token_str: str, settings: Settings) -> dict:
         try:
             id_info = id_token.verify_oauth2_token(
                 id_token_str,
-                request.Request(),
+                requests.Request(),
                 settings.GOOGLE_ANDROID_CLIENT_ID,
             )
             return id_info
