@@ -40,3 +40,14 @@ class ArticleCreateResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class ArticleDelete(BaseModel):
+    user_id: int
+    article_id: int
+
+
+class ArticleDeleteRsesponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

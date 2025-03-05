@@ -5,6 +5,8 @@ from app.schemas.article import (
     AllArticlesLimitResponse,
     ArticleCreate,
     ArticleCreateResponse,
+    ArticleDelete,
+    ArticleDeleteRsesponse,
     ArticleModel,
 )
 from app.services.article import ArticleService
@@ -33,6 +35,20 @@ async def create_article(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+@router.delete("/")
+async def delete_article(
+    request: ArticleDelete, db: Session = Depends(get_db)
+) -> ArticleDeleteResponse:
+    try:
+        article_id = await ArticleService.delete_article(request, db)
+        return ArticleDeleteResponse(id=article_id)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
 @router.get("/all")
 async def get_all_articles_limit(
     limit: int,
@@ -46,4 +62,13 @@ async def get_all_articles_limit(
     except HTTPException as e:
         raise e
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

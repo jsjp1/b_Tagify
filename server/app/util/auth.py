@@ -77,7 +77,9 @@ async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
         apple_keys = response.json().get("keys", [])
 
         if not apple_keys:
-            raise HTTPException(status_code=500, detail="Unable to fetch Apple public keys")
+            raise HTTPException(
+                status_code=500, detail="Unable to fetch Apple public keys"
+            )
 
         unverified_header = jwt.get_unverified_header(id_token_str)
         key_id = unverified_header.get("kid")

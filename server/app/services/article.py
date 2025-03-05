@@ -2,7 +2,12 @@ from typing import List
 
 from app.models.article import Article
 from app.models.user import User
-from app.schemas.article import AllArticlesLimitResponse, ArticleCreate, ArticleModel
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
@@ -42,6 +47,35 @@ class ArticleService:
             )
 
         return new_article.id
+
+    @staticmethod
+    async def delete_article(article: ArticleDelete, db: Session) -> int:
+        """
+        특정 user의 특정 article 삭제 후 id 반환
+        """
+        db_article = db.query(Article).filter(Article.id == article.article_id).first()
+        if not db_article:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Article id {article.article_id} does not exists",
+            )
+
+        if db_article.user_id is not article.user_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Article {article.article_id} is not owned by user {article.user_id}",
+            )
+
+        try:
+            db.delete(db_article)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=500, detail="DB error while deleting article"
+            )
+
+        return db_article.id
 
     @staticmethod
     async def get_all_articles_limit(

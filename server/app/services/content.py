@@ -16,6 +16,7 @@ from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
 from sqlalchemy import desc, insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
 
@@ -196,7 +197,13 @@ class ContentService:
             .delete()
         )
 
-        db.delete(content)
-        db.commit()
+        try:
+            db.delete(content)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=500, detail="DB error while deleting content"
+            )
 
         return
