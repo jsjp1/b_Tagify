@@ -8,8 +8,13 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
@@ -140,9 +145,9 @@ class ArticleService:
             db.add(db_tag)
             db.flush()
             db.refresh(db_tag)
-        
+
         for content in contents:
-            # TODO: content.type에 따른 metadata 저장
+            # TODO: content.type에 따른 metadata 저장 -> 아예 저장 안하기?
             db_content = Content(
                 user_id=db_user.id,
                 url=content["url"],
@@ -159,10 +164,11 @@ class ArticleService:
             db.refresh(db_content)
 
             stmt = content_tag_association.insert().values(
-                content_id=db_content.id, tag_id=db_tag.id,
+                content_id=db_content.id,
+                tag_id=db_tag.id,
             )
             db.execute(stmt)
-        
+
         db.commit()
 
         return db_tag.id

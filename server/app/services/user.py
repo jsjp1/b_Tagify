@@ -3,7 +3,7 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.user import AllUsersResponse, TokenRefresh, UserLogin
+from app.schemas.user import AllUsersResponse, TokenRefresh, UserLogin, UserUpdateName
 from app.util.auth import (
     create_access_token,
     decode_token,
@@ -100,3 +100,20 @@ class UserService:
 
         except jwt.InvalidSignatureError:
             raise HTTPException(status_code=401, detail="Invalid token signature")
+
+    @staticmethod
+    async def update_name(user: UserUpdateName, user_id: int, db: Session) -> int:
+        """
+        user 이름 변경 후 id 반환
+        """
+        db_user = db.query(User).filter(User.id == user_id).first()
+        if not db_user:
+            raise HTTPException(
+                status_code=400, detail=f"User with id {user_id} not found"
+            )
+
+        db_user.username = user.username
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user.id

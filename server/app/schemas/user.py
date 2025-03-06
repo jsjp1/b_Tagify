@@ -38,3 +38,13 @@ class TokenRefreshResponse(BaseModel):
     access_token: str
 
     model_config = {"from_attributes": True}
+
+
+class UserUpdateName(BaseModel):
+    username: str
+
+
+class UserUpdateNameResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

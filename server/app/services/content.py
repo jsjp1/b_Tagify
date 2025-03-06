@@ -6,8 +6,12 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPostResponse,
-                                 UserBookmark, UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPostResponse,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -59,10 +63,16 @@ class ContentService:
         db_user = db.query(User).filter(User.id == content.user_id).first()
         if not db_user:
             raise HTTPException(
-                status_code=404, detail=f"User with id {content.user_id} not found"
+                status_code=400, detail=f"User with id {content.user_id} not found"
             )
 
-        db_content = db.query(Content).filter(and_(Content.url == content.url, Content.user_id == content.user_id)).first()
+        db_content = (
+            db.query(Content)
+            .filter(
+                and_(Content.url == content.url, Content.user_id == content.user_id)
+            )
+            .first()
+        )
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 

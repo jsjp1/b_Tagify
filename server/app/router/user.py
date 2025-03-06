@@ -1,12 +1,8 @@
 from app.db import get_db
-from app.schemas.user import (
-    AllUsersResponse,
-    TokenRefresh,
-    TokenRefreshResponse,
-    User,
-    UserLogin,
-    UserWithTokens,
-)
+from app.schemas.user import (AllUsersResponse, TokenRefresh,
+                              TokenRefreshResponse, User, UserLogin,
+                              UserUpdateName, UserUpdateNameResponse,
+                              UserWithTokens)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -75,6 +71,22 @@ async def refresh(
         new_access_token = await UserService.token_refresh(request, settings)
         return TokenRefreshResponse(access_token=new_access_token)
 
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.put("/name/{user_id}")
+async def update_name(
+    request: UserUpdateName,
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> UserUpdateNameResponse:
+    try:
+        updated_user_id = await UserService.update_name(request, user_id, db)
+        return UserUpdateNameResponse(id=userupdated_user_id_id)
+        
     except HTTPException as e:
         raise e
     except Exception as e:
