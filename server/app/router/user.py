@@ -1,8 +1,16 @@
 from app.db import get_db
-from app.schemas.user import (AllUsersResponse, TokenRefresh,
-                              TokenRefreshResponse, User, UserLogin,
-                              UserUpdateName, UserUpdateNameResponse,
-                              UserWithTokens)
+from app.schemas.user import (
+    AllUsersResponse,
+    TokenRefresh,
+    TokenRefreshResponse,
+    User,
+    UserLogin,
+    UserUpdateName,
+    UserUpdateNameResponse,
+    UserUpdateProfileImage,
+    UserUpdateProfileImageResponse,
+    UserWithTokens,
+)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
@@ -85,8 +93,24 @@ async def update_name(
 ) -> UserUpdateNameResponse:
     try:
         updated_user_id = await UserService.update_name(request, user_id, db)
-        return UserUpdateNameResponse(id=userupdated_user_id_id)
-        
+        return UserUpdateNameResponse(id=updated_user_id)
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+
+@router.put("/profile_image/{user_id}")
+async def update_name(
+    request: UserUpdateProfileImage,
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> UserUpdateProfileImageResponse:
+    try:
+        updated_user_id = await UserService.update_profile_image(request, user_id, db)
+        return UserUpdateProfileImageResponse(id=updated_user_id)
+
     except HTTPException as e:
         raise e
     except Exception as e:

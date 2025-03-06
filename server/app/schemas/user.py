@@ -48,3 +48,13 @@ class UserUpdateNameResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class UserUpdateProfileImage(BaseModel):
+    profile_image: str
+
+
+class UserUpdateProfileImageResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}

@@ -3,7 +3,13 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.user import AllUsersResponse, TokenRefresh, UserLogin, UserUpdateName
+from app.schemas.user import (
+    AllUsersResponse,
+    TokenRefresh,
+    UserLogin,
+    UserUpdateName,
+    UserUpdateProfileImage,
+)
 from app.util.auth import (
     create_access_token,
     decode_token,
@@ -113,6 +119,25 @@ class UserService:
             )
 
         db_user.username = user.username
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user.id
+
+    @staticmethod
+    async def update_profile_image(
+        user: UserUpdateProfileImage, user_id: int, db: Session
+    ) -> int:
+        """
+        user 프로필 사진 변경 후 id 반환
+        """
+        db_user = db.query(User).filter(User.id == user_id).first()
+        if not db_user:
+            raise HTTPException(
+                status_code=400, detail=f"User with id {user_id} not found"
+            )
+
+        db_user.profile_image = user.profile_image
         db.commit()
         db.refresh(db_user)
 
