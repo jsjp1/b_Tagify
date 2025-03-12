@@ -61,7 +61,7 @@ services:
       - 443:443
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./ssl:/etc/ssl
+      - ./ssl:/etc/nginx/ssl
     depends_on:
       - fastapi
     networks:
