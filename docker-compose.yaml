@@ -52,6 +52,21 @@ services:
     networks:
       - tagi_network
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/ssl
+    depends_on:
+      - fastapi
+    networks:
+      - tagi_network
+
 networks:
   tagi_network:
 volumes:

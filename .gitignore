@@ -174,3 +174,4 @@ pyrightconfig.json
 # EDIT
 postgres-data/
 .vscode/
+ssl/
