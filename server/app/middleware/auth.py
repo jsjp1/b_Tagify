@@ -15,6 +15,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.url.path not in [
             "/",
             "/docs",
+            "/pgadmin",
             "/openapi.json",
             "/api/users/login",
             "/api/users/token/refresh",
