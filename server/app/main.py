@@ -14,7 +14,7 @@ def get_application() -> FastAPI:
 
     app.include_router(router=router)
 
-    app.add_exception_handler(EXception, handler=handle_exceptions)
+    app.add_exception_handler(Exception, handler=handle_exceptions)
     app.add_middleware(AuthMiddleware, settings=get_settings())
 
     @app.get("/")
