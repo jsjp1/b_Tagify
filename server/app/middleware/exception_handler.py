@@ -1,14 +1,20 @@
 from functools import wraps
 
+from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse
+
 
 def handle_exceptions(func):
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(request: Request, *args, **kwargs):
         try:
-            return await func(*args, **kwargs)
-        except HTTPException:
-            raise
+            return await func(request, *args, **kwargs)
+        except HTTPException as e:
+            raise e
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+            return JSONResponse(
+                status_code=500,
+                content={"detail": f"Unexpected error: {str(e)}"},
+            )
 
     return wrapper
