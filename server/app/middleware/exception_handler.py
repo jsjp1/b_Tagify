@@ -6,7 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispaych(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next):
         try:
             return await call_next(request)
         except Exception as e:
