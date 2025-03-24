@@ -1,5 +1,6 @@
 from app.db import get_db, init_db
 from app.middleware.auth import AuthMiddleware
+from app.middleware.exception_handler import handle_exceptions
 from app.router import router
 from config import get_settings
 from fastapi import Depends, FastAPI, HTTPException
@@ -13,6 +14,7 @@ def get_application() -> FastAPI:
 
     app.include_router(router=router)
 
+    app.add_exception_handler(EXception, handler=handle_exceptions)
     app.add_middleware(AuthMiddleware, settings=get_settings())
 
     @app.get("/")

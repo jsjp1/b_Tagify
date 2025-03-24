@@ -1,6 +1,7 @@
 from typing import List
 
 from app.db import get_db
+from app.middleware.exception_handler import handle_exceptions
 from app.schemas.article import (
     AllArticlesLimitResponse,
     ArticleCreate,
@@ -27,28 +28,16 @@ def endpoint_test():
 async def create_article(
     request: ArticleCreate, db: Session = Depends(get_db)
 ) -> ArticleCreateResponse:
-    try:
-        article_id = await ArticleService.post_article(request, db)
-        return ArticleCreateResponse(id=article_id)
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    article_id = await ArticleService.post_article(request, db)
+    return ArticleCreateResponse(id=article_id)
 
 
 @router.delete("/")
 async def delete_article(
     request: ArticleDelete, db: Session = Depends(get_db)
 ) -> ArticleDeleteResponse:
-    try:
-        article_id = await ArticleService.delete_article(request, db)
-        return ArticleDeleteResponse(id=article_id)
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    article_id = await ArticleService.delete_article(request, db)
+    return ArticleDeleteResponse(id=article_id)
 
 
 @router.get("/all")
@@ -57,14 +46,8 @@ async def get_all_articles_limit(
     offset: int,
     db: Session = Depends(get_db),
 ) -> AllArticlesLimitResponse:
-    try:
-        articles = await ArticleService.get_all_articles_limit(limit, offset, db)
-        return articles
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    articles = await ArticleService.get_all_articles_limit(limit, offset, db)
+    return articles
 
 
 @router.post("/download/{article_id}")
@@ -73,11 +56,5 @@ async def download_article(
     article_id: int,
     db: Session = Depends(get_db),
 ) -> ArticleDownloadResponse:
-    try:
-        tag_id = await ArticleService.download_article(request, article_id, db)
-        return ArticleDownloadResponse(tag_id=tag_id)
-
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    tag_id = await ArticleService.download_article(request, article_id, db)
+    return ArticleDownloadResponse(tag_id=tag_id)
