@@ -1,20 +1,20 @@
-from functools import wraps
+from traceback import print_exception
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
-def handle_exceptions(func):
-    @wraps(func)
-    async def wrapper(request: Request, *args, **kwargs):
+class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
+    async def dispaych(self, request: Request, call_next):
         try:
-            return await func(request, *args, **kwargs)
-        except HTTPException as e:
-            raise e
+            return await call_next(request)
         except Exception as e:
+            print_exception(e)
             return JSONResponse(
                 status_code=500,
-                content={"detail": f"Unexpected error: {str(e)}"},
+                content={
+                    "error": e.__class__.__name__,
+                    "messages": e.args,
+                },
             )
-
-    return wrapper
