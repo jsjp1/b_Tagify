@@ -1,6 +1,6 @@
 from app.db import get_db, init_db
 from app.middleware.auth import AuthMiddleware
-from app.middleware.exception_handler import handle_exceptions
+from app.middleware.exception_handler import ExceptionHandlerMiddleware
 from app.router import router
 from config import get_settings
 from fastapi import Depends, FastAPI, HTTPException
