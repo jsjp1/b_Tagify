@@ -54,5 +54,6 @@ class ContentPost(Content):
 
 class ContentPostResponse(BaseModel):
     id: int
+    tag_ids: List[int]
 
     model_config = {"from_attributes": True}

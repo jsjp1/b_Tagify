@@ -6,8 +6,12 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPostResponse,
-                                 UserBookmark, UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPostResponse,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -52,7 +56,9 @@ class ContentService:
             raise HTTPException(status_code=400, detail="Unsupported Content Type")
 
     @staticmethod
-    async def post_content(content_type: str, content: ContentPost, db: Session) -> int:
+    async def post_content(
+        content_type: str, content: ContentPost, db: Session
+    ) -> dict:
         """
         content 정보 db에 저장 (content, metadata, tag, content_tag)
         """
@@ -130,7 +136,9 @@ class ContentService:
 
         db.commit()
 
-        return new_content.id
+        tag_ids = [tag.id for tag in existing_tags.values()]
+
+        return {"content_id": new_content.id, "tag_ids": tag_ids}
 
     @staticmethod
     async def toggle_bookmark(content_id: int, db: Session):
