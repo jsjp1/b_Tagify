@@ -2,16 +2,10 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (
-    ContentAnalyze,
-    ContentAnalyzeResponse,
-    ContentPost,
-    ContentPostResponse,
-    UserBookmark,
-    UserBookmarkResponse,
-    UserContents,
-    UserContentsResponse,
-)
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 ContentPost, ContentPostResponse, TagResponse,
+                                 UserBookmark, UserBookmarkResponse,
+                                 UserContents, UserContentsResponse)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -48,7 +42,12 @@ async def save(
     db: Session = Depends(get_db),
 ) -> ContentPostResponse:
     content_data = await ContentService.post_content(content_type, request, db)
-    return ContentPostResponse(**content_data)
+    tag_responses = [TagResponse(
+        id=tag.id,
+        tagname=tag.tagname,
+        color=tag.color,
+    ) for tag in content_data["tags"]]
+    return ContentPostResponse(id=content_data["id"], tags=tag_responses)
 
 
 @router.delete("/{content_id}")

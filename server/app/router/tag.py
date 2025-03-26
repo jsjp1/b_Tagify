@@ -1,18 +1,10 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (
-    TagContents,
-    TagContentsResponse,
-    TagDelete,
-    TagDeleteResponse,
-    TagPost,
-    TagPostResponse,
-    TagPut,
-    TagPutResponse,
-    UserTags,
-    UserTagsResponse,
-)
+from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
+                             TagDeleteResponse, TagPost, TagPostResponse,
+                             TagPut, TagPutResponse, UserTags,
+                             UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -35,8 +27,8 @@ async def tags(
 
     return [
         UserTagsResponse(
-            tag=tag.tagname,
-            tag_id=tag.id,
+            id=tag.id,
+            tagname=tag.tagname,
             color=tag.color,
         )
         for tag in tags

@@ -9,8 +9,8 @@ class UserTags(BaseModel):
 
 
 class UserTagsResponse(BaseModel):
-    tag: str
-    tag_id: int
+    id: int
+    tagname: str
     color: int
 
     model_config = {"from_attributes": True}

@@ -57,12 +57,11 @@ class TagResponse(BaseModel):
     tagname: str
     color: int
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class ContentPostResponse(BaseModel):
     id: int
-    tag_ids: List[TagResponse]
+    tags: List[TagResponse]
 
     model_config = {"from_attributes": True}
