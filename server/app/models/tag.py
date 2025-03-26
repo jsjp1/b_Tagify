@@ -17,6 +17,3 @@ class Tag(Base):
     contents = relationship(
         "Content", secondary=content_tag_association, back_populates="tags"
     )
-
-    def to_dict(self):
-        return {"id": self.id, "tagname": self.tagname, "color": self.color}
