@@ -88,7 +88,7 @@ class TagService:
         return db_posts
 
     @staticmethod
-    async def post_tag(user_id: int, tag: TagPost, db: Session) -> int:
+    async def post_tag(user_id: int, tag: TagPost, db: Session) -> Tag:
         """
         특정 사용자가 동일한 태그를 생성했는지 검사 후, 태그 생성 및 ID 반환
         """
@@ -115,7 +115,7 @@ class TagService:
             db.rollback()
             raise HTTPException(status_code=500, detail="DB error while creating tag")
 
-        return new_tag.id
+        return new_tag
 
     @staticmethod
     async def update_tag(user_id: int, tag_id: int, tag: TagPut, db: Session) -> int:

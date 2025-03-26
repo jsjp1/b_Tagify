@@ -1,10 +1,18 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
-                             TagDeleteResponse, TagPost, TagPostResponse,
-                             TagPut, TagPutResponse, UserTags,
-                             UserTagsResponse)
+from app.schemas.tag import (
+    TagContents,
+    TagContentsResponse,
+    TagDelete,
+    TagDeleteResponse,
+    TagPost,
+    TagPostResponse,
+    TagPut,
+    TagPutResponse,
+    UserTags,
+    UserTagsResponse,
+)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -41,8 +49,8 @@ async def create(
     request: TagPost,
     db: Session = Depends(get_db),
 ) -> TagPostResponse:
-    tag_id = await TagService.post_tag(user_id, request, db)
-    return TagPostResponse.model_validate({"id": tag_id}, from_attributes=True)
+    tag = await TagService.post_tag(user_id, request, db)
+    return TagPostResponse(id=tag.id, tagname=tag.tagname, color=tag.color)
 
 
 @router.put("/user/{user_id}/{tag_id}/update")

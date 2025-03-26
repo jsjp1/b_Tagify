@@ -6,8 +6,12 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPostResponse,
-                                 UserBookmark, UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPostResponse,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException

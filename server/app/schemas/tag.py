@@ -33,6 +33,8 @@ class TagPost(BaseModel):
 
 class TagPostResponse(BaseModel):
     id: int
+    tagname: str
+    color: str
 
     model_config = {"from_attributes": True}
 
