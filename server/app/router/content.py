@@ -2,16 +2,10 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (
-    ContentAnalyze,
-    ContentAnalyzeResponse,
-    ContentPost,
-    ContentPostResponse,
-    UserBookmark,
-    UserBookmarkResponse,
-    UserContents,
-    UserContentsResponse,
-)
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 ContentPost, ContentPostResponse,
+                                 UserBookmark, UserBookmarkResponse,
+                                 UserContents, UserContentsResponse)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -86,7 +80,7 @@ async def contents(
                 if getattr(content, "post_metadata", None)
                 else {}
             ),
-            tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            tags=([tag for tag in content.tags] if content.tags else []),
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
@@ -116,7 +110,7 @@ async def contents(
                 else {}
             ),
             **({"body": content.post_metadata.body} if content_type == "post" else {}),
-            tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            tags=([tag for tag in content.tags] if content.tags else []),
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
@@ -148,7 +142,7 @@ async def bookmark(
                 if getattr(content, "post_metadata", None)
                 else {}
             ),
-            tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            tags=([tag for tag in content.tags] if content.tags else []),
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
