@@ -16,6 +16,6 @@ class Content(BaseModel):
     bookmark: bool
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
-    tags: List[str]
+    tags: List[Dict[str, Any]]
 
     model_config = {"from_attributes": True}
