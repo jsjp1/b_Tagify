@@ -101,21 +101,19 @@ class ContentService:
         else:
             raise HTTPException(status_code=404, detail="Unsupported content type")
 
-        tag_list = [(tag["tagname"], tag.get("color", 4288585374)) for tag in content.tags]
-
+        tag_list = content.tags
         if len(tag_list) == 0:
-            tag_list.append(("None", 4288585374))
+            tag_list.append("None")
 
         existing_tags = {
             tag.tagname: tag
-            for tag in db.query(Tag).filter(Tag.tagname.in_([t[0] for t in tag_list])).all()
+            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
         }
 
-
         new_tags = []
-        for tagname in tag_list:
-            if tagname not in existing_tags:
-                new_tag = Tag(tagname=tagname, user_id=db_user.id)
+        for tag_name in tag_list:
+            if tag_name not in existing_tags:
+                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
