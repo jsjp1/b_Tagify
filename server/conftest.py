@@ -163,12 +163,12 @@ def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_vide
     )
     db_session.add(video_metadata)
 
-    tag_names = ["AI", "Machine Learning", "Tech"]
+    tagnames = ["AI", "Machine Learning", "Tech"]
     tags = []
-    for tag_name in tag_names:
-        tag = db_session.query(Tag).filter(Tag.tagname == tag_name).first()
+    for tagname in tagnames:
+        tag = db_session.query(Tag).filter(Tag.tagname == tagname).first()
         if not tag:
-            tag = Tag(tagname=tag_name, user_id=user.id)
+            tag = Tag(tagname=tagname, user_id=user.id)
             db_session.add(tag)
             db_session.flush()
         tags.append(tag)

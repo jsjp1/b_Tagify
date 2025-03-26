@@ -55,7 +55,7 @@ class ArticleDeleteResponse(BaseModel):
 
 class ArticleDownload(BaseModel):
     user_id: int
-    tag_name: str
+    tagname: str
 
 
 class ArticleDownloadResponse(BaseModel):

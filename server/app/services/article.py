@@ -8,13 +8,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
@@ -139,9 +134,9 @@ class ArticleService:
         contents = json.loads(decompressed_data)["contents"]
 
         # 태그 새로 생성
-        db_tag = db.query(Tag).filter(Tag.tagname == article.tag_name).first()
+        db_tag = db.query(Tag).filter(Tag.tagname == article.tagname).first()
         if not db_tag:
-            db_tag = Tag(tagname=article.tag_name, user_id=db_user.id)
+            db_tag = Tag(tagname=article.tagname, user_id=db_user.id)
             db.add(db_tag)
             db.flush()
             db.refresh(db_tag)

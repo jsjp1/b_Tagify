@@ -113,9 +113,9 @@ class ContentService:
 
 
         new_tags = []
-        for tag_name in tag_list:
-            if tag_name not in existing_tags:
-                new_tag = Tag(tagname=tag_name, user_id=db_user.id)
+        for tagname in tag_list:
+            if tagname not in existing_tags:
+                new_tag = Tag(tagname=tagname, user_id=db_user.id)
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
