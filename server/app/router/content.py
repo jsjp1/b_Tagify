@@ -47,10 +47,8 @@ async def save(
     request: ContentPost,
     db: Session = Depends(get_db),
 ) -> ContentPostResponse:
-    content_id = await ContentService.post_content(content_type, request, db)
-    return ContentPostResponse.model_validate(
-        {"id": result["content_id"], "tag_ids": result["tag_ids"]}, from_attributes=True
-    )
+    content_data = await ContentService.post_content(content_type, request, db)
+    return ContentPostResponse(**content_data)
 
 
 @router.delete("/{content_id}")

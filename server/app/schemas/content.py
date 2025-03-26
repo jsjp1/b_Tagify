@@ -52,8 +52,17 @@ class ContentPost(Content):
     bookmark: bool
 
 
+class TagResponse(BaseModel):
+    id: int
+    tagname: str
+    color: int
+
+    class Config:
+        orm_mode = True
+
+
 class ContentPostResponse(BaseModel):
     id: int
-    tag_ids: List[int]
+    tag_ids: List[TagResponse]
 
     model_config = {"from_attributes": True}

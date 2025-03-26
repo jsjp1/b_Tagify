@@ -136,9 +136,7 @@ class ContentService:
 
         db.commit()
 
-        tag_ids = [tag.id for tag in existing_tags.values()]
-
-        return {"content_id": new_content.id, "tag_ids": tag_ids}
+        return {"id": new_content.id, "tags": [tag for tag in existing_tags.values()]}
 
     @staticmethod
     async def toggle_bookmark(content_id: int, db: Session):
