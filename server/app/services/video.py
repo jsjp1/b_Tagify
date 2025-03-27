@@ -56,6 +56,7 @@ class VideoService:
             return {
                 "title": "",
                 "thumbnail": "",
+                "favicon": "https://www.youtube.com/favicon.ico",
                 "description": "",
                 "tags": [],
                 "length": 0,  # 초 단위
@@ -128,6 +129,7 @@ class VideoService:
             .all()
         )
 
+        return contents
         return contents
         return contents
         return contents
