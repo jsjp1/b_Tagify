@@ -134,15 +134,3 @@ class VideoService:
         )
 
         return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
