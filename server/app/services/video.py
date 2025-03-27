@@ -1,4 +1,5 @@
 from typing import List
+from urllib.parse import parse_qs, urlparse
 
 import isodate
 from app.models.content import Content, ContentTypeEnum
@@ -20,13 +21,16 @@ class VideoService:
         """
         YouTube URL에서 영상 ID 추출
         """
-        from urllib.parse import parse_qs, urlparse
-
         parsed_url = urlparse(video_url)
+
         if parsed_url.hostname in ["www.youtube.com", "youtube.com"]:
+            if "shorts" in parsed_url.path:
+                return parsed_url.path.split("/")[-1].split("?")[0]
             return parse_qs(parsed_url.query).get("v", [""])[0]
+
         elif parsed_url.hostname in ["youtu.be"]:
             return parsed_url.path.lstrip("/")
+
         return ""
 
     @staticmethod
@@ -129,6 +133,7 @@ class VideoService:
             .all()
         )
 
+        return contents
         return contents
         return contents
         return contents
