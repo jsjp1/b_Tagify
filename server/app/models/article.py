@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from app.models.article_tag import article_tag_association
 from app.models.base import Base
 from sqlalchemy import BIGINT, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -13,7 +14,7 @@ class Article(Base):
     body = Column(String, nullable=True, default="")
     encoded_content = Column(String, nullable=False)
     up_count = Column(Integer, default=0)
-    down_count = Column(Integer, default=0) # 다운로드 횟수
+    down_count = Column(Integer, default=0)  # 다운로드 횟수
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
@@ -29,5 +30,5 @@ class Article(Base):
 
     user = relationship("User", back_populates="articles")
     tags = relationship(
-        "Tag", secondary=content_tag_association, back_populates="contents"
+        "Tag", secondary=article_tag_association, back_populates="contents"
     )
