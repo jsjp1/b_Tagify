@@ -22,10 +22,14 @@ class TagService:
         if not db_user:
             return []
 
+        user_tag_ids = [tag.id for tag in db_user.tags]
+
         ordered_tags = (
             db.query(Tag)
-            .filter(Tag.id.in_([tag.id for tag in db_user.tags]))
+            .filter(Tag.id.in_(user_tag_ids))
+            .join(content_tag_association, content_tag_association.tag_id == Tag.id)
             .order_by(desc(Tag.id))
+            .distinct()
             .all()
         )
 
