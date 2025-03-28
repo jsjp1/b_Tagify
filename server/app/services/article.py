@@ -9,13 +9,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import desc, func
 from sqlalchemy.exc import IntegrityError
@@ -192,7 +187,7 @@ class ArticleService:
         return db_tag.id
 
     @staticmethod
-    async def get_pupular_tags(count: int, db: Session) -> List[dict]:
+    async def get_popular_tags(count: int, db: Session) -> List[dict]:
         """
         article에 연결된 tag 중에 가장 다운로드 수가 많은 tags, count만큼 반환
         """
