@@ -108,9 +108,6 @@ class ContentService:
             raise HTTPException(status_code=404, detail="Unsupported content type")
 
         tag_list = content.tags
-        if len(tag_list) == 0:
-            tag_list.append("None")
-
         existing_tags = {
             tag.tagname: tag
             for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()

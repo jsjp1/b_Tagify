@@ -4,6 +4,7 @@ import json
 from typing import List
 
 from app.models.article import Article
+from app.models.article_tag import article_tag_association
 from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
@@ -16,7 +17,7 @@ from app.schemas.article import (
     ArticleModel,
 )
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, joinedload
@@ -34,6 +35,22 @@ class ArticleService:
                 status_code=400, detail=f"User id {article.user_id} does not exists"
             )
 
+        tag_list = article.tags
+        existing_tags = {
+            tag.tagname: tag
+            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
+        }
+
+        new_tags = []
+        for tagname in tag_list:
+            if tagname not in existing_tags:
+                new_tag = Tag(tagname=tagname, user_id=db_user.id)
+                db.add(new_tag)
+                new_tags.append(new_tag)
+
+        db.flush()
+        all_tags = list(existing_tags.values()) + new_tags
+
         new_article = Article(
             title=article.title,
             body=article.body,
@@ -41,6 +58,7 @@ class ArticleService:
             up_count=0,
             down_count=0,
             user_id=article.user_id,
+            tags=all_tags,
         )
 
         try:
@@ -172,3 +190,31 @@ class ArticleService:
         db.commit()
 
         return db_tag.id
+
+    @staticmethod
+    async def get_pupular_tags(count: int, db: Session) -> List[dict]:
+        """
+        article에 연결된 tag 중에 가장 다운로드 수가 많은 tags, count만큼 반환
+        """
+        popular_tags = (
+            db.query(
+                Tag.id,
+                Tag.tagname,
+                func.sum(Article.down_count).label("total_down_count"),
+            )
+            .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
+            .join(Article, article_tag_association.c.article_id == Article.id)
+            .group_by(Tag.id, Tag.tagname)
+            .order_by(desc("total_down_count"))
+            .limit(count)
+            .all()
+        )
+
+        return [
+            {
+                "id": tag.id,
+                "tagname": tag.tagname,
+                "total_down_count": tag.total_down_count,
+            }
+            for tag in popular_tags
+        ]

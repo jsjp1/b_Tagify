@@ -14,6 +14,7 @@ class ArticleModel(BaseModel):
     encoded_content: str
     up_count: int = 0
     down_count: int = 0
+    tags: List[str]
 
     created_at: datetime
     updated_at: datetime
@@ -32,6 +33,7 @@ class ArticleCreate(BaseModel):
     title: str = ""
     body: Optional[str] = None
     encoded_content: str
+    tags: List[str]
 
     model_config = {"from_attributes": True}
 
@@ -62,3 +64,7 @@ class ArticleDownloadResponse(BaseModel):
     tag_id: int
 
     model_config = {"from_attributes": True}
+
+
+class ArticlePopularTagResponse(BaseModel):
+    tags: List[Dict[str, str | int]]
