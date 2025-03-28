@@ -27,7 +27,7 @@ class TagService:
         ordered_tags = (
             db.query(Tag)
             .filter(Tag.id.in_(user_tag_ids))
-            .join(content_tag_association, content_tag_association.tag_id == Tag.id)
+            .join(content_tag_association, content_tag_association.c.tag_id == Tag.id)
             .order_by(desc(Tag.id))
             .distinct()
             .all()
