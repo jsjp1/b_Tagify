@@ -1,3 +1,4 @@
+from app.models.article_tag import article_tag_association
 from app.models.base import Base
 from app.models.content_tag import content_tag_association
 from sqlalchemy import BIGINT, Column, ForeignKey, Integer, String
@@ -16,4 +17,7 @@ class Tag(Base):
     user = relationship("User", back_populates="tags")
     contents = relationship(
         "Content", secondary=content_tag_association, back_populates="tags"
+    )
+    articles = relationship(
+        "Article", secondary=article_tag_association, back_populates="tags"
     )
