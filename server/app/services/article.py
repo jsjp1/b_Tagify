@@ -10,13 +10,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -319,7 +314,7 @@ class ArticleService:
         유저가 작성한 article의 tags, count만큼 반환
         count가 -1일시 전부 반환
         """
-        owned_tags = (
+        query = (
             db.query(
                 Tag.id,
                 Tag.tagname,
