@@ -1,17 +1,11 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleCreateResponse,
-    ArticleDelete,
-    ArticleDeleteResponse,
-    ArticleDownload,
-    ArticleDownloadResponse,
-    ArticleModel,
-    ArticleTagResponse,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleCreateResponse, ArticleDelete,
+                                 ArticleDeleteResponse, ArticleDownload,
+                                 ArticleDownloadResponse, ArticleModel,
+                                 ArticleTagResponse)
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -76,3 +70,11 @@ async def get_hot_tags(
 ) -> ArticleTagResponse:
     hot_tags = await ArticleService.get_hot_tags(count, db)
     return ArticleTagResponse(tags=hot_tags)
+
+@router.get("/tags/upvote/{count}")
+async def get_upvote_tags(
+    count: int,
+    db: Session = Depends(get_db),
+) -> ArticleTagResponse:
+    upvote_tags = await ArticleService.get_upvote_tags(count, db)
+    return ArticleTagResponse(tags=upvote_tags)
