@@ -102,5 +102,5 @@ async def get_owned_tags(
     count: int,
     db: Session = Depends(get_db),
 ) -> ArticleTagResponse:
-    owned_tags = await ArticleService.get_owned_tags(count, db)
+    owned_tags = await ArticleService.get_owned_tags(user_id, count, db)
     return ArticleTagResponse(tags=owned_tags)
