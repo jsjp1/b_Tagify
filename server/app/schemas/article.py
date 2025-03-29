@@ -66,5 +66,5 @@ class ArticleDownloadResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class ArticlePopularTagResponse(BaseModel):
+class ArticleTagResponse(BaseModel):
     tags: List[Dict[str, str | int]]

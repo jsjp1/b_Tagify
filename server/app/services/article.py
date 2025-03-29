@@ -1,6 +1,7 @@
 import base64
 import gzip
 import json
+from datetime import datetime, timedelta
 from typing import List
 
 from app.models.article import Article
@@ -9,10 +10,15 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
-from sqlalchemy import desc, func
+from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, joinedload
@@ -212,4 +218,43 @@ class ArticleService:
                 "total_down_count": tag.total_down_count,
             }
             for tag in popular_tags
+        ]
+
+    @staticmethod
+    async def get_hot_tags(count: int, db: Session) -> List[dict]:
+        """
+        마지막 article로부터 24시간 이내에 있는 articles 중
+        가장 download 수 많은 tags, count만큼 반환
+        """
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+
+        last_article_time = db.query(func.max(Article.created_at)).scalar()
+
+        hot_tags = (
+            db.query(
+                Tag.id,
+                Tag.tagname,
+                func.sum(Article.down_count).label("total_down_count"),
+            )
+            .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
+            .join(Article, article_tag_association.c.article_id == Article.id)
+            .filter(
+                and_(
+                    Article.created_at >= (last_article_time - timedelta(hours=24)),
+                    Article.created_at <= last_article_time,
+                )
+            )
+            .group_by(Tag.id, Tag.tagname)
+            .order_by(desc("total_down_count"))
+            .limit(count)
+            .all()
+        )
+
+        return [
+            {
+                "id": tag.id,
+                "tagname": tag.tagname,
+                "total_down_count": tag.total_down_count,
+            }
+            for tag in hot_tags
         ]

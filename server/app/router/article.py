@@ -10,7 +10,7 @@ from app.schemas.article import (
     ArticleDownload,
     ArticleDownloadResponse,
     ArticleModel,
-    ArticlePopularTagResponse,
+    ArticleTagResponse,
 )
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
@@ -64,6 +64,15 @@ async def download_article(
 async def get_popular_tags(
     count: int,
     db: Session = Depends(get_db),
-) -> ArticlePopularTagResponse:
+) -> ArticleTagResponse:
     popular_tags = await ArticleService.get_popular_tags(count, db)
-    return ArticlePopularTagResponse(tags=popular_tags)
+    return ArticleTagResponse(tags=popular_tags)
+
+
+@router.get("/tags/hot/{count}")
+async def get_hot_tags(
+    count: int,
+    db: Session = Depends(get_db),
+) -> ArticleTagResponse:
+    hot_tags = await ArticleService.get_hot_tags(count, db)
+    return ArticleTagResponse(tags=hot_tags)
