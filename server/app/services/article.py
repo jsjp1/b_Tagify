@@ -324,7 +324,6 @@ class ArticleService:
             .filter(Article.user_id == user_id)
             .order_by(desc(Tag.id))
             .distinct(Tag.id)
-            .all()
         )
 
         if count != -1:
