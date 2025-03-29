@@ -312,3 +312,35 @@ class ArticleService:
             }
             for tag in newest_tags
         ]
+
+    @staticmethod
+    async def get_owned_tags(user_id: int, count: int, db: Session) -> List[dict]:
+        """
+        유저가 작성한 article의 tags, count만큼 반환
+        count가 -1일시 전부 반환
+        """
+        owned_tags = (
+            db.query(
+                Tag.id,
+                Tag.tagname,
+            )
+            .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
+            .join(Article, article_tag_association.c.article_id == Article.id)
+            .filter(Article.user_id == user_id)
+            .order_by(desc(Tag.id))
+            .distinct(Tag.id)
+            .all()
+        )
+
+        if count != -1:
+            query = query.limit(count)
+
+        owned_tags = query.all()
+
+        return [
+            {
+                "id": tag.id,
+                "tagname": tag.tagname,
+            }
+            for tag in owned_tags
+        ]

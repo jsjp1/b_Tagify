@@ -94,3 +94,13 @@ async def get_newest_tags(
 ) -> ArticleTagResponse:
     newest_tags = await ArticleService.get_newest_tags(count, db)
     return ArticleTagResponse(tags=newest_tags)
+
+
+@router.get("/tags/owned/{user_id}/{count}")
+async def get_owned_tags(
+    user_id: int,
+    count: int,
+    db: Session = Depends(get_db),
+) -> ArticleTagResponse:
+    owned_tags = await ArticleService.get_owned_tags(count, db)
+    return ArticleTagResponse(tags=owned_tags)
