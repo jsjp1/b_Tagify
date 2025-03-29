@@ -10,8 +10,13 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -277,7 +282,33 @@ class ArticleService:
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
-                "total_down_count": tag.total_up_count,
+                "total_up_count": tag.total_up_count,
             }
             for tag in upvote_tags
+        ]
+
+    @staticmethod
+    async def get_newest_tags(count: int, db: Session) -> List[dict]:
+        """
+        가장 최신의 tags, count만큼 반환
+        """
+        newest_tags = (
+            db.query(
+                Tag.id,
+                Tag.tagname,
+            )
+            .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
+            .join(Article, article_tag_association.c.article_id == Article.id)
+            .order_by(desc(Tag.id))
+            .distinct(Tag.id)
+            .limit(count)
+            .all()
+        )
+
+        return [
+            {
+                "id": tag.id,
+                "tagname": tag.tagname,
+            }
+            for tag in newest_tags
         ]
