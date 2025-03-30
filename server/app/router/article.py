@@ -125,6 +125,15 @@ async def get_owned_tags(
     return ArticleTagResponse(tags=owned_tags)
 
 
+@router.get("/tags/random/{count}")
+async def get_random_tags(
+    count: int,
+    db: Session = Depends(get_db),
+) -> ArticleTagResponse:
+    random_tags = await ArticleService.get_random_tags(count, db)
+    return ArticleTagResponse(tags=random_tags)
+
+
 @router.get("/tag/{tag_id}")
 async def get_articles_by_tag(
     tag_id: int,
