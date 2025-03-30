@@ -10,8 +10,13 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -115,16 +120,7 @@ class ArticleService:
             .all()
         )
 
-        articles = [
-            ArticleModel(
-                **article.__dict__,
-                user_name=article.user.username,
-                user_profile_image=article.user.profile_image,
-            )
-            for article in db_articles
-        ]
-
-        return AllArticlesLimitResponse(articles=articles)
+        return articles
 
     @staticmethod
     async def download_article(
