@@ -6,12 +6,8 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (
-    ContentPost,
-    ContentPostResponse,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPostResponse,
+                                 UserBookmark, UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -35,7 +31,7 @@ class ContentService:
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
-            .order_by(desc(Content.id))
+            .order_by(desc(Content.created_at))
             .all()
         )
 
@@ -160,7 +156,7 @@ class ContentService:
             db.query(Content)
             .filter(Content.user_id == user.user_id)
             .filter(Content.bookmark == True)
-            .order_by(desc(Content.id))
+            .order_by(desc(Content.created_at))
             .all()
         )
 

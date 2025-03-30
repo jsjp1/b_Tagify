@@ -44,7 +44,7 @@ class TagService:
             db.query(Content)
             .join(content_tag_association)
             .filter(content_tag_association.c.tag_id == tag.tag_id)
-            .order_by(desc(Content.id))
+            .order_by(desc(Content.created_at))
             .all()
         )
 
@@ -63,7 +63,7 @@ class TagService:
             .join(content_tag_association)
             .filter(Content.content_type == "VIDEO")
             .filter(content_tag_association.c.tag_id == tag.tag_id)
-            .order_by(desc(Content.id))
+            .order_by(desc(Content.created_at))
             .all()
         )
 
@@ -82,7 +82,7 @@ class TagService:
             .join(content_tag_association)
             .filter(Content.content_type == "POST")
             .filter(content_tag_association.c.tag_id == tag.tag_id)
-            .order_by(desc(Content.id))
+            .order_by(desc(Content.created_at))
             .all()
         )
 

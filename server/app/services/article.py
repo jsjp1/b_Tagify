@@ -109,7 +109,7 @@ class ArticleService:
             db.query(Article)
             .join(User, User.id == Article.user_id)
             .options(joinedload(Article.user))
-            .order_by(desc(Article.updated_at))
+            .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
             .all()
