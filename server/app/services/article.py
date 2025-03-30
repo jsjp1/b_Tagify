@@ -10,13 +10,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -347,7 +342,6 @@ class ArticleService:
             )
             .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
             .join(Article, article_tag_association.c.article_id == Article.id)
-            .filter(Article.user_id == user_id)
             .order_by(func.random())
             .distinct(Tag.id)
             .limit(count)
