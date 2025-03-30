@@ -116,5 +116,20 @@ async def get_articles_by_tag(
 ) -> TagArticleResponse:
     articles = await ArticleService.get_articles_by_tag_limit(tag_id, limit, offset, db)
     return TagArticleResponse(
-        articles=[ArticleModel.model_validate(article) for article in articles]
+        articles=[
+            ArticleModel(
+                id=article.id,
+                title=article.title,
+                body=article.body,
+                encoded_content=article.encoded_content,
+                up_count=article.up_count,
+                down_count=article.down_count,
+                created_at=article.created_at,
+                updated_at=article.updated_at,
+                user_name=article.user.username,
+                user_profile_image=article.user.profile_image,
+                tags=[tag.tagname for tag in article.tags],
+            )
+            for article in articles
+        ]
     )
