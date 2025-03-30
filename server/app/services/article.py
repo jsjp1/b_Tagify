@@ -346,9 +346,9 @@ class ArticleService:
         articles = (
             db.query(Article)
             .filter(Article.tags.any(Tag.id == tag_id))
+            .order_by(desc(Article.updated_at))
             .limit(limit)
             .offset(offset)
-            .order_by(desc(Article.updated_at))
             .all()
         )
 
