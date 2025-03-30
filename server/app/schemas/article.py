@@ -68,3 +68,11 @@ class ArticleDownloadResponse(BaseModel):
 
 class ArticleTagResponse(BaseModel):
     tags: List[Dict[str, str | int]]
+
+    model_config = {"from_attributes": True}
+
+
+class TagArticleResponse(BaseModel):
+    articles: List[ArticleModel]
+
+    model_config = {"from_attributes": True}

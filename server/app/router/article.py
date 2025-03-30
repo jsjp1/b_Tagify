@@ -11,6 +11,7 @@ from app.schemas.article import (
     ArticleDownloadResponse,
     ArticleModel,
     ArticleTagResponse,
+    TagArticleResponse,
 )
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends, HTTPException
@@ -104,3 +105,16 @@ async def get_owned_tags(
 ) -> ArticleTagResponse:
     owned_tags = await ArticleService.get_owned_tags(user_id, count, db)
     return ArticleTagResponse(tags=owned_tags)
+
+
+@router.get("/tag/{tag_id}")
+async def get_articles_by_tag(
+    tag_id: int,
+    limit: int,
+    offset: int,
+    db: Session = Depends(get_db),
+) -> TagArticleResponse:
+    articles = await ArticleService.get_articles_by_tag_limit(tag_id, limit, offset, db)
+    return TagArticleResponse(
+        articles=[ArticleModel.model_validate(article) for article in articles]
+    )
