@@ -10,13 +10,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -120,7 +115,7 @@ class ArticleService:
             .all()
         )
 
-        return articles
+        return db_articles
 
     @staticmethod
     async def download_article(
@@ -339,7 +334,7 @@ class ArticleService:
     async def get_articles_by_tag_limit(
         tag_id: int, limit: int, offset: int, db: Session
     ) -> List[Article]:
-        articles = (
+        db_articles = (
             db.query(Article)
             .filter(Article.tags.any(Tag.id == tag_id))
             .order_by(desc(Article.updated_at))
@@ -348,4 +343,4 @@ class ArticleService:
             .all()
         )
 
-        return articles
+        return db_articles
