@@ -7,7 +7,8 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
@@ -55,8 +56,10 @@ class PostService:
         response = requests.get(
             url,
             headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
+                "Accept-Language": "ko-KR,ko;q=0.9",
             },
+            timeout=3,
         )
 
         response.encoding = (
@@ -145,5 +148,6 @@ class PostService:
             .all()
         )
 
+        return contents
         return contents
         return contents
