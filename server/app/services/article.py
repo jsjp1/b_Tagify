@@ -10,8 +10,13 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -109,6 +114,89 @@ class ArticleService:
             db.query(Article)
             .join(User, User.id == Article.user_id)
             .options(joinedload(Article.user))
+            .order_by(desc(Article.created_at))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
+    async def get_popular_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        다운로드 수 내림차순으로 offset부터 limit만큼 articles 반환
+        """
+        db_articles = (
+            db.query(Article)
+            .order_by(desc(Article.down_count))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
+    async def get_hot_articles(limit: int, offset: int, db: Session) -> List[Article]:
+        """
+        마지막 article로부터 24시간 이내에 있는 articles 중
+        가장 download 수 많은 articles, offset부터 limit만큼 반환
+        """
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+
+        last_article_time = db.query(func.max(Article.created_at)).scalar()
+
+        db_articles = (
+            db.query(
+                Article,
+            )
+            .filter(
+                and_(
+                    Article.created_at >= (last_article_time - timedelta(hours=24)),
+                    Article.created_at <= last_article_time,
+                )
+            )
+            .order_by(desc(Article.down_count))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
+    async def get_upvote_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
+        """
+        db_articles = (
+            db.query(
+                Article,
+            )
+            .order_by(desc(Article.up_count))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
+    async def get_newest_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        created_at 내림차순 offset부터 limit만큼 articles 반환
+        """
+        db_articles = (
+            db.query(
+                Article,
+            )
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
@@ -364,89 +452,6 @@ class ArticleService:
             db.query(Article)
             .filter(Article.tags.any(Tag.id == tag_id))
             .order_by(desc(Article.updated_at))
-            .limit(limit)
-            .offset(offset)
-            .all()
-        )
-
-        return db_articles
-
-    @staticmethod
-    async def get_popular_articles(
-        limit: int, offset: int, db: Session
-    ) -> List[Article]:
-        """
-        다운로드 수 내림차순으로 offset부터 limit만큼 articles 반환
-        """
-        db_articles = (
-            db.query(Article)
-            .order_by(desc(Article.down_count))
-            .limit(limit)
-            .offset(offset)
-            .all()
-        )
-
-        return db_articles
-
-    @staticmethod
-    async def get_hot_articles(limit: int, offset: int, db: Session) -> List[Article]:
-        """
-        마지막 article로부터 24시간 이내에 있는 articles 중
-        가장 download 수 많은 articles, offset부터 limit만큼 반환
-        """
-        time_threshold = datetime.utcnow() - timedelta(hours=24)
-
-        last_article_time = db.query(func.max(Article.created_at)).scalar()
-
-        db_articles = (
-            db.query(
-                Article,
-            )
-            .filter(
-                and_(
-                    Article.created_at >= (last_article_time - timedelta(hours=24)),
-                    Article.created_at <= last_article_time,
-                )
-            )
-            .order_by(desc(Article.down_count))
-            .limit(limit)
-            .offset(offset)
-            .all()
-        )
-
-        return db_articles
-
-    @staticmethod
-    async def get_upvote_articles(
-        limit: int, offset: int, db: Session
-    ) -> List[Article]:
-        """
-        upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
-        """
-        db_articles = (
-            db.query(
-                Article,
-            )
-            .order_by(desc(Article.up_count))
-            .limit(limit)
-            .offset(offset)
-            .all()
-        )
-
-        return db_articles
-
-    @staticmethod
-    async def get_newest_articles(
-        limit: int, offset: int, db: Session
-    ) -> List[Article]:
-        """
-        created_at 내림차순 offset부터 limit만큼 articles 반환
-        """
-        db_articles = (
-            db.query(
-                Article,
-            )
-            .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
             .all()
