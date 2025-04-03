@@ -1,5 +1,9 @@
 # b_Tagify
 
+## API Endpoint
+
+[Swagger API Documentation](https://tagi.jieeen.kr/docs)
+
 ## ERD
 
 <p align="left">
