@@ -41,6 +41,37 @@ async def delete_article(
     return ArticleDeleteResponse(id=article_id)
 
 
+@router.get("/user/{user_id}")
+async def get_all_user_articles_limit(
+    user_id: int,
+    limit: int,
+    offset: int,
+    db: Session = Depends(get_db),
+) -> AllArticlesLimitResponse:
+    articles = await ArticleService.get_all_user_articles_limit(
+        user_id, limit, offset, db
+    )
+    return AllArticlesLimitResponse(
+        articles=[
+            ArticleModel(
+                id=article.id,
+                title=article.title,
+                body=article.body,
+                encoded_content=article.encoded_content,
+                up_count=article.up_count,
+                down_count=article.down_count,
+                created_at=article.created_at,
+                updated_at=article.updated_at,
+                user_id=article.user.id,
+                user_name=article.user.username,
+                user_profile_image=article.user.profile_image,
+                tags=[tag.tagname for tag in article.tags],
+            )
+            for article in articles
+        ]
+    )
+
+
 @router.get("/all")
 async def get_all_articles_limit(
     limit: int,

@@ -104,6 +104,24 @@ class ArticleService:
         return db_article.id
 
     @staticmethod
+    async def get_all_user_articles_limit(
+        user_id: int, limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        특정 유저의 offset으로부터 limit만큼의 article 반환
+        """
+        db_articles = (
+            db.query(Article)
+            .filter(Article.user_id == user_id)
+            .order_by(desc(Article.created_at))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
     async def get_all_articles_limit(
         limit: int, offset: int, db: Session
     ) -> List[Article]:
