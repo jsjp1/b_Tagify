@@ -420,3 +420,22 @@ class ArticleService:
         )
 
         return db_articles
+
+    @staticmethod
+    async def get_upvote_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
+        """
+        db_articles = (
+            db.query(
+                Article,
+            )
+            .order_by(desc(Article.up_count))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
