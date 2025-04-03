@@ -392,3 +392,31 @@ class ArticleService:
         )
 
         return db_articles
+
+    @staticmethod
+    async def get_hot_articles(limit: int, offset: int, db: Session) -> List[Article]:
+        """
+        마지막 article로부터 24시간 이내에 있는 articles 중
+        가장 download 수 많은 articles, offset부터 limit만큼 반환
+        """
+        time_threshold = datetime.utcnow() - timedelta(hours=24)
+
+        last_article_time = db.query(func.max(Article.created_at)).scalar()
+
+        db_articles = (
+            db.query(
+                Article,
+            )
+            .filter(
+                and_(
+                    Article.created_at >= (last_article_time - timedelta(hours=24)),
+                    Article.created_at <= last_article_time,
+                )
+            )
+            .order_by(desc(Article.down_count))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
