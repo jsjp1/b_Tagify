@@ -212,6 +212,34 @@ async def get_newest_articles(
     )
 
 
+@router.get("/random")
+async def get_random_articles(
+    limit: int,
+    offset: int,
+    db: Session = Depends(get_db),
+) -> AllArticlesLimitResponse:
+    articles = await ArticleService.get_random_articles(limit, offset, db)
+    return AllArticlesLimitResponse(
+        articles=[
+            ArticleModel(
+                id=article.id,
+                title=article.title,
+                body=article.body,
+                encoded_content=article.encoded_content,
+                up_count=article.up_count,
+                down_count=article.down_count,
+                created_at=article.created_at,
+                updated_at=article.updated_at,
+                user_id=article.user.id,
+                user_name=article.user.username,
+                user_profile_image=article.user.profile_image,
+                tags=[tag.tagname for tag in article.tags],
+            )
+            for article in articles
+        ]
+    )
+
+
 @router.post("/download/{article_id}")
 async def download_article(
     request: ArticleDownload,

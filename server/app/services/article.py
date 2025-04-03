@@ -224,6 +224,25 @@ class ArticleService:
         return db_articles
 
     @staticmethod
+    async def get_random_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        offset부터 limit만큼 임의의 articles 반환
+        """
+        db_articles = (
+            db.query(
+                Article,
+            )
+            .order_by(func.random())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
     async def download_article(
         article: ArticleDownload, article_id: int, db: Session
     ) -> int:
