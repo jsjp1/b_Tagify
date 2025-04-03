@@ -7,8 +7,7 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
@@ -60,7 +59,9 @@ class PostService:
             },
         )
 
-        response.encoding = response.apparent_encoding # 특정 사이트 글자 깨져서 나오는 문제 해결
+        response.encoding = (
+            response.apparent_encoding
+        )  # 특정 사이트 글자 깨져서 나오는 문제 해결
         html = response.text
 
         bs = BeautifulSoup(html, "html.parser")

@@ -10,8 +10,13 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -101,7 +106,7 @@ class ArticleService:
     @staticmethod
     async def get_all_articles_limit(
         limit: int, offset: int, db: Session
-    ) -> AllArticlesLimitResponse:
+    ) -> List[Article]:
         """
         offset으로부터 limit 개수의 article 반환
         """
@@ -364,6 +369,23 @@ class ArticleService:
             db.query(Article)
             .filter(Article.tags.any(Tag.id == tag_id))
             .order_by(desc(Article.updated_at))
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return db_articles
+
+    @staticmethod
+    async def get_popular_articles(
+        limit: int, offset: int, db: Session
+    ) -> List[Article]:
+        """
+        다운로드 수 내림차순으로 offset부터 limit만큼 articles 반환
+        """
+        db_articles = (
+            db.query(Article)
+            .order_by(desc(Article.down_count))
             .limit(limit)
             .offset(offset)
             .all()
