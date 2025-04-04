@@ -59,6 +59,11 @@ class TagResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class TagPutResponse(BaseModel):
+    id: int
+    tagname: str
+
+    model_config = {"from_attributes": True}
 
 class ContentPostResponse(BaseModel):
     id: int
@@ -72,7 +77,7 @@ class ContentPutRequest(Content):
 
 
 class ContentPutResponse(BaseModel):
-    tags: List[TagResponse]
+    tags: List[TagPutResponse]
 
     model_config = {"from_attributes": True}
 
