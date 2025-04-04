@@ -7,6 +7,9 @@ from app.schemas.content import (
     ContentAnalyzeResponse,
     ContentPost,
     ContentPostResponse,
+    ContentPutRequest,
+    ContentPutResponse,
+    SearchContentResponse,
     TagResponse,
     UserBookmark,
     UserBookmarkResponse,
@@ -168,3 +171,21 @@ async def bookmark(
 async def bookmark(content_id: int, db: Session = Depends(get_db)) -> dict:
     await ContentService.toggle_bookmark(content_id, db)
     return DefaultSuccessResponse(message="success").model_dump()
+
+
+@router.put("/{content_id}")
+async def edit(
+    content_id: int,
+    request: ContentPutRequest,
+    db: Session = Depends(get_db),
+) -> ContentPutResponse:
+    content_id = await ContentService.edit_content(content_id, request, db)
+    return ContentPutResponse(id=content_id)
+
+
+@router.get("/user/{user_id}/search/{keyword}")
+async def search(
+    user_id: int, keyword: str, db: Session = Depends(get_db)
+) -> SearchContentResponse:
+    contents = await ContentService.get_search_contents(user_id, keyword, db)
+    return SearchContentResponse()  # todo

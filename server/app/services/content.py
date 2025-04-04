@@ -9,6 +9,7 @@ from app.models.video_metadata import VideoMetadata
 from app.schemas.content import (
     ContentPost,
     ContentPostResponse,
+    ContentPutRequest,
     UserBookmark,
     UserContents,
 )
@@ -212,3 +213,35 @@ class ContentService:
             )
 
         return
+
+    @staticmethod
+    async def edit_content(
+        content_id: int,
+        content: ContentPutRequest,
+        db: Session,
+    ) -> int:
+        """
+        content_id에 해당하는 content 정보 수정 후 id 반환
+        """
+        db_content = db.query(Content).filter(Content.id == content_id).first()
+
+        if not db_content:
+            raise HTTPException(status_code=404, detail="Content not found")
+
+        for k, v in content.dict(exclude_unset=True).items():
+            setattr(db_content, k, v)
+
+        db.commit()
+        db.refresh(db_content)
+
+        return db_content.id
+
+    @staticmethod
+    async def get_search_contents(
+        user_id: int, keyword: str, db: Session
+    ) -> List[dict]:
+        """
+        keyword에 근접한 content 반환
+        todo: 추후 변경?
+        """
+        pass

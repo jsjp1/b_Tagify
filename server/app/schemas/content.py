@@ -65,3 +65,19 @@ class ContentPostResponse(BaseModel):
     tags: List[TagResponse]
 
     model_config = {"from_attributes": True}
+
+
+class ContentPutRequest(Content):
+    pass
+
+
+class ContentPutResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
+class SearchContentResponse(BaseModel):
+    contents: List[Content]
+
+    model_config = {"from_attributes": True}
