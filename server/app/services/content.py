@@ -228,8 +228,26 @@ class ContentService:
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
 
-        for k, v in content.dict(exclude_unset=True).items():
-            setattr(db_content, k, v)
+        existing_tag_names = {tag.tagname for tag in db_content.tags}
+        new_tag_names = set(content.tags)
+
+        tags_to_remove = [
+            tag for tag in db_content.tags if tag.tagname not in new_tag_names
+        ]
+        for tag in tags_to_remove:
+            db_content.tags.remove(tag)
+
+            if len(tag.contents) == 0:
+                db.delete(tag)
+
+        tags_to_add = new_tag_names - existing_tag_names
+        for tag_name in tags_to_add:
+            tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
+            if not tag:
+                tag = Tag(tagname=tag_name)
+                db.add(tag)
+                db.flush()
+            db_content.tags.append(tag)
 
         db.commit()
         db.refresh(db_content)
