@@ -13,7 +13,7 @@ from app.services.video import VideoService
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, contains_eager, joinedload
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
 
 
@@ -25,14 +25,13 @@ class ContentService:
         """
         contents = (
             db.query(Content)
-            .join(Content.tags) 
             .filter(Content.user.has(id=user.id))
             .options(
-                contains_eager(Content.tags),
+                joinedload(Content.tags).joinedload(Tag).order_by(desc(Tag.id)),
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
-            .order_by(desc(Content.created_at), Content.tags.tagname) 
+            .order_by(desc(Content.created_at))
             .all()
         )
 
