@@ -2,20 +2,12 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import DefaultSuccessResponse
-from app.schemas.content import (
-    ContentAnalyze,
-    ContentAnalyzeResponse,
-    ContentPost,
-    ContentPostResponse,
-    ContentPutRequest,
-    ContentPutResponse,
-    SearchContentResponse,
-    TagResponse,
-    UserBookmark,
-    UserBookmarkResponse,
-    UserContents,
-    UserContentsResponse,
-)
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 ContentPost, ContentPostResponse,
+                                 ContentPutRequest, ContentPutResponse,
+                                 SearchContentResponse, TagResponse,
+                                 UserBookmark, UserBookmarkResponse,
+                                 UserContents, UserContentsResponse)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -173,14 +165,15 @@ async def bookmark(content_id: int, db: Session = Depends(get_db)) -> dict:
     return DefaultSuccessResponse(message="success").model_dump()
 
 
-@router.put("/{content_id}")
+@router.put("/{content_id}/user/{user_id}")
 async def edit(
+    user_id: int,
     content_id: int,
     request: ContentPutRequest,
     db: Session = Depends(get_db),
 ) -> ContentPutResponse:
-    content_id = await ContentService.edit_content(content_id, request, db)
-    return ContentPutResponse(id=content_id)
+    tags = await ContentService.edit_content(user_id, content_id, request, db)
+    return ContentPutResponse(tags=tags)
 
 
 @router.get("/user/{user_id}/search/{keyword}")

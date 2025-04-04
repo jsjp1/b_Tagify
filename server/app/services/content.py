@@ -6,13 +6,8 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (
-    ContentPost,
-    ContentPostResponse,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPostResponse,
+                                 ContentPutRequest, UserBookmark, UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -216,14 +211,15 @@ class ContentService:
 
     @staticmethod
     async def edit_content(
+        user_id: int,
         content_id: int,
         content: ContentPutRequest,
         db: Session,
-    ) -> int:
+    ) -> List[dict]:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
         """
-        db_content = db.query(Content).filter(Content.id == content_id).first()
+        db_content = db.query(Content).filter(and_(Content.id == content_id, Content.user_id == user_id)).first()
 
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
@@ -244,22 +240,29 @@ class ContentService:
             if len(tag.contents) == 0:
                 db.delete(tag)
 
+        return_tags = []
+
         tags_to_add = new_tag_names - existing_tag_names
         for tag_name in tags_to_add:
-            tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
+            tag = db.query(Tag).filter(and_(Tag.tagname == tag_name, Tag.user_id == user_id)).first()
             if not tag:
+                tmp = {}
                 tag = Tag(
-                    tagname=tag_name,
                     user_id=db_content.user_id,
+                    tagname=tag_name,
                 )
                 db.add(tag)
                 db.flush()
+                tmp["id"] = tag.id
+                tmp["tagname"] = tag.tagname
+
+                return_tags.append(tmp)
             db_content.tags.append(tag)
 
         db.commit()
         db.refresh(db_content)
 
-        return db_content.id
+        return return_tags
 
     @staticmethod
     async def get_search_contents(

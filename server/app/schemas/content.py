@@ -72,7 +72,7 @@ class ContentPutRequest(Content):
 
 
 class ContentPutResponse(BaseModel):
-    id: int
+    tags: List[TagResponse]
 
     model_config = {"from_attributes": True}
 
