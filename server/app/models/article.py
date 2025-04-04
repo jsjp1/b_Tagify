@@ -30,5 +30,8 @@ class Article(Base):
 
     user = relationship("User", back_populates="articles")
     tags = relationship(
-        "Tag", secondary=article_tag_association, back_populates="articles"
+        "Tag",
+        order_by="desc(Tag.id)",
+        secondary=article_tag_association,
+        back_populates="articles",
     )

@@ -38,7 +38,10 @@ class Content(Base):
 
     user = relationship("User", back_populates="contents")
     tags = relationship(
-        "Tag", secondary=content_tag_association, back_populates="contents"
+        "Tag",
+        order_by="desc(Tag.id)",
+        secondary=content_tag_association,
+        back_populates="contents",
     )
     video_metadata = relationship(
         "VideoMetadata", uselist=False, back_populates="content"

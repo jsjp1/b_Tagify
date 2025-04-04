@@ -6,8 +6,13 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPostResponse,
-                                 ContentPutRequest, UserBookmark, UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPostResponse,
+    ContentPutRequest,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -27,7 +32,7 @@ class ContentService:
             db.query(Content)
             .filter(Content.user.has(id=user.id))
             .options(
-                joinedload(Content.tags).joinedload(Tag).order_by(desc(Tag.id)),
+                joinedload(Content.tags),
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
@@ -219,7 +224,11 @@ class ContentService:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
         """
-        db_content = db.query(Content).filter(and_(Content.id == content_id, Content.user_id == user_id)).first()
+        db_content = (
+            db.query(Content)
+            .filter(and_(Content.id == content_id, Content.user_id == user_id))
+            .first()
+        )
 
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
@@ -247,9 +256,11 @@ class ContentService:
 
         tags_to_add = new_tag_names - existing_tag_names
         for tag_name in tags_to_add:
-            tag = db.query(Tag).filter(
-                and_(Tag.tagname == tag_name, Tag.user_id == user_id)
-            ).first()
+            tag = (
+                db.query(Tag)
+                .filter(and_(Tag.tagname == tag_name, Tag.user_id == user_id))
+                .first()
+            )
             if not tag:
                 tag = Tag(
                     user_id=db_content.user_id,
