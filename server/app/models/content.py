@@ -39,7 +39,7 @@ class Content(Base):
     user = relationship("User", back_populates="contents")
     tags = relationship(
         "Tag",
-        order_by="desc(Tag.id)",
+        order_by="asc(Tag.id)",
         secondary=content_tag_association,
         back_populates="contents",
     )
