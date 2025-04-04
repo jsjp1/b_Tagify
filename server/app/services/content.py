@@ -228,6 +228,10 @@ class ContentService:
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
 
+        db_content.title = content.title
+        db_content.description = content.description
+        db_content.thumbnail = content.thumbnail
+
         existing_tag_names = {tag.tagname for tag in db_content.tags}
         new_tag_names = set(content.tags)
 
@@ -244,7 +248,10 @@ class ContentService:
         for tag_name in tags_to_add:
             tag = db.query(Tag).filter(Tag.tagname == tag_name).first()
             if not tag:
-                tag = Tag(tagname=tag_name)
+                tag = Tag(
+                    tagname=tag_name,
+                    user_id=db_content.user_id,
+                )
                 db.add(tag)
                 db.flush()
             db_content.tags.append(tag)
