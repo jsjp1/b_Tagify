@@ -172,7 +172,7 @@ async def edit(
     request: ContentPutRequest,
     db: Session = Depends(get_db),
 ) -> ContentPutResponse:
-    tags = await ContentService.edit_content(user_id, content_id, request, db)
+    tags = await ContentService.put_content(user_id, content_id, request, db)
     return ContentPutResponse(tags=tags)
 
 

@@ -210,7 +210,7 @@ class ContentService:
         return
 
     @staticmethod
-    async def edit_content(
+    async def put_content(
         user_id: int,
         content_id: int,
         content: ContentPutRequest,
@@ -227,9 +227,12 @@ class ContentService:
         db_content.title = content.title
         db_content.description = content.description
         db_content.thumbnail = content.thumbnail
+        db_content.bookmark = content.bookmark
 
         existing_tag_names = {tag.tagname for tag in db_content.tags}
         new_tag_names = set(content.tags)
+
+        return_tags = []
 
         tags_to_remove = [
             tag for tag in db_content.tags if tag.tagname not in new_tag_names
@@ -239,25 +242,24 @@ class ContentService:
 
             if len(tag.contents) == 0:
                 db.delete(tag)
-
-        return_tags = []
+            else:
+                return_tags.append({"id": tag.id, "tagname": tag.tagname})
 
         tags_to_add = new_tag_names - existing_tag_names
         for tag_name in tags_to_add:
-            tag = db.query(Tag).filter(and_(Tag.tagname == tag_name, Tag.user_id == user_id)).first()
+            tag = db.query(Tag).filter(
+                and_(Tag.tagname == tag_name, Tag.user_id == user_id)
+            ).first()
             if not tag:
-                tmp = {}
                 tag = Tag(
                     user_id=db_content.user_id,
                     tagname=tag_name,
                 )
                 db.add(tag)
                 db.flush()
-                tmp["id"] = tag.id
-                tmp["tagname"] = tag.tagname
 
-                return_tags.append(tmp)
             db_content.tags.append(tag)
+            return_tags.append({"id": tag.id, "tagname": tag.tagname})
 
         db.commit()
         db.refresh(db_content)
