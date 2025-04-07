@@ -15,6 +15,7 @@ from app.schemas.article import (
     ArticleCreate,
     ArticleDelete,
     ArticleDownload,
+    ArticleEdit,
     ArticleModel,
 )
 from fastapi import HTTPException
@@ -73,6 +74,38 @@ class ArticleService:
             )
 
         return new_article.id
+
+    @staticmethod
+    async def put_article(article_id: int, article: ArticleEdit, db: Session) -> int:
+        """
+        특정 article의 정보 수정 후 id 반환
+        """
+        db_article = db.query(Article).filter(Article.id == article_id).first()
+        if not db_article:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Article id {article_id} does not exists",
+            )
+
+        db_article.title = article.title
+        db_article.body = article.body
+
+        existing_tags = db.query(Tag).filter(Tag.tagname.in_(article.tags)).all()
+        existing_tags_names = {tag.tagname for tag in existing_tags}
+
+        new_tag_names = set(article.tags) - existing_tags_names
+
+        new_tags = [Tag(tagname=name) for name in new_tag_names]
+        db.add_all(new_tags)
+        db.commit()
+        db.refresh(db_article)
+
+        all_tags = existing_tags + new_tags
+        db_article.tags = all_tags
+
+        db.commit()
+
+        return db_article.id
 
     @staticmethod
     async def delete_article(article: ArticleDelete, db: Session) -> int:

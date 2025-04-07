@@ -38,6 +38,21 @@ class ArticleCreate(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ArticleEdit(BaseModel):
+    title: str = ""
+    body: Optional[str] = None
+    # 기존에 등록한 컨텐츠는 수정하지 못하도록
+    tags: List[str]
+
+    model_config = {"from_attributes": True}
+
+
+class ArticleEditResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
 class ArticleCreateResponse(BaseModel):
     id: int
 

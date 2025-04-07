@@ -9,6 +9,8 @@ from app.schemas.article import (
     ArticleDeleteResponse,
     ArticleDownload,
     ArticleDownloadResponse,
+    ArticleEdit,
+    ArticleEditResponse,
     ArticleModel,
     ArticleTagResponse,
     TagArticleResponse,
@@ -31,6 +33,14 @@ async def create_article(
 ) -> ArticleCreateResponse:
     article_id = await ArticleService.post_article(request, db)
     return ArticleCreateResponse(id=article_id)
+
+
+@router.put("/{article_id}")
+async def put_article(
+    article_id: int, request: ArticleEdit, db: Session = Depends(get_db)
+) -> ArticleEditResponse:
+    article_id = await ArticleService.put_article(article_id, request, db)
+    return ArticleEditResponse(id=article_id)
 
 
 @router.delete("/")
