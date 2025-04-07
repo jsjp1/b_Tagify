@@ -20,7 +20,7 @@ class CommentService:
         if not db_article:
             raise HTTPException(
                 status_code=400, detail=f"Article id {article_id} does not exists"
-            ) # TODO: 이 과정 꼭 필요한지?
+            )  # TODO: 이 과정 꼭 필요한지?
 
         comments = (
             db.query(Comment)
@@ -32,7 +32,9 @@ class CommentService:
         return comments
 
     @staticmethod
-    async def post_comment(article_id: int, comment: PostCommentRequest, db: Session) -> int:
+    async def post_comment(
+        article_id: int, comment: PostCommentRequest, db: Session
+    ) -> int:
         """
         특정 article에 속하는 comment 등록 후 해당 comment 정보 반환
         """
@@ -43,19 +45,19 @@ class CommentService:
             )
 
         new_comment = Comment(
-          body=comment.body,
-          user_id=comment.user_id,
-          article_id=article_id,
+            body=comment.body,
+            user_id=comment.user_id,
+            article_id=article_id,
         )
 
         try:
-          db.add(new_comment)
-          db.commit()
-          db.refresh(new_comment)
+            db.add(new_comment)
+            db.commit()
+            db.refresh(new_comment)
         except IntegrityError:
-          db.rollback()
-          raise HTTPException(
-              status_code=500, detail="DB error while creating comment"
-          )
+            db.rollback()
+            raise HTTPException(
+                status_code=500, detail="DB error while creating comment"
+            )
 
         return new_comment.id

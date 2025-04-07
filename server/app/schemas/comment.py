@@ -24,9 +24,11 @@ class ArticleCommentsResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class PostCommentRequest(BaseModel):
     user_id: int
     body: str
+
 
 class PostCommentResponse(BaseModel):
     id: int
