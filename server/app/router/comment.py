@@ -30,9 +30,13 @@ async def get_article_all_comments(
             CommentModel(
                 id=comment.id,
                 user_id=comment.user_id,
+                user_name=comment.user.username,
+                user_profile_image=comment.user.profile_image,
                 body=comment.body,
                 up_count=comment.up_count,
                 down_count=comment.down_count,
+                created_at=comment.created_at,
+                updated_at=comment.updated_at,
             )
             for comment in comments
         ]

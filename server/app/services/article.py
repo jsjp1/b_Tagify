@@ -299,6 +299,8 @@ class ArticleService:
             )
             db.execute(stmt)
 
+        db_article.down_count = db_article.down_count + 1
+
         db.commit()
 
         return db_tag.id
