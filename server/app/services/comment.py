@@ -61,3 +61,25 @@ class CommentService:
             )
 
         return new_comment.id
+
+    @staticmethod
+    async def delete_comment(comment_id: int, db: Session) -> int:
+        """
+        특정 comment 삭제 후 id 반환
+        """
+        db_comment = db.query(Comment).filter(Comment.id == comment_id).first()
+        if not db_comment:
+            raise HTTPException(
+                status_code=400, detail=f"Comment id {comment_id} does not exists"
+            )
+
+        try:
+            db.delete(db_comment)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=500, detail="DB error while deleting comment"
+            )
+
+        return db_comment.id

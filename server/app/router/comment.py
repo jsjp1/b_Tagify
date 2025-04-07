@@ -4,11 +4,12 @@ from app.db import get_db
 from app.schemas.comment import (
     ArticleCommentsResponse,
     CommentModel,
+    DeleteCommentResponse,
     PostCommentRequest,
     PostCommentResponse,
 )
 from app.services.comment import CommentService
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/comments", tags=["comments"])
@@ -51,3 +52,12 @@ async def post_comment(
 ) -> PostCommentResponse:
     comment_id = await CommentService.post_comment(article_id, request, db)
     return PostCommentResponse(id=comment_id)
+
+
+@router.delete("/{comment_id}")
+async def delete_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+) -> DeleteCommentResponse:
+    comment_id = await CommentService.delete_comment(comment_id, db)
+    return DeleteCommentResponse(id=comment_id)

@@ -34,3 +34,9 @@ class PostCommentResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class DeleteCommentResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
