@@ -1,7 +1,8 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.comment import ArticleCommentsResponse, Comment
+from app.schemas.comment import (ArticleCommentsResponse, CommentModel,
+                                 PostCommentRequest, PostCommentResponse)
 from app.services.comment import CommentService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -22,7 +23,7 @@ async def get_article_all_comments(
     comments = await CommentService.get_article_all_comments(article_id, db)
     return ArticleCommentsResponse(
         comments=[
-            Comment(
+            CommentModel(
                 id=comment.id,
                 user_id=comment.user_id,
                 body=comment.body,
@@ -32,3 +33,12 @@ async def get_article_all_comments(
             for comment in comments
         ]
     )
+
+@router.post("/article/{article_id}")
+async def post_comment(
+    article_id: int,
+    request: PostCommentRequest,
+    db: Session = Depends(get_db),
+) -> PostCommentResponse:
+    comment_id = await CommentService.post_comment(article_id, request, db)
+    return PostCommentResponse(id=comment_id)
