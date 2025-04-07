@@ -1,6 +1,7 @@
 from typing import List
 
-from app.models.content import Content, ContentTypeEnum
+from app.models.article_tag import article_tag_association
+from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
@@ -186,7 +187,12 @@ class ContentService:
                 .filter(content_tag_association.c.content_id != content_id)
                 .count()
             )
-            if other_content_tags == 0:
+            article_count = (  # 엮여있는 article이 존재해도 삭제 X
+                db.query(article_tag_association)
+                .filter(article_tag_association.c.tag_id == tag.id)
+                .count()
+            )
+            if other_content_tags == 0 and article_count == 0:
                 orphan_tags.append(tag)
 
         for tag in orphan_tags:
