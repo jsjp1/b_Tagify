@@ -7,7 +7,8 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
@@ -52,6 +53,9 @@ class PostService:
         """
         db에 저장할 Content 데이터 추출 후 반환
         """
+        if url[-1] != '/': 
+            url = url + "/"
+        
         response = requests.get(
             url,
             headers={
@@ -148,6 +152,7 @@ class PostService:
             .all()
         )
 
+        return contents
         return contents
         return contents
         return contents
