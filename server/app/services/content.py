@@ -7,13 +7,9 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (
-    ContentPost,
-    ContentPostResponse,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.common import ContentModel
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -21,9 +17,6 @@ from sqlalchemy import and_, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
-
-from server.app.models import content_tag
-from server.app.schemas.common import ContentModel
 
 
 class ContentService:
