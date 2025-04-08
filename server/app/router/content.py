@@ -190,16 +190,18 @@ async def search(
 ) -> SearchContentResponse:
     contents = await ContentService.get_search_contents(user_id, keyword, db)
     return SearchContentResponse(
-        ContentModel(
-            url=content.url,
-            title=content.title,
-            thumbnail=content.thumbnail,
-            favicon=content.favicon,
-            description=content.description,
-            bookmark=content.bookmark,
-            video_length=content.video_lengthm,
-            body=content.body,
-            tags=[tag.tagname for tag in content.tags],
-        )
-        for content in contents
+        contents=[
+            ContentModel(
+                url=content.url,
+                title=content.title,
+                thumbnail=content.thumbnail,
+                favicon=content.favicon,
+                description=content.description,
+                bookmark=content.bookmark,
+                video_length=content.video_lengthm,
+                body=content.body,
+                tags=[tag.tagname for tag in content.tags],
+            )
+            for content in contents
+        ]
     )
