@@ -1,7 +1,7 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.common import DefaultSuccessResponse
+from app.schemas.common import ContentModel, DefaultSuccessResponse
 from app.schemas.content import (
     ContentAnalyze,
     ContentAnalyzeResponse,
@@ -189,4 +189,17 @@ async def search(
     user_id: int, keyword: str, db: Session = Depends(get_db)
 ) -> SearchContentResponse:
     contents = await ContentService.get_search_contents(user_id, keyword, db)
-    return SearchContentResponse()  # todo
+    return SearchContentResponse(
+        ContentModel(
+            url=content.url,
+            title=content.title,
+            thumbnail=content.thumbnail,
+            favicon=content.favicon,
+            description=content.description,
+            bookmark=content.bookmark,
+            video_length=content.video_lengthm,
+            body=content.body,
+            tags=[tag.tagname for tag in content.tags],
+        )
+        for content in contents
+    )

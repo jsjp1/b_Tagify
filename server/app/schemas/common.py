@@ -7,7 +7,7 @@ class DefaultSuccessResponse(BaseModel):
     message: str
 
 
-class Content(BaseModel):
+class ContentModel(BaseModel):
     url: str
     title: str
     thumbnail: Optional[str]

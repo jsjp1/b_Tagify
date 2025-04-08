@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from app.schemas.common import Content
+from app.schemas.common import ContentModel
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +20,7 @@ class TagContents(BaseModel):
     tag_id: int
 
 
-class TagContentsResponse(Content):
+class TagContentsResponse(ContentModel):
     id: int
     type: str
 

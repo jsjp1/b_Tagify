@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from app.schemas.common import Content
+from app.schemas.common import ContentModel
 from pydantic import BaseModel, Field
 
 
@@ -29,7 +29,7 @@ class UserContents(BaseModel):
     id: int
 
 
-class UserContentsResponse(Content):
+class UserContentsResponse(ContentModel):
     id: int
     type: str
 
@@ -40,14 +40,14 @@ class UserBookmark(BaseModel):
     user_id: int
 
 
-class UserBookmarkResponse(Content):
+class UserBookmarkResponse(ContentModel):
     id: int
     type: str
 
     model_config = {"from_attributes": True}
 
 
-class ContentPost(Content):
+class ContentPost(ContentModel):
     user_id: int
     bookmark: bool
 
@@ -74,7 +74,7 @@ class ContentPostResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class ContentPutRequest(Content):
+class ContentPutRequest(ContentModel):
     pass
 
 
@@ -85,6 +85,6 @@ class ContentPutResponse(BaseModel):
 
 
 class SearchContentResponse(BaseModel):
-    contents: List[Content]
+    contents: List[ContentModel]
 
     model_config = {"from_attributes": True}

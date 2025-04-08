@@ -17,10 +17,13 @@ from app.schemas.content import (
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
-from sqlalchemy import and_, desc, insert
+from sqlalchemy import and_, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
+
+from server.app.models import content_tag
+from server.app.schemas.common import ContentModel
 
 
 class ContentService:
@@ -286,9 +289,30 @@ class ContentService:
     @staticmethod
     async def get_search_contents(
         user_id: int, keyword: str, db: Session
-    ) -> List[dict]:
+    ) -> List[ContentModel]:
         """
         keyword에 근접한 content 반환
         todo: 추후 변경?
         """
-        pass
+        keyword_pattern = f"%{keyword}%"
+
+        db_contents = (
+            db.query(Content)
+            .outerjoin(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
+            .outerjoin(Tag, content_tag_association.c.tag_id == Tag.id)
+            .filter(
+                Content.user_id == user_id,
+                or_(
+                    Content.title.ilike(keyword_pattern),
+                    Content.description.ilike(keyword_pattern),
+                    Tag.tagname.ilike(keyword_pattern),
+                ),
+            )
+            .distinct()
+            .order_by(desc(Content.created_at))
+        )
+
+        return db_contents
