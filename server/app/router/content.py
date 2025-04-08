@@ -2,12 +2,20 @@ from typing import List
 
 from app.db import get_db
 from app.schemas.common import ContentModel, DefaultSuccessResponse
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 ContentPost, ContentPostResponse,
-                                 ContentPutRequest, ContentPutResponse,
-                                 SearchContentResponse, TagResponse,
-                                 UserBookmark, UserBookmarkResponse,
-                                 UserContents, UserContentsResponse)
+from app.schemas.content import (
+    ContentAnalyze,
+    ContentAnalyzeResponse,
+    ContentPost,
+    ContentPostResponse,
+    ContentPutRequest,
+    ContentPutResponse,
+    SearchContentResponse,
+    TagResponse,
+    UserBookmark,
+    UserBookmarkResponse,
+    UserContents,
+    UserContentsResponse,
+)
 from app.services.content import ContentService
 from app.services.post import PostService
 from app.services.video import VideoService
@@ -190,9 +198,17 @@ async def search(
                 favicon=content.favicon,
                 description=content.description,
                 bookmark=content.bookmark,
-                video_length=content.video_length,
-                body=content.body,
-                tags=[tag.tagname for tag in content.tags],
+                **(
+                    {"video_length": content.video_metadata.video_length}
+                    if getattr(content, "video_metadata", None)
+                    else {}
+                ),
+                **(
+                    {"body": content.post_metadata.body}
+                    if getattr(content, "post_metadata", None)
+                    else {}
+                ),
+                tags=([tag.tagname for tag in content.tags] if content.tags else []),
             )
             for content in contents
         ]
