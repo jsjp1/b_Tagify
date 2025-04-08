@@ -53,7 +53,7 @@ class PostService:
         """
         db에 저장할 Content 데이터 추출 후 반환
         """
-        if url[-1] != '/': 
+        if not url.endswith("/"): 
             url = url + "/"
         
         response = requests.get(
