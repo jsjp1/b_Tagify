@@ -8,12 +8,8 @@ from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.common import ContentModel
-from app.schemas.content import (
-    ContentPost,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -77,7 +73,7 @@ class ContentService:
             )
             .first()
         )
-        if db_content:
+        if db_content and content.url != "":
             raise HTTPException(status_code=400, detail="Content already exists")
 
         new_content = Content(
