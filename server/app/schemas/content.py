@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from app.schemas.common import ContentModel
+from app.schemas.common import ContentModel, ContentResponseModel
 from pydantic import BaseModel, Field
 
 
@@ -85,6 +85,6 @@ class ContentPutResponse(BaseModel):
 
 
 class SearchContentResponse(BaseModel):
-    contents: List[ContentModel]
+    contents: List[ContentResponseModel]
 
     model_config = {"from_attributes": True}

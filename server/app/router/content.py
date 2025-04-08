@@ -192,6 +192,7 @@ async def search(
     return SearchContentResponse(
         contents=[
             ContentModel(
+                id=content.id,
                 url=content.url,
                 title=content.title,
                 thumbnail=content.thumbnail,

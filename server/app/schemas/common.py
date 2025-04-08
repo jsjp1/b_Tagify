@@ -19,3 +19,18 @@ class ContentModel(BaseModel):
     tags: List[str]
 
     model_config = {"from_attributes": True}
+
+
+class ContentResponseModel(BaseModel):
+    id: int
+    url: str
+    title: str
+    thumbnail: Optional[str]
+    favicon: Optional[str]
+    description: Optional[str]
+    bookmark: bool
+    video_length: Optional[int] = Field(default=0)
+    body: Optional[str] = Field(default="")
+    tags: List[str]
+
+    model_config = {"from_attributes": True}
