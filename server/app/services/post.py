@@ -3,17 +3,16 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from app.models.content import Content, ContentTypeEnum
-from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
-from config import Settings
 from fastapi import HTTPException
-from sqlalchemy import and_, desc, insert
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 
 
 class PostService:
@@ -66,9 +65,7 @@ class PostService:
             allow_redirects=False,
         )
 
-        response.encoding = (
-            response.apparent_encoding
-        )  # 특정 사이트 글자 깨져서 나오는 문제 해결
+        response.encoding = response.apparent_encoding  # 특정 사이트 글자 깨져서 나오는 문제 해결
         html = response.text
 
         bs = BeautifulSoup(html, "html.parser")
@@ -111,13 +108,12 @@ class PostService:
         """
         post 정보 추출 후 반환
         """
-        db_content = (
-            db.query(Content)
-            .filter(
-                and_(Content.url == content.url, Content.user_id == content.user_id)
-            )
-            .first()
+        stmt = select(Content).where(
+            and_(Content.url == content.url, Content.user_id == content.user_id)
         )
+        result = await db.execute(stmt)
+        db_content = result.scalar_one_or_none()
+
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 
@@ -140,21 +136,18 @@ class PostService:
         """
         유저가 소유한 포스트 정보를 모두 반환
         """
-        contents = (
-            db.query(Content)
-            .filter(Content.user.has(oauth_id=user.oauth_id))
-            .filter(Content.content_type == ContentTypeEnum.POST)
+        stmt = (
+            select(Content)
+            .join(User)
+            .where(User.oauth_id == user.oauth_id)
+            .where(Content.content_type == ContentTypeEnum.POST)
             .options(
-                joinedload(Content.tags),
-                joinedload(Content.post_metadata),
+                selectinload(Content.tags),
+                selectinload(Content.post_metadata),
             )
             .order_by(desc(Content.id))
-            .all()
         )
 
-        return contents
-        return contents
-        return contents
-        return contents
-        return contents
+        result = await db.execute(stmt)
+        contents = result.scalars().all()
         return contents

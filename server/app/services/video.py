@@ -3,15 +3,15 @@ from urllib.parse import parse_qs, urlparse
 
 import isodate
 from app.models.content import Content, ContentTypeEnum
-from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
-from sqlalchemy import and_, desc, insert
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -77,11 +77,11 @@ class VideoService:
             "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
             "favicon": "https://www.youtube.com/favicon.ico",
             "description": snippet.get("description", ""),
-            "tags": snippet.get("tags", []),  # TODO: tags 처리 -> llm api
+            "tags": snippet.get("tags", []),
             "length": VideoService._convert_duration_to_seconds(
                 content_details.get("duration", "")
             ),
-            "summation": "",  # TODO: caption 관련 처리
+            "summation": "",
         }
 
         return video_info
@@ -93,13 +93,13 @@ class VideoService:
         """
         video 정보 추출 후 반환
         """
-        db_content = (
-            db.query(Content)
-            .filter(
+        result = await db.execute(
+            select(Content).where(
                 and_(Content.url == content.url, Content.user_id == content.user_id)
             )
-            .first()
         )
+        db_content = result.scalars().first()
+
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
 
@@ -124,17 +124,19 @@ class VideoService:
         """
         유저가 소유한 비디오 정보를 모두 반환
         """
-        contents = (
-            db.query(Content)
-            .filter(Content.user.has(id=user.id))
-            .filter(Content.content_type == ContentTypeEnum.VIDEO)
+        stmt = (
+            select(Content)
             .options(
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
             )
+            .where(
+                Content.user_id == user.id,
+                Content.content_type == ContentTypeEnum.VIDEO
+            )
             .order_by(desc(Content.created_at))
-            .all()
         )
+        result = await db.execute(stmt)
+        contents = result.scalars().all()
 
-        return contents
         return contents

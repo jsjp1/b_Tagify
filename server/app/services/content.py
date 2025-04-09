@@ -7,21 +7,16 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.common import ContentModel
-from app.schemas.content import (
-    ContentPost,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql import func
 
 
 class ContentService:
@@ -32,19 +27,18 @@ class ContentService:
         """
         유저가 소유한 모든 콘텐츠 정보를 반환
         """
-        contents = (
-            db.query(Content)
-            .filter(Content.user.has(id=user.id))
+        stmt = (
+            select(Content)
+            .where(Content.user_id == user.id)
             .options(
                 joinedload(Content.tags),
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
             .order_by(desc(Content.created_at))
-            .all()
         )
-
-        return contents
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @staticmethod
     async def get_user_all_sub_contents(
@@ -67,19 +61,18 @@ class ContentService:
         """
         content 정보 db에 저장 (content, metadata, tag, content_tag)
         """
-        db_user = db.query(User).filter(User.id == content.user_id).first()
+        result = await db.execute(select(User).where(User.id == content.user_id))
+        db_user = result.scalar_one_or_none()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User with id {content.user_id} not found"
             )
 
-        db_content = (
-            db.query(Content)
-            .filter(
-                and_(Content.url == content.url, Content.user_id == content.user_id)
-            )
-            .first()
+        stmt = select(Content).where(
+            and_(Content.url == content.url, Content.user_id == content.user_id)
         )
+        result = await db.execute(stmt)
+        db_content = result.scalar_one_or_none()
         if db_content and content.url != "":
             raise HTTPException(status_code=400, detail="Content already exists")
 
@@ -94,8 +87,8 @@ class ContentService:
             content_type=content_type,
         )
         db.add(new_content)
-        db.flush()
-        db.refresh(new_content)
+        await db.flush()
+        await db.refresh(new_content)
 
         if content_type == "video":
             video_metadata = VideoMetadata(
@@ -113,10 +106,8 @@ class ContentService:
             raise HTTPException(status_code=404, detail="Unsupported content type")
 
         tag_list = content.tags
-        existing_tags = {
-            tag.tagname: tag
-            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
-        }
+        result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
+        existing_tags = {tag.tagname: tag for tag in result.scalars().all()}
 
         new_tags = []
         for tagname in tag_list:
@@ -125,10 +116,11 @@ class ContentService:
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
-        db.flush()
-        existing_tags.update({tag.tagname: tag for tag in new_tags})
+        await db.flush()
+        for tag in new_tags:
+            existing_tags[tag.tagname] = tag
 
-        db.execute(
+        await db.execute(
             insert(content_tag_association),
             [
                 {"content_id": new_content.id, "tag_id": tag.id}
@@ -136,7 +128,7 @@ class ContentService:
             ],
         )
 
-        db.commit()
+        await db.commit()
 
         return {"id": new_content.id, "tags": [tag for tag in existing_tags.values()]}
 
@@ -145,16 +137,15 @@ class ContentService:
         """
         콘텐츠 북마크 등록 <-> 해제 토글
         """
-        content = (
-            db.query(Content).with_for_update().filter(Content.id == content_id).first()
+        result = await db.execute(
+            select(Content).where(Content.id == content_id).with_for_update()
         )
+        content = result.scalar_one_or_none()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
 
         content.bookmark = not content.bookmark
-        db.commit()
-
-        return
+        await db.commit()
 
     @staticmethod
     async def get_bookmarked_contents(
@@ -163,15 +154,13 @@ class ContentService:
         """
         북마크로 저장돼있는 콘텐츠 반환
         """
-        contents = (
-            db.query(Content)
-            .filter(Content.user_id == user.user_id)
-            .filter(Content.bookmark == True)
+        stmt = (
+            select(Content)
+            .where(and_(Content.user_id == user.user_id, Content.bookmark == True))
             .order_by(desc(Content.created_at))
-            .all()
         )
-
-        return contents
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @staticmethod
     async def delete_content(content_id: int, db: AsyncSession):
@@ -179,51 +168,48 @@ class ContentService:
         특정 콘텐츠 삭제
         """
 
-        content = db.query(Content).filter(Content.id == content_id).first()
+        result = await db.execute(select(Content).where(Content.id == content_id))
+        content = result.scalar_one_or_none()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
 
-        # 해당 콘텐츠와 관계된, 다른 콘텐츠와는 관계되지 않은 모든 태그 삭제
         orphan_tags = []
         for tag in content.tags:
-            other_content_tags = (
-                db.query(content_tag_association)
-                .filter(content_tag_association.c.tag_id == tag.id)
-                .filter(content_tag_association.c.content_id != content_id)
-                .count()
+            result = await db.execute(
+                select(content_tag_association)
+                .where(content_tag_association.c.tag_id == tag.id)
+                .where(content_tag_association.c.content_id != content_id)
             )
-            article_count = (  # 엮여있는 article이 존재해도 삭제 X
-                db.query(article_tag_association)
-                .filter(article_tag_association.c.tag_id == tag.id)
-                .count()
+            other_content_tags = result.rowcount
+
+            result = await db.execute(
+                select(article_tag_association).where(
+                    article_tag_association.c.tag_id == tag.id
+                )
             )
+            article_count = result.rowcount
+
             if other_content_tags == 0 and article_count == 0:
                 orphan_tags.append(tag)
 
         for tag in orphan_tags:
-            db.delete(tag)
+            await db.delete(tag)
 
-        video_metadata = (
-            db.query(VideoMetadata)
-            .filter(VideoMetadata.content_id == content_id)
-            .delete()
+        await db.execute(
+            select(VideoMetadata).where(VideoMetadata.content_id == content_id)
         )
-        post_metadata = (
-            db.query(PostMetadata)
-            .filter(PostMetadata.content_id == content_id)
-            .delete()
+        await db.execute(
+            select(PostMetadata).where(PostMetadata.content_id == content_id)
         )
 
         try:
-            db.delete(content)
-            db.commit()
+            await db.delete(content)
+            await db.commit()
         except IntegrityError:
-            db.rollback()
+            await db.rollback()
             raise HTTPException(
                 status_code=500, detail="DB error while deleting content"
             )
-
-        return
 
     @staticmethod
     async def put_content(
@@ -235,11 +221,11 @@ class ContentService:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
         """
-        db_content = (
-            db.query(Content)
-            .filter(and_(Content.id == content_id, Content.user_id == user_id))
-            .first()
+        stmt = select(Content).where(
+            and_(Content.id == content_id, Content.user_id == user_id)
         )
+        result = await db.execute(stmt)
+        db_content = result.scalar_one_or_none()
 
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
@@ -259,53 +245,45 @@ class ContentService:
         ]
         for tag in tags_to_remove:
             db_content.tags.remove(tag)
-
             if len(tag.contents) == 0:
-                db.delete(tag)
+                await db.delete(tag)
             else:
                 return_tags.append({"id": tag.id, "tagname": tag.tagname})
 
         tags_to_add = new_tag_names - existing_tag_names
         for tag_name in tags_to_add:
-            tag = (
-                db.query(Tag)
-                .filter(and_(Tag.tagname == tag_name, Tag.user_id == user_id))
-                .first()
+            result = await db.execute(
+                select(Tag).where(and_(Tag.tagname == tag_name, Tag.user_id == user_id))
             )
+            tag = result.scalar_one_or_none()
             if not tag:
-                tag = Tag(
-                    user_id=db_content.user_id,
-                    tagname=tag_name,
-                )
+                tag = Tag(user_id=db_content.user_id, tagname=tag_name)
                 db.add(tag)
-                db.flush()
+                await db.flush()
 
             db_content.tags.append(tag)
             return_tags.append({"id": tag.id, "tagname": tag.tagname})
 
-        db.commit()
-        db.refresh(db_content)
+        await db.commit()
+        await db.refresh(db_content)
 
         return return_tags
 
     @staticmethod
     async def get_search_contents(
         user_id: int, keyword: str, db: AsyncSession
-    ) -> List[ContentModel]:
+    ) -> List[Content]:
         """
         keyword에 근접한 content 반환
         todo: 추후 변경?
         """
         keyword_pattern = f"%{keyword}%"
 
-        db_contents = (
-            db.query(Content)
-            .outerjoin(
-                content_tag_association,
-                Content.id == content_tag_association.c.content_id,
-            )
+        stmt = (
+            select(Content)
+            .outerjoin(content_tag_association, Content.id == content_tag_association.c.content_id)
             .outerjoin(Tag, content_tag_association.c.tag_id == Tag.id)
-            .filter(
+            .where(
                 Content.user_id == user_id,
                 or_(
                     Content.title.ilike(keyword_pattern),
@@ -317,4 +295,5 @@ class ContentService:
             .order_by(desc(Content.created_at))
         )
 
-        return db_contents
+        result = await db.execute(stmt)
+        return result.scalars().all()

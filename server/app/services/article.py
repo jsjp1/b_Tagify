@@ -10,16 +10,10 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleEdit,
-    ArticleModel,
-)
+from app.schemas.article import (ArticleCreate, ArticleDelete, ArticleDownload,
+                                 ArticleEdit)
 from fastapi import HTTPException
-from sqlalchemy import and_, desc, func
+from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -31,17 +25,16 @@ class ArticleService:
         """
         article db에 저장 후 id 반환
         """
-        db_user = db.query(User).filter(User.id == article.user_id).first()
+        result = await db.execute(select(User).where(User.id == article.user_id))
+        db_user = result.scalars().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User id {article.user_id} does not exists"
             )
 
         tag_list = article.tags
-        existing_tags = {
-            tag.tagname: tag
-            for tag in db.query(Tag).filter(Tag.tagname.in_(tag_list)).all()
-        }
+        result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
+        existing_tags = {tag.tagname: tag for tag in result.scalars().all()}
 
         new_tags = []
         for tagname in tag_list:
@@ -50,7 +43,7 @@ class ArticleService:
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
-        db.flush()
+        await db.flush()
         all_tags = list(existing_tags.values()) + new_tags
 
         new_article = Article(
@@ -65,10 +58,10 @@ class ArticleService:
 
         try:
             db.add(new_article)
-            db.commit()
-            db.refresh(new_article)
+            await db.commit()
+            await db.refresh(new_article)
         except IntegrityError:
-            db.rollback()
+            await db.rollback()
             raise HTTPException(
                 status_code=500, detail="DB error while creating article"
             )
@@ -82,7 +75,8 @@ class ArticleService:
         """
         특정 article의 정보 수정 후 id 반환
         """
-        db_article = db.query(Article).filter(Article.id == article_id).first()
+        result = await db.execute(select(Article).where(Article.id == article_id))
+        db_article = result.scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400,
@@ -92,20 +86,20 @@ class ArticleService:
         db_article.title = article.title
         db_article.body = article.body
 
-        existing_tags = db.query(Tag).filter(Tag.tagname.in_(article.tags)).all()
+        result = await db.execute(select(Tag).where(Tag.tagname.in_(article.tags)))
+        existing_tags = result.scalars().all()
         existing_tags_names = {tag.tagname for tag in existing_tags}
 
         new_tag_names = set(article.tags) - existing_tags_names
-
         new_tags = [Tag(tagname=name) for name in new_tag_names]
         db.add_all(new_tags)
-        db.commit()
-        db.refresh(db_article)
+        await db.commit()
+        await db.refresh(db_article)
 
         all_tags = existing_tags + new_tags
         db_article.tags = all_tags
 
-        db.commit()
+        await db.commit()
 
         return db_article.id
 
@@ -114,7 +108,8 @@ class ArticleService:
         """
         특정 user의 특정 article 삭제 후 id 반환
         """
-        db_article = db.query(Article).filter(Article.id == article.article_id).first()
+        result = await db.execute(select(Article).where(Article.id == article.article_id))
+        db_article = result.scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400,
@@ -128,10 +123,10 @@ class ArticleService:
             )
 
         try:
-            db.delete(db_article)
-            db.commit()
+            await db.delete(db_article)
+            await db.commit()
         except IntegrityError:
-            db.rollback()
+            await db.rollback()
             raise HTTPException(
                 status_code=500, detail="DB error while deleting article"
             )
@@ -145,16 +140,14 @@ class ArticleService:
         """
         특정 유저의 offset으로부터 limit만큼의 article 반환
         """
-        db_articles = (
-            db.query(Article)
-            .filter(Article.user_id == user_id)
+        result = await db.execute(
+            select(Article)
+            .where(Article.user_id == user_id)
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def get_all_articles_limit(
@@ -163,17 +156,15 @@ class ArticleService:
         """
         offset으로부터 limit 개수의 article 반환
         """
-        db_articles = (
-            db.query(Article)
+        result = await db.execute(
+            select(Article)
             .join(User, User.id == Article.user_id)
             .options(joinedload(Article.user))
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_popular_articles(
@@ -182,15 +173,13 @@ class ArticleService:
         """
         다운로드 수 내림차순으로 offset부터 limit만큼 articles 반환
         """
-        db_articles = (
-            db.query(Article)
+        result = await db.execute(
+            select(Article)
             .order_by(desc(Article.down_count))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def get_hot_articles(
@@ -202,13 +191,12 @@ class ArticleService:
         """
         time_threshold = datetime.utcnow() - timedelta(hours=24)
 
-        last_article_time = db.query(func.max(Article.created_at)).scalar()
+        result = await db.execute(select(func.max(Article.created_at)))
+        last_article_time = result.scalar()
 
-        db_articles = (
-            db.query(
-                Article,
-            )
-            .filter(
+        result = await db.execute(
+            select(Article)
+            .where(
                 and_(
                     Article.created_at >= (last_article_time - timedelta(hours=24)),
                     Article.created_at <= last_article_time,
@@ -217,10 +205,8 @@ class ArticleService:
             .order_by(desc(Article.down_count))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def get_upvote_articles(
@@ -229,17 +215,13 @@ class ArticleService:
         """
         upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
         """
-        db_articles = (
-            db.query(
-                Article,
-            )
+        result = await db.execute(
+            select(Article)
             .order_by(desc(Article.up_count))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def get_newest_articles(
@@ -248,17 +230,13 @@ class ArticleService:
         """
         created_at 내림차순 offset부터 limit만큼 articles 반환
         """
-        db_articles = (
-            db.query(
-                Article,
-            )
+        result = await db.execute(
+            select(Article)
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def get_random_articles(
@@ -267,17 +245,13 @@ class ArticleService:
         """
         offset부터 limit만큼 임의의 articles 반환
         """
-        db_articles = (
-            db.query(
-                Article,
-            )
+        result = await db.execute(
+            select(Article)
             .order_by(func.random())
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
 
     @staticmethod
     async def download_article(
@@ -286,14 +260,16 @@ class ArticleService:
         """
         article에 존재하는 encoded_content 파싱 및 user에 저장 후 tag id 반환
         """
-        db_user = db.query(User).filter(User.id == article.user_id).first()
+        result = await db.execute(select(User).where(User.id == article.user_id))
+        db_user = result.scalars().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User id {article.user_id} does not exists"
             )
 
-        db_article = db.query(Article).filter(Article.id == article_id).first()
-        if not db_user:
+        result = await db.execute(select(Article).where(Article.id == article_id))
+        db_article = result.scalars().first()
+        if not db_article:
             raise HTTPException(
                 status_code=400, detail=f"Article id {article_id} does not exists"
             )
@@ -306,15 +282,15 @@ class ArticleService:
         contents = json.loads(decompressed_data)["contents"]
 
         # 태그 새로 생성
-        db_tag = db.query(Tag).filter(Tag.tagname == article.tagname).first()
+        result = await db.execute(select(Tag).where(Tag.tagname == article.tagname))
+        db_tag = result.scalars().first()
         if not db_tag:
             db_tag = Tag(tagname=article.tagname, user_id=db_user.id)
             db.add(db_tag)
-            db.flush()
-            db.refresh(db_tag)
+            await db.flush()
+            await db.refresh(db_tag)
 
         for content in contents:
-            # TODO: content.type에 따른 metadata 저장 -> 아예 저장 안하기?
             db_content = Content(
                 user_id=db_user.id,
                 url=content["url"],
@@ -327,18 +303,18 @@ class ArticleService:
             )
 
             db.add(db_content)
-            db.flush()
-            db.refresh(db_content)
+            await db.flush()
+            await db.refresh(db_content)
 
             stmt = content_tag_association.insert().values(
                 content_id=db_content.id,
                 tag_id=db_tag.id,
             )
-            db.execute(stmt)
+            await db.execute(stmt)
 
         db_article.down_count = db_article.down_count + 1
 
-        db.commit()
+        await db.commit()
 
         return db_tag.id
 
@@ -347,8 +323,8 @@ class ArticleService:
         """
         article에 연결된 tag 중에 가장 다운로드 수가 많은 tags, count만큼 반환
         """
-        popular_tags = (
-            db.query(
+        result = await db.execute(
+            select(
                 Tag.id,
                 Tag.tagname,
                 func.sum(Article.down_count).label("total_down_count"),
@@ -358,16 +334,14 @@ class ArticleService:
             .group_by(Tag.id, Tag.tagname)
             .order_by(desc("total_down_count"))
             .limit(count)
-            .all()
         )
-
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
                 "total_down_count": tag.total_down_count,
             }
-            for tag in popular_tags
+            for tag in result.all()
         ]
 
     @staticmethod
@@ -378,17 +352,18 @@ class ArticleService:
         """
         time_threshold = datetime.utcnow() - timedelta(hours=24)
 
-        last_article_time = db.query(func.max(Article.created_at)).scalar()
+        result = await db.execute(select(func.max(Article.created_at)))
+        last_article_time = result.scalar()
 
-        hot_tags = (
-            db.query(
+        result = await db.execute(
+            select(
                 Tag.id,
                 Tag.tagname,
                 func.sum(Article.down_count).label("total_down_count"),
             )
             .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
             .join(Article, article_tag_association.c.article_id == Article.id)
-            .filter(
+            .where(
                 and_(
                     Article.created_at >= (last_article_time - timedelta(hours=24)),
                     Article.created_at <= last_article_time,
@@ -397,16 +372,14 @@ class ArticleService:
             .group_by(Tag.id, Tag.tagname)
             .order_by(desc("total_down_count"))
             .limit(count)
-            .all()
         )
-
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
                 "total_down_count": tag.total_down_count,
             }
-            for tag in hot_tags
+            for tag in result.all()
         ]
 
     @staticmethod
@@ -414,8 +387,8 @@ class ArticleService:
         """
         가장 up vote가 많은 tags, count만큼 반환
         """
-        upvote_tags = (
-            db.query(
+        result = await db.execute(
+            select(
                 Tag.id,
                 Tag.tagname,
                 func.sum(Article.up_count).label("total_up_count"),
@@ -425,16 +398,14 @@ class ArticleService:
             .group_by(Tag.id, Tag.tagname)
             .order_by(desc("total_up_count"))
             .limit(count)
-            .all()
         )
-
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
                 "total_up_count": tag.total_up_count,
             }
-            for tag in upvote_tags
+            for tag in result.all()
         ]
 
     @staticmethod
@@ -442,8 +413,8 @@ class ArticleService:
         """
         가장 최신의 tags, count만큼 반환
         """
-        newest_tags = (
-            db.query(
+        result = await db.execute(
+            select(
                 Tag.id,
                 Tag.tagname,
             )
@@ -452,15 +423,13 @@ class ArticleService:
             .order_by(desc(Tag.id))
             .distinct(Tag.id)
             .limit(count)
-            .all()
         )
-
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
             }
-            for tag in newest_tags
+            for tag in result.all()
         ]
 
     @staticmethod
@@ -470,13 +439,13 @@ class ArticleService:
         count가 -1일시 전부 반환
         """
         query = (
-            db.query(
+            select(
                 Tag.id,
                 Tag.tagname,
             )
             .join(article_tag_association, Tag.id == article_tag_association.c.tag_id)
             .join(Article, article_tag_association.c.article_id == Article.id)
-            .filter(Article.user_id == user_id)
+            .where(Article.user_id == user_id)
             .order_by(desc(Tag.id))
             .distinct(Tag.id)
         )
@@ -484,14 +453,13 @@ class ArticleService:
         if count != -1:
             query = query.limit(count)
 
-        owned_tags = query.all()
-
+        result = await db.execute(query)
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
             }
-            for tag in owned_tags
+            for tag in result.all()
         ]
 
     @staticmethod
@@ -499,8 +467,8 @@ class ArticleService:
         """
         랜덤 tags, count만큼 반환
         """
-        random_tags = (
-            db.query(
+        result = await db.execute(
+            select(
                 Tag.id,
                 Tag.tagname,
             )
@@ -509,28 +477,24 @@ class ArticleService:
             .group_by(Tag.id, Tag.tagname)
             .order_by(func.random())
             .limit(count)
-            .all()
         )
-
         return [
             {
                 "id": tag.id,
                 "tagname": tag.tagname,
             }
-            for tag in random_tags
+            for tag in result.all()
         ]
 
     @staticmethod
     async def get_articles_by_tag_limit(
         tag_id: int, limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
-        db_articles = (
-            db.query(Article)
-            .filter(Article.tags.any(Tag.id == tag_id))
+        result = await db.execute(
+            select(Article)
+            .where(Article.tags.any(Tag.id == tag_id))
             .order_by(desc(Article.updated_at))
             .limit(limit)
             .offset(offset)
-            .all()
         )
-
-        return db_articles
+        return result.scalars().all()
