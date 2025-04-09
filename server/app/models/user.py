@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from app.models.base import Base
-from sqlalchemy import BIGINT, Column, DateTime, String
+from sqlalchemy import BIGINT, Boolean, Column, DateTime, String
 from sqlalchemy.orm import relationship
 
 
@@ -14,6 +14,7 @@ class User(Base):
     oauth_id = Column(String, unique=True, nullable=False)
     email = Column(String, nullable=True)
     profile_image = Column(String, nullable=True)
+    is_premium = Column(Boolean, default=False, nullable=False)
 
     created_at = Column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False

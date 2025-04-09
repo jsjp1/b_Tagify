@@ -2,26 +2,14 @@ from typing import List
 
 import jwt
 from app.models.user import User
-from app.models.video_metadata import VideoMetadata
-from app.schemas.user import (
-    AllUsersResponse,
-    TokenRefresh,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateProfileImage,
-)
-from app.util.auth import (
-    create_access_token,
-    decode_token,
-    verify_apple_token,
-    verify_google_token,
-)
+from app.schemas.user import (TokenRefresh, UserLogin, UserUpdateName,
+                              UserUpdateProfileImage)
+from app.util.auth import (create_access_token, decode_token,
+                           verify_apple_token, verify_google_token)
 from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from sqlalchemy import and_
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -46,6 +34,7 @@ class UserService:
                 oauth_id=user.oauth_id,
                 email=user.email,
                 profile_image=user.profile_image,
+                is_premium=False,
             )
             db.add(db_user)
             db.commit()
@@ -72,6 +61,7 @@ class UserService:
                 oauth_id=apple_id,
                 email=apple_user_info.get("email", ""),
                 profile_image=user.profile_image,
+                is_premium=False,
             )
             db.add(db_user)
             db.commit()
