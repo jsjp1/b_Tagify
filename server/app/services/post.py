@@ -139,7 +139,7 @@ class PostService:
         stmt = (
             select(Content)
             .join(User)
-            .where(User.oauth_id == user.oauth_id)
+            .where(User.id == user.id)
             .where(Content.content_type == ContentTypeEnum.POST)
             .options(
                 selectinload(Content.tags),

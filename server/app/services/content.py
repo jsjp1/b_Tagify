@@ -38,7 +38,7 @@ class ContentService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_user_all_sub_contents(
