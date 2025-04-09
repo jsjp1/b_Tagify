@@ -2,29 +2,21 @@ from typing import List
 
 import jwt
 from app.models.user import User
-from app.schemas.user import (
-    TokenRefresh,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateProfileImage,
-)
-from app.util.auth import (
-    create_access_token,
-    decode_token,
-    verify_apple_token,
-    verify_google_token,
-)
+from app.schemas.user import (TokenRefresh, UserLogin, UserUpdateName,
+                              UserUpdateProfileImage)
+from app.util.auth import (create_access_token, decode_token,
+                           verify_apple_token, verify_google_token)
 from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserService:
     @staticmethod
-    async def login_google(user: UserLogin, db: Session, settings: Settings) -> User:
+    async def login_google(user: UserLogin, db: AsyncSession, settings: Settings) -> User:
         """
         google oauth 로그인 처리 -> 없을 경우 db에 저장
         """
@@ -51,7 +43,7 @@ class UserService:
         return db_user
 
     @staticmethod
-    async def login_apple(user: UserLogin, db: Session, settings: Settings) -> User:
+    async def login_apple(user: UserLogin, db: AsyncSession, settings: Settings) -> User:
         """
         Apple OAuth 로그인 처리 -> 없을 경우 db에 저장
         """
@@ -78,7 +70,7 @@ class UserService:
         return db_user
 
     @staticmethod
-    async def get_all_users(db: Session) -> List[User]:
+    async def get_all_users(db: AsyncSession) -> List[User]:
         """
         모든 사용자 정보를 가져오는 메서드
         """
@@ -106,7 +98,7 @@ class UserService:
             raise HTTPException(status_code=401, detail="Invalid token signature")
 
     @staticmethod
-    async def update_name(user: UserUpdateName, user_id: int, db: Session) -> int:
+    async def update_name(user: UserUpdateName, user_id: int, db: AsyncSession) -> int:
         """
         user 이름 변경 후 id 반환
         """
@@ -124,7 +116,7 @@ class UserService:
 
     @staticmethod
     async def update_profile_image(
-        user: UserUpdateProfileImage, user_id: int, db: Session
+        user: UserUpdateProfileImage, user_id: int, db: AsyncSession
     ) -> int:
         """
         user 프로필 사진 변경 후 id 반환

@@ -10,24 +10,19 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleEdit,
-    ArticleModel,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleDelete, ArticleDownload, ArticleEdit,
+                                 ArticleModel)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class ArticleService:
     @staticmethod
-    async def post_article(article: ArticleCreate, db: Session) -> int:
+    async def post_article(article: ArticleCreate, db: AsyncSession) -> int:
         """
         article db에 저장 후 id 반환
         """
@@ -76,7 +71,7 @@ class ArticleService:
         return new_article.id
 
     @staticmethod
-    async def put_article(article_id: int, article: ArticleEdit, db: Session) -> int:
+    async def put_article(article_id: int, article: ArticleEdit, db: AsyncSession) -> int:
         """
         특정 article의 정보 수정 후 id 반환
         """
@@ -108,7 +103,7 @@ class ArticleService:
         return db_article.id
 
     @staticmethod
-    async def delete_article(article: ArticleDelete, db: Session) -> int:
+    async def delete_article(article: ArticleDelete, db: AsyncSession) -> int:
         """
         특정 user의 특정 article 삭제 후 id 반환
         """
@@ -138,7 +133,7 @@ class ArticleService:
 
     @staticmethod
     async def get_all_user_articles_limit(
-        user_id: int, limit: int, offset: int, db: Session
+        user_id: int, limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         특정 유저의 offset으로부터 limit만큼의 article 반환
@@ -156,7 +151,7 @@ class ArticleService:
 
     @staticmethod
     async def get_all_articles_limit(
-        limit: int, offset: int, db: Session
+        limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         offset으로부터 limit 개수의 article 반환
@@ -175,7 +170,7 @@ class ArticleService:
 
     @staticmethod
     async def get_popular_articles(
-        limit: int, offset: int, db: Session
+        limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         다운로드 수 내림차순으로 offset부터 limit만큼 articles 반환
@@ -191,7 +186,7 @@ class ArticleService:
         return db_articles
 
     @staticmethod
-    async def get_hot_articles(limit: int, offset: int, db: Session) -> List[Article]:
+    async def get_hot_articles(limit: int, offset: int, db: AsyncSession) -> List[Article]:
         """
         마지막 article로부터 24시간 이내에 있는 articles 중
         가장 download 수 많은 articles, offset부터 limit만큼 반환
@@ -220,7 +215,7 @@ class ArticleService:
 
     @staticmethod
     async def get_upvote_articles(
-        limit: int, offset: int, db: Session
+        limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
@@ -239,7 +234,7 @@ class ArticleService:
 
     @staticmethod
     async def get_newest_articles(
-        limit: int, offset: int, db: Session
+        limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         created_at 내림차순 offset부터 limit만큼 articles 반환
@@ -258,7 +253,7 @@ class ArticleService:
 
     @staticmethod
     async def get_random_articles(
-        limit: int, offset: int, db: Session
+        limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         """
         offset부터 limit만큼 임의의 articles 반환
@@ -277,7 +272,7 @@ class ArticleService:
 
     @staticmethod
     async def download_article(
-        article: ArticleDownload, article_id: int, db: Session
+        article: ArticleDownload, article_id: int, db: AsyncSession
     ) -> int:
         """
         article에 존재하는 encoded_content 파싱 및 user에 저장 후 tag id 반환
@@ -339,7 +334,7 @@ class ArticleService:
         return db_tag.id
 
     @staticmethod
-    async def get_popular_tags(count: int, db: Session) -> List[dict]:
+    async def get_popular_tags(count: int, db: AsyncSession) -> List[dict]:
         """
         article에 연결된 tag 중에 가장 다운로드 수가 많은 tags, count만큼 반환
         """
@@ -367,7 +362,7 @@ class ArticleService:
         ]
 
     @staticmethod
-    async def get_hot_tags(count: int, db: Session) -> List[dict]:
+    async def get_hot_tags(count: int, db: AsyncSession) -> List[dict]:
         """
         마지막 article로부터 24시간 이내에 있는 articles 중
         가장 download 수 많은 tags, count만큼 반환
@@ -406,7 +401,7 @@ class ArticleService:
         ]
 
     @staticmethod
-    async def get_upvote_tags(count: int, db: Session) -> List[dict]:
+    async def get_upvote_tags(count: int, db: AsyncSession) -> List[dict]:
         """
         가장 up vote가 많은 tags, count만큼 반환
         """
@@ -434,7 +429,7 @@ class ArticleService:
         ]
 
     @staticmethod
-    async def get_newest_tags(count: int, db: Session) -> List[dict]:
+    async def get_newest_tags(count: int, db: AsyncSession) -> List[dict]:
         """
         가장 최신의 tags, count만큼 반환
         """
@@ -460,7 +455,7 @@ class ArticleService:
         ]
 
     @staticmethod
-    async def get_owned_tags(user_id: int, count: int, db: Session) -> List[dict]:
+    async def get_owned_tags(user_id: int, count: int, db: AsyncSession) -> List[dict]:
         """
         유저가 작성한 article의 tags, count만큼 반환
         count가 -1일시 전부 반환
@@ -491,7 +486,7 @@ class ArticleService:
         ]
 
     @staticmethod
-    async def get_random_tags(count: int, db: Session) -> List[dict]:
+    async def get_random_tags(count: int, db: AsyncSession) -> List[dict]:
         """
         랜덤 tags, count만큼 반환
         """
@@ -518,7 +513,7 @@ class ArticleService:
 
     @staticmethod
     async def get_articles_by_tag_limit(
-        tag_id: int, limit: int, offset: int, db: Session
+        tag_id: int, limit: int, offset: int, db: AsyncSession
     ) -> List[Article]:
         db_articles = (
             db.query(Article)

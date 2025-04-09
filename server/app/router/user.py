@@ -1,21 +1,14 @@
 from app.db import get_db
-from app.schemas.user import (
-    AllUsersResponse,
-    TokenRefresh,
-    TokenRefreshResponse,
-    User,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateNameResponse,
-    UserUpdateProfileImage,
-    UserUpdateProfileImageResponse,
-    UserWithTokens,
-)
+from app.schemas.user import (AllUsersResponse, TokenRefresh,
+                              TokenRefreshResponse, User, UserLogin,
+                              UserUpdateName, UserUpdateNameResponse,
+                              UserUpdateProfileImage,
+                              UserUpdateProfileImageResponse, UserWithTokens)
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
 from config import get_settings
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -27,7 +20,7 @@ def endpoint_test():
 
 @router.get("/")
 async def users(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllUsersResponse:
     db_users = await UserService.get_all_users(db)
 
@@ -39,7 +32,7 @@ async def users(
 @router.post("/login")
 async def login(
     request: UserLogin,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     settings=Depends(get_settings),
 ) -> UserWithTokens:
     if request.oauth_provider in ("google", "Google"):
@@ -71,7 +64,7 @@ async def refresh(
 async def update_name(
     request: UserUpdateName,
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> UserUpdateNameResponse:
     updated_user_id = await UserService.update_name(request, user_id, db)
     return UserUpdateNameResponse(id=updated_user_id)
@@ -81,7 +74,7 @@ async def update_name(
 async def update_name(
     request: UserUpdateProfileImage,
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> UserUpdateProfileImageResponse:
     updated_user_id = await UserService.update_profile_image(request, user_id, db)
     return UserUpdateProfileImageResponse(id=updated_user_id)

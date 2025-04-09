@@ -6,13 +6,13 @@ from app.schemas.comment import PostCommentRequest
 from fastapi import HTTPException
 from sqlalchemy import and_, asc, desc, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, joinedload
 
 
 class CommentService:
     @staticmethod
-    async def get_article_all_comments(article_id: int, db: Session) -> int:
+    async def get_article_all_comments(article_id: int, db: AsyncSession) -> int:
         """
         article id에 속하는 모든 comments 반환
         """
@@ -33,7 +33,7 @@ class CommentService:
 
     @staticmethod
     async def post_comment(
-        article_id: int, comment: PostCommentRequest, db: Session
+        article_id: int, comment: PostCommentRequest, db: AsyncSession
     ) -> int:
         """
         특정 article에 속하는 comment 등록 후 해당 comment 정보 반환
@@ -63,7 +63,7 @@ class CommentService:
         return new_comment.id
 
     @staticmethod
-    async def delete_comment(comment_id: int, db: Session) -> int:
+    async def delete_comment(comment_id: int, db: AsyncSession) -> int:
         """
         특정 comment 삭제 후 id 반환
         """

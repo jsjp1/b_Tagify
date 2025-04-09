@@ -1,21 +1,13 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (
-    TagContents,
-    TagContentsResponse,
-    TagDelete,
-    TagDeleteResponse,
-    TagPost,
-    TagPostResponse,
-    TagPut,
-    TagPutResponse,
-    UserTags,
-    UserTagsResponse,
-)
+from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
+                             TagDeleteResponse, TagPost, TagPostResponse,
+                             TagPut, TagPutResponse, UserTags,
+                             UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -28,7 +20,7 @@ def endpoint_test():
 @router.get("/user/{user_id}")
 async def tags(
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> List[UserTagsResponse]:
     request = UserTags(user_id=user_id)
     tags = await TagService.get_user_tags(request, db)
@@ -47,7 +39,7 @@ async def tags(
 async def create(
     user_id: int,
     request: TagPost,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> TagPostResponse:
     tag = await TagService.post_tag(user_id, request, db)
     return TagPostResponse(id=tag.id, tagname=tag.tagname, color=tag.color)
@@ -58,7 +50,7 @@ async def update_tag(
     user_id: int,
     tag_id: int,
     request: TagPut,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> TagPutResponse:
     tag_id = await TagService.update_tag(user_id, tag_id, request, db)
     return TagPutResponse.model_validate({"id": tag_id}, from_attributes=True)
@@ -68,7 +60,7 @@ async def update_tag(
 async def delete(
     user_id: int,
     request: TagDelete,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> TagDeleteResponse:
     tag_id = await TagService.delete_tag(user_id, request, db)
     return TagDeleteResponse.model_validate({"id": tag_id}, from_attributes=True)
@@ -77,7 +69,7 @@ async def delete(
 @router.get("/{tag_id}/contents/all")
 async def contents(
     tag_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> List[TagContentsResponse]:
     request = TagContents(tag_id=tag_id)
     contents = await TagService.get_tag_all_contents(request, db)
@@ -112,7 +104,7 @@ async def contents(
 async def contents(
     tag_id: int,
     content_type: str,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> List[TagContentsResponse]:
     request = TagContents(tag_id=tag_id)
     if content_type == "video":

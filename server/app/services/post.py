@@ -7,12 +7,14 @@ from app.models.content_tag import content_tag_association
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, insert
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class PostService:
@@ -105,7 +107,7 @@ class PostService:
 
     @staticmethod
     async def analyze_post(
-        content_type: str, content: ContentAnalyze, db: Session
+        content_type: str, content: ContentAnalyze, db: AsyncSession
     ) -> ContentAnalyzeResponse:
         """
         post 정보 추출 후 반환
@@ -135,7 +137,7 @@ class PostService:
         return content
 
     @staticmethod
-    async def get_user_all_posts(user: UserContents, db: Session) -> List[Content]:
+    async def get_user_all_posts(user: UserContents, db: AsyncSession) -> List[Content]:
         """
         유저가 소유한 포스트 정보를 모두 반환
         """
@@ -151,6 +153,7 @@ class PostService:
             .all()
         )
 
+        return contents
         return contents
         return contents
         return contents

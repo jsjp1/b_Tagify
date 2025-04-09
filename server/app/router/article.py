@@ -1,23 +1,13 @@
-from typing import List
-
 from app.db import get_db
-from app.schemas.article import (
-    AllArticlesLimitResponse,
-    ArticleCreate,
-    ArticleCreateResponse,
-    ArticleDelete,
-    ArticleDeleteResponse,
-    ArticleDownload,
-    ArticleDownloadResponse,
-    ArticleEdit,
-    ArticleEditResponse,
-    ArticleModel,
-    ArticleTagResponse,
-    TagArticleResponse,
-)
+from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
+                                 ArticleCreateResponse, ArticleDelete,
+                                 ArticleDeleteResponse, ArticleDownload,
+                                 ArticleDownloadResponse, ArticleEdit,
+                                 ArticleEditResponse, ArticleModel,
+                                 ArticleTagResponse, TagArticleResponse)
 from app.services.article import ArticleService
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/articles", tags=["articles"])
 
@@ -29,7 +19,7 @@ def endpoint_test():
 
 @router.post("/")
 async def create_article(
-    request: ArticleCreate, db: Session = Depends(get_db)
+    request: ArticleCreate, db: AsyncSession = Depends(get_db)
 ) -> ArticleCreateResponse:
     article_id = await ArticleService.post_article(request, db)
     return ArticleCreateResponse(id=article_id)
@@ -37,7 +27,7 @@ async def create_article(
 
 @router.put("/{article_id}")
 async def put_article(
-    article_id: int, request: ArticleEdit, db: Session = Depends(get_db)
+    article_id: int, request: ArticleEdit, db: AsyncSession = Depends(get_db)
 ) -> ArticleEditResponse:
     article_id = await ArticleService.put_article(article_id, request, db)
     return ArticleEditResponse(id=article_id)
@@ -45,7 +35,7 @@ async def put_article(
 
 @router.delete("/")
 async def delete_article(
-    request: ArticleDelete, db: Session = Depends(get_db)
+    request: ArticleDelete, db: AsyncSession = Depends(get_db)
 ) -> ArticleDeleteResponse:
     article_id = await ArticleService.delete_article(request, db)
     return ArticleDeleteResponse(id=article_id)
@@ -56,7 +46,7 @@ async def get_all_user_articles_limit(
     user_id: int,
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_all_user_articles_limit(
         user_id, limit, offset, db
@@ -86,7 +76,7 @@ async def get_all_user_articles_limit(
 async def get_all_articles_limit(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_all_articles_limit(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -114,7 +104,7 @@ async def get_all_articles_limit(
 async def get_popular_articles(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_popular_articles(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -142,7 +132,7 @@ async def get_popular_articles(
 async def get_hot_articles(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_hot_articles(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -170,7 +160,7 @@ async def get_hot_articles(
 async def get_hot_articles(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_upvote_articles(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -198,7 +188,7 @@ async def get_hot_articles(
 async def get_newest_articles(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_newest_articles(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -226,7 +216,7 @@ async def get_newest_articles(
 async def get_random_articles(
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> AllArticlesLimitResponse:
     articles = await ArticleService.get_random_articles(limit, offset, db)
     return AllArticlesLimitResponse(
@@ -254,7 +244,7 @@ async def get_random_articles(
 async def download_article(
     request: ArticleDownload,
     article_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleDownloadResponse:
     tag_id = await ArticleService.download_article(request, article_id, db)
     return ArticleDownloadResponse(tag_id=tag_id)
@@ -263,7 +253,7 @@ async def download_article(
 @router.get("/tags/popular/{count}")
 async def get_popular_tags(
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     popular_tags = await ArticleService.get_popular_tags(count, db)
     return ArticleTagResponse(tags=popular_tags)
@@ -272,7 +262,7 @@ async def get_popular_tags(
 @router.get("/tags/hot/{count}")
 async def get_hot_tags(
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     hot_tags = await ArticleService.get_hot_tags(count, db)
     return ArticleTagResponse(tags=hot_tags)
@@ -281,7 +271,7 @@ async def get_hot_tags(
 @router.get("/tags/upvote/{count}")
 async def get_upvote_tags(
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     upvote_tags = await ArticleService.get_upvote_tags(count, db)
     return ArticleTagResponse(tags=upvote_tags)
@@ -290,7 +280,7 @@ async def get_upvote_tags(
 @router.get("/tags/newest/{count}")
 async def get_newest_tags(
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     newest_tags = await ArticleService.get_newest_tags(count, db)
     return ArticleTagResponse(tags=newest_tags)
@@ -300,7 +290,7 @@ async def get_newest_tags(
 async def get_owned_tags(
     user_id: int,
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     owned_tags = await ArticleService.get_owned_tags(user_id, count, db)
     return ArticleTagResponse(tags=owned_tags)
@@ -309,7 +299,7 @@ async def get_owned_tags(
 @router.get("/tags/random/{count}")
 async def get_random_tags(
     count: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleTagResponse:
     random_tags = await ArticleService.get_random_tags(count, db)
     return ArticleTagResponse(tags=random_tags)
@@ -320,7 +310,7 @@ async def get_articles_by_tag(
     tag_id: int,
     limit: int,
     offset: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> TagArticleResponse:
     articles = await ArticleService.get_articles_by_tag_limit(tag_id, limit, offset, db)
     return TagArticleResponse(

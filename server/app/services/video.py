@@ -7,12 +7,14 @@ from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
 from sqlalchemy import and_, desc, insert
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 
 class VideoService:
@@ -87,7 +89,7 @@ class VideoService:
 
     @staticmethod
     async def analyze_video(
-        content_type: str, content: ContentAnalyze, db: Session, settings: Settings
+        content_type: str, content: ContentAnalyze, db: AsyncSession, settings: Settings
     ) -> ContentAnalyzeResponse:
         """
         video 정보 추출 후 반환
@@ -117,7 +119,7 @@ class VideoService:
         return content
 
     @staticmethod
-    async def get_user_all_videos(user: UserContents, db: Session) -> List[Content]:
+    async def get_user_all_videos(user: UserContents, db: AsyncSession) -> List[Content]:
         """
         유저가 소유한 비디오 정보를 모두 반환
         """
@@ -133,4 +135,5 @@ class VideoService:
             .all()
         )
 
+        return contents
         return contents

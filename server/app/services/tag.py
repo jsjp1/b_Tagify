@@ -8,13 +8,13 @@ from app.schemas.tag import TagContents, TagDelete, TagPost, TagPut, UserTags
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import exists
 
 
 class TagService:
     @staticmethod
-    async def get_user_tags(user: UserTags, db: Session) -> List[Tag]:
+    async def get_user_tags(user: UserTags, db: AsyncSession) -> List[Tag]:
         """
         유저가 가지고 있는 모든 태그 반환
         """
@@ -36,7 +36,7 @@ class TagService:
         return ordered_tags
 
     @staticmethod
-    async def get_tag_all_contents(tag: TagContents, db: Session) -> List[Content]:
+    async def get_tag_all_contents(tag: TagContents, db: AsyncSession) -> List[Content]:
         """
         태그와 매치되는 모든 콘텐츠 반환
         """
@@ -54,7 +54,7 @@ class TagService:
         return db_contents
 
     @staticmethod
-    async def get_tag_videos(tag: TagContents, db: Session) -> List[Content]:
+    async def get_tag_videos(tag: TagContents, db: AsyncSession) -> List[Content]:
         """
         태그와 매치되는 video 반환
         """
@@ -73,7 +73,7 @@ class TagService:
         return db_videos
 
     @staticmethod
-    async def get_tag_posts(tag: TagContents, db: Session) -> List[Content]:
+    async def get_tag_posts(tag: TagContents, db: AsyncSession) -> List[Content]:
         """
         태그와 매치되는 post 반환
         """
@@ -92,7 +92,7 @@ class TagService:
         return db_posts
 
     @staticmethod
-    async def post_tag(user_id: int, tag: TagPost, db: Session) -> Tag:
+    async def post_tag(user_id: int, tag: TagPost, db: AsyncSession) -> Tag:
         """
         특정 사용자가 동일한 태그를 생성했는지 검사 후, 태그 생성 및 ID 반환
         """
@@ -122,7 +122,7 @@ class TagService:
         return new_tag
 
     @staticmethod
-    async def update_tag(user_id: int, tag_id: int, tag: TagPut, db: Session) -> int:
+    async def update_tag(user_id: int, tag_id: int, tag: TagPut, db: AsyncSession) -> int:
         """
         태그 정보(이름, 색상) 수정 후 id 반환
         """
@@ -144,7 +144,7 @@ class TagService:
         return db_tag.id
 
     @staticmethod
-    async def delete_tag(user_id: int, tag: TagDelete, db: Session) -> int:
+    async def delete_tag(user_id: int, tag: TagDelete, db: AsyncSession) -> int:
         """
         콘텐츠 없는 빈 태그 삭제, 연관된 콘텐츠가 하나라도 있을시 예외 반환
         """

@@ -1,16 +1,12 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.comment import (
-    ArticleCommentsResponse,
-    CommentModel,
-    DeleteCommentResponse,
-    PostCommentRequest,
-    PostCommentResponse,
-)
+from app.schemas.comment import (ArticleCommentsResponse, CommentModel,
+                                 DeleteCommentResponse, PostCommentRequest,
+                                 PostCommentResponse)
 from app.services.comment import CommentService
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 
@@ -23,7 +19,7 @@ def endpoint_test():
 @router.get("/article/{article_id}")
 async def get_article_all_comments(
     article_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> ArticleCommentsResponse:
     comments = await CommentService.get_article_all_comments(article_id, db)
     return ArticleCommentsResponse(
@@ -48,7 +44,7 @@ async def get_article_all_comments(
 async def post_comment(
     article_id: int,
     request: PostCommentRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> PostCommentResponse:
     comment_id = await CommentService.post_comment(article_id, request, db)
     return PostCommentResponse(id=comment_id)
@@ -57,7 +53,7 @@ async def post_comment(
 @router.delete("/{comment_id}")
 async def delete_comment(
     comment_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> DeleteCommentResponse:
     comment_id = await CommentService.delete_comment(comment_id, db)
     return DeleteCommentResponse(id=comment_id)

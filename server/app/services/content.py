@@ -8,24 +8,21 @@ from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.common import ContentModel
-from app.schemas.content import (
-    ContentPost,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
 
 
 class ContentService:
     @staticmethod
-    async def get_user_all_contents(user: UserContents, db: Session) -> List[Content]:
+    async def get_user_all_contents(user: UserContents, db: AsyncSession) -> List[Content]:
         """
         유저가 소유한 모든 콘텐츠 정보를 반환
         """
@@ -45,7 +42,7 @@ class ContentService:
 
     @staticmethod
     async def get_user_all_sub_contents(
-        user: UserContents, content_type: str, db: Session
+        user: UserContents, content_type: str, db: AsyncSession
     ) -> List[Content]:
         """
         유저가 소유한 모든 서브 콘텐츠(비디오, 포스트, ...) 정보를 반환
@@ -59,7 +56,7 @@ class ContentService:
 
     @staticmethod
     async def post_content(
-        content_type: str, content: ContentPost, db: Session
+        content_type: str, content: ContentPost, db: AsyncSession
     ) -> dict:
         """
         content 정보 db에 저장 (content, metadata, tag, content_tag)
@@ -138,7 +135,7 @@ class ContentService:
         return {"id": new_content.id, "tags": [tag for tag in existing_tags.values()]}
 
     @staticmethod
-    async def toggle_bookmark(content_id: int, db: Session):
+    async def toggle_bookmark(content_id: int, db: AsyncSession):
         """
         콘텐츠 북마크 등록 <-> 해제 토글
         """
@@ -154,7 +151,7 @@ class ContentService:
         return
 
     @staticmethod
-    async def get_bookmarked_contents(user: UserBookmark, db: Session) -> List[Content]:
+    async def get_bookmarked_contents(user: UserBookmark, db: AsyncSession) -> List[Content]:
         """
         북마크로 저장돼있는 콘텐츠 반환
         """
@@ -169,7 +166,7 @@ class ContentService:
         return contents
 
     @staticmethod
-    async def delete_content(content_id: int, db: Session):
+    async def delete_content(content_id: int, db: AsyncSession):
         """
         특정 콘텐츠 삭제
         """
@@ -225,7 +222,7 @@ class ContentService:
         user_id: int,
         content_id: int,
         content: ContentPutRequest,
-        db: Session,
+        db: AsyncSession,
     ) -> List[dict]:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
@@ -285,7 +282,7 @@ class ContentService:
 
     @staticmethod
     async def get_search_contents(
-        user_id: int, keyword: str, db: Session
+        user_id: int, keyword: str, db: AsyncSession
     ) -> List[ContentModel]:
         """
         keyword에 근접한 content 반환
