@@ -23,5 +23,5 @@ async def init_db():
 
 
 async def get_db():
-    async with async_sessionmaker() as db:
+    async with SessionLocal() as db:
         yield db 
