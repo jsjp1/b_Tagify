@@ -1,6 +1,7 @@
 from app.models import Base
 from config import get_settings
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import sessionmaker
 
 settings = get_settings()
@@ -21,9 +22,6 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 
-def get_db():
-    db: AsyncSession = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with async_sessionmaker() as db:
+        yield db 
