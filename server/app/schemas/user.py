@@ -9,6 +9,7 @@ class User(BaseModel):
     oauth_id: str
     email: Optional[EmailStr] = None
     profile_image: Optional[str] = None
+    is_premium: bool
 
     model_config = {"from_attributes": True}
 
