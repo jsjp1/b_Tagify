@@ -122,7 +122,9 @@ class TagService:
         return new_tag
 
     @staticmethod
-    async def update_tag(user_id: int, tag_id: int, tag: TagPut, db: AsyncSession) -> int:
+    async def update_tag(
+        user_id: int, tag_id: int, tag: TagPut, db: AsyncSession
+    ) -> int:
         """
         태그 정보(이름, 색상) 수정 후 id 반환
         """

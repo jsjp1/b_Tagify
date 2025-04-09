@@ -1,9 +1,13 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.comment import (ArticleCommentsResponse, CommentModel,
-                                 DeleteCommentResponse, PostCommentRequest,
-                                 PostCommentResponse)
+from app.schemas.comment import (
+    ArticleCommentsResponse,
+    CommentModel,
+    DeleteCommentResponse,
+    PostCommentRequest,
+    PostCommentResponse,
+)
 from app.services.comment import CommentService
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession

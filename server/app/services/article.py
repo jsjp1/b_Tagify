@@ -10,9 +10,14 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleDelete, ArticleDownload, ArticleEdit,
-                                 ArticleModel)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleEdit,
+    ArticleModel,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func
 from sqlalchemy.exc import IntegrityError
@@ -71,7 +76,9 @@ class ArticleService:
         return new_article.id
 
     @staticmethod
-    async def put_article(article_id: int, article: ArticleEdit, db: AsyncSession) -> int:
+    async def put_article(
+        article_id: int, article: ArticleEdit, db: AsyncSession
+    ) -> int:
         """
         특정 article의 정보 수정 후 id 반환
         """
@@ -186,7 +193,9 @@ class ArticleService:
         return db_articles
 
     @staticmethod
-    async def get_hot_articles(limit: int, offset: int, db: AsyncSession) -> List[Article]:
+    async def get_hot_articles(
+        limit: int, offset: int, db: AsyncSession
+    ) -> List[Article]:
         """
         마지막 article로부터 24시간 이내에 있는 articles 중
         가장 download 수 많은 articles, offset부터 limit만큼 반환

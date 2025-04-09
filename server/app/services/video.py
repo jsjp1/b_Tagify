@@ -7,8 +7,7 @@ from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
@@ -119,7 +118,9 @@ class VideoService:
         return content
 
     @staticmethod
-    async def get_user_all_videos(user: UserContents, db: AsyncSession) -> List[Content]:
+    async def get_user_all_videos(
+        user: UserContents, db: AsyncSession
+    ) -> List[Content]:
         """
         유저가 소유한 비디오 정보를 모두 반환
         """

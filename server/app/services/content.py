@@ -8,8 +8,12 @@ from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
 from app.schemas.common import ContentModel
-from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
-                                 UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPutRequest,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -22,7 +26,9 @@ from sqlalchemy.sql import func
 
 class ContentService:
     @staticmethod
-    async def get_user_all_contents(user: UserContents, db: AsyncSession) -> List[Content]:
+    async def get_user_all_contents(
+        user: UserContents, db: AsyncSession
+    ) -> List[Content]:
         """
         유저가 소유한 모든 콘텐츠 정보를 반환
         """
@@ -151,7 +157,9 @@ class ContentService:
         return
 
     @staticmethod
-    async def get_bookmarked_contents(user: UserBookmark, db: AsyncSession) -> List[Content]:
+    async def get_bookmarked_contents(
+        user: UserBookmark, db: AsyncSession
+    ) -> List[Content]:
         """
         북마크로 저장돼있는 콘텐츠 반환
         """

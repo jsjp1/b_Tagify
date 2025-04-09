@@ -2,10 +2,18 @@ from typing import List
 
 import jwt
 from app.models.user import User
-from app.schemas.user import (TokenRefresh, UserLogin, UserUpdateName,
-                              UserUpdateProfileImage)
-from app.util.auth import (create_access_token, decode_token,
-                           verify_apple_token, verify_google_token)
+from app.schemas.user import (
+    TokenRefresh,
+    UserLogin,
+    UserUpdateName,
+    UserUpdateProfileImage,
+)
+from app.util.auth import (
+    create_access_token,
+    decode_token,
+    verify_apple_token,
+    verify_google_token,
+)
 from config import Settings
 from fastapi import HTTPException
 from passlib.context import CryptContext
@@ -16,7 +24,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserService:
     @staticmethod
-    async def login_google(user: UserLogin, db: AsyncSession, settings: Settings) -> User:
+    async def login_google(
+        user: UserLogin, db: AsyncSession, settings: Settings
+    ) -> User:
         """
         google oauth 로그인 처리 -> 없을 경우 db에 저장
         """
@@ -43,7 +53,9 @@ class UserService:
         return db_user
 
     @staticmethod
-    async def login_apple(user: UserLogin, db: AsyncSession, settings: Settings) -> User:
+    async def login_apple(
+        user: UserLogin, db: AsyncSession, settings: Settings
+    ) -> User:
         """
         Apple OAuth 로그인 처리 -> 없을 경우 db에 저장
         """

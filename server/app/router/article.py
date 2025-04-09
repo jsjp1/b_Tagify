@@ -1,10 +1,18 @@
 from app.db import get_db
-from app.schemas.article import (AllArticlesLimitResponse, ArticleCreate,
-                                 ArticleCreateResponse, ArticleDelete,
-                                 ArticleDeleteResponse, ArticleDownload,
-                                 ArticleDownloadResponse, ArticleEdit,
-                                 ArticleEditResponse, ArticleModel,
-                                 ArticleTagResponse, TagArticleResponse)
+from app.schemas.article import (
+    AllArticlesLimitResponse,
+    ArticleCreate,
+    ArticleCreateResponse,
+    ArticleDelete,
+    ArticleDeleteResponse,
+    ArticleDownload,
+    ArticleDownloadResponse,
+    ArticleEdit,
+    ArticleEditResponse,
+    ArticleModel,
+    ArticleTagResponse,
+    TagArticleResponse,
+)
 from app.services.article import ArticleService
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession

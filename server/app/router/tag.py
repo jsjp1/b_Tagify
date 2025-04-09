@@ -1,10 +1,18 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
-                             TagDeleteResponse, TagPost, TagPostResponse,
-                             TagPut, TagPutResponse, UserTags,
-                             UserTagsResponse)
+from app.schemas.tag import (
+    TagContents,
+    TagContentsResponse,
+    TagDelete,
+    TagDeleteResponse,
+    TagPost,
+    TagPostResponse,
+    TagPut,
+    TagPutResponse,
+    UserTags,
+    UserTagsResponse,
+)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
