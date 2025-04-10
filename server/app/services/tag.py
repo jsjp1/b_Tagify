@@ -125,7 +125,7 @@ class TagService:
         result = await db.execute(
             select(Tag).where(and_(Tag.id == tag_id, Tag.user_id == user_id))
         )
-        db_tag = result.scalar_one_or_none()
+        db_tag = result.unique().scalars().first()
 
         if not db_tag:
             raise HTTPException(

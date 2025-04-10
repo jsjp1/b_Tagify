@@ -10,8 +10,12 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (ArticleCreate, ArticleDelete, ArticleDownload,
-                                 ArticleEdit)
+from app.schemas.article import (
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleEdit,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError
@@ -275,8 +279,12 @@ class ArticleService:
 
         contents = json.loads(decompressed_data)["contents"]
 
-        # 태그 새로 생성
-        result = await db.execute(select(Tag).where(Tag.tagname == article.tagname))
+        # 태그 새로 생성 -> tagname과 user_id가 같은게 있는지 확인해야됨
+        result = await db.execute(
+            select(Tag).where(
+                and_(Tag.tagname == article.tagname, Tag.user_id == db_user.id)
+            )
+        )
         db_tag = result.unique().scalars().first()
         if not db_tag:
             db_tag = Tag(tagname=article.tagname, user_id=db_user.id)

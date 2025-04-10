@@ -7,8 +7,12 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
-                                 UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPutRequest,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -228,10 +232,10 @@ class ContentService:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
         """
-        stmt = select(Content).options(
-            selectinload(Content.tags).selectinload(Tag.contents)
-        ).where(
-            and_(Content.id == content_id, Content.user_id == user_id)
+        stmt = (
+            select(Content)
+            .options(selectinload(Content.tags).selectinload(Tag.contents))
+            .where(and_(Content.id == content_id, Content.user_id == user_id))
         )
         result = await db.execute(stmt)
         db_content = result.unique().scalars().first()
