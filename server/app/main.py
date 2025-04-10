@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from app.db import get_db, init_db
 from app.middleware.auth import AuthMiddleware
 from app.middleware.exception_handler import ExceptionHandlerMiddleware
@@ -7,13 +9,13 @@ from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-app = FastAPI(title="tagify backend server")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db() 
+    yield
 
-@app.on_event("startup")
-async def on_startup():
-    await init_db()
-
+app = FastAPI(title="tagify backend server", lifespan=lifespan)
 
 app.include_router(router=router)
 

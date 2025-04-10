@@ -29,8 +29,7 @@ class TagService:
         stmt = (
             select(Content)
             .join(
-                content_tag_association,
-                Content.id == content_tag_association.c.content_id,
+                content_tag_association
             )
             .where(content_tag_association.c.tag_id == tag.tag_id)
             .order_by(desc(Content.created_at))
