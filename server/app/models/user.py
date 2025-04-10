@@ -30,19 +30,23 @@ class User(Base):
         "Content",
         back_populates="user",
         cascade="all, delete-orphan",
+        lazy="joined",
     )
     tags = relationship(
         "Tag",
         back_populates="user",
         cascade="all, delete-orphan",
+        lazy="joined",
     )
     articles = relationship(
         "Article",
         back_populates="user",
         cascade="all, delete-orphan",
+        lazy="joined",
     )
     comments = relationship(
         "Comment",
         back_populates="user",
         cascade="all, delete-orphan",
+        lazy="joined",
     )

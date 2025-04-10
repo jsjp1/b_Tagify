@@ -28,10 +28,15 @@ class Article(Base):
         nullable=False,
     )
 
-    user = relationship("User", back_populates="articles")
+    user = relationship(
+        "User",
+        back_populates="articles",
+        lazy="joined",
+    )
     tags = relationship(
         "Tag",
         order_by="asc(Tag.id)",
         secondary=article_tag_association,
         back_populates="articles",
+        lazy="selectin",
     )

@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-POSTGRES_TEST_DB_URL = "postgresql+psycopg2://test:1234@localhost:5432/test_db"
+POSTGRES_TEST_DB_URL = "postgresql+aysncpg://test:1234@localhost:5432/test_db"
 
 engine = create_engine(POSTGRES_TEST_DB_URL)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -10,8 +10,12 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (ArticleCreate, ArticleDelete, ArticleDownload,
-                                 ArticleEdit)
+from app.schemas.article import (
+    ArticleCreate,
+    ArticleDelete,
+    ArticleDownload,
+    ArticleEdit,
+)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError
@@ -108,7 +112,9 @@ class ArticleService:
         """
         특정 user의 특정 article 삭제 후 id 반환
         """
-        result = await db.execute(select(Article).where(Article.id == article.article_id))
+        result = await db.execute(
+            select(Article).where(Article.id == article.article_id)
+        )
         db_article = result.scalars().first()
         if not db_article:
             raise HTTPException(
@@ -216,10 +222,7 @@ class ArticleService:
         upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
         """
         result = await db.execute(
-            select(Article)
-            .order_by(desc(Article.up_count))
-            .limit(limit)
-            .offset(offset)
+            select(Article).order_by(desc(Article.up_count)).limit(limit).offset(offset)
         )
         return result.scalars().all()
 
@@ -246,10 +249,7 @@ class ArticleService:
         offset부터 limit만큼 임의의 articles 반환
         """
         result = await db.execute(
-            select(Article)
-            .order_by(func.random())
-            .limit(limit)
-            .offset(offset)
+            select(Article).order_by(func.random()).limit(limit).offset(offset)
         )
         return result.scalars().all()
 

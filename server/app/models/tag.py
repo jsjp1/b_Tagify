@@ -14,10 +14,20 @@ class Tag(Base):
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
-    user = relationship("User", back_populates="tags")
+    user = relationship(
+        "User",
+        back_populates="tags",
+        lazy="joined",
+    )
     contents = relationship(
-        "Content", secondary=content_tag_association, back_populates="tags"
+        "Content",
+        secondary=content_tag_association,
+        back_populates="tags",
+        lazy="selectin",
     )
     articles = relationship(
-        "Article", secondary=article_tag_association, back_populates="tags"
+        "Article",
+        secondary=article_tag_association,
+        back_populates="tags",
+        lazy="selectin",
     )

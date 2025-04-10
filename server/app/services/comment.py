@@ -86,4 +86,3 @@ class CommentService:
             )
 
         return db_comment.id
-    

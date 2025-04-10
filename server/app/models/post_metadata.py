@@ -14,4 +14,8 @@ class PostMetadata(Base):
         nullable=False,
     )
 
-    content = relationship("Content", back_populates="post_metadata")
+    content = relationship(
+        "Content",
+        back_populates="post_metadata",
+        lazy="joined",
+    )

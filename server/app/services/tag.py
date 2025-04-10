@@ -16,7 +16,9 @@ class TagService:
         """
         유저가 가지고 있는 모든 태그 반환
         """
-        result = await db.execute(select(Tag).where(Tag.user_id == user.user_id).order_by(desc(Tag.id)))
+        result = await db.execute(
+            select(Tag).where(Tag.user_id == user.user_id).order_by(desc(Tag.id))
+        )
         return result.scalars().all()
 
     @staticmethod
@@ -26,7 +28,10 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, Content.id == content_tag_association.c.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
             .where(content_tag_association.c.tag_id == tag.tag_id)
             .order_by(desc(Content.created_at))
         )
@@ -40,11 +45,14 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, Content.id == content_tag_association.c.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
             .where(
                 and_(
                     Content.content_type == "VIDEO",
-                    content_tag_association.c.tag_id == tag.tag_id
+                    content_tag_association.c.tag_id == tag.tag_id,
                 )
             )
             .order_by(desc(Content.created_at))
@@ -59,11 +67,14 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, Content.id == content_tag_association.c.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
             .where(
                 and_(
                     Content.content_type == "POST",
-                    content_tag_association.c.tag_id == tag.tag_id
+                    content_tag_association.c.tag_id == tag.tag_id,
                 )
             )
             .order_by(desc(Content.created_at))
@@ -77,7 +88,9 @@ class TagService:
         특정 사용자가 동일한 태그를 생성했는지 검사 후, 태그 생성 및 ID 반환
         """
         result = await db.execute(
-            select(exists().where(and_(Tag.tagname == tag.tagname, Tag.user_id == user_id)))
+            select(
+                exists().where(and_(Tag.tagname == tag.tagname, Tag.user_id == user_id))
+            )
         )
         tag_exists = result.scalar()
 

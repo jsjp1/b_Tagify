@@ -6,8 +6,7 @@ from app.models.content import Content, ContentTypeEnum
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
@@ -132,7 +131,7 @@ class VideoService:
             )
             .where(
                 Content.user_id == user.id,
-                Content.content_type == ContentTypeEnum.VIDEO
+                Content.content_type == ContentTypeEnum.VIDEO,
             )
             .order_by(desc(Content.created_at))
         )

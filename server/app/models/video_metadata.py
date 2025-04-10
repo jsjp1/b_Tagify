@@ -12,4 +12,8 @@ class VideoMetadata(Base):
         BIGINT, ForeignKey("contents.id", ondelete="CASCADE"), nullable=False
     )
 
-    content = relationship("Content", back_populates="video_metadata")
+    content = relationship(
+        "Content",
+        back_populates="video_metadata",
+        lazy="joined",
+    )

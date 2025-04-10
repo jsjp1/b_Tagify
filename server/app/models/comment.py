@@ -26,4 +26,8 @@ class Comment(Base):
         nullable=False,
     )
 
-    user = relationship("User", back_populates="comments")
+    user = relationship(
+        "User",
+        back_populates="comments",
+        lazy="joined",
+    )

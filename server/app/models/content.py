@@ -36,16 +36,27 @@ class Content(Base):
         nullable=False,
     )
 
-    user = relationship("User", back_populates="contents")
+    user = relationship(
+        "User",
+        back_populates="contents",
+        lazy="joined",
+    )
     tags = relationship(
         "Tag",
         order_by="asc(Tag.id)",
         secondary=content_tag_association,
         back_populates="contents",
+        lazy="selectin",
     )
     video_metadata = relationship(
-        "VideoMetadata", uselist=False, back_populates="content"
+        "VideoMetadata",
+        uselist=False,
+        back_populates="content",
+        lazy="joined",
     )
     post_metadata = relationship(
-        "PostMetadata", uselist=False, back_populates="content"
+        "PostMetadata",
+        uselist=False,
+        back_populates="content",
+        lazy="joined",
     )
