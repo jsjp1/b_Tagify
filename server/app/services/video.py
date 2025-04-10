@@ -97,7 +97,7 @@ class VideoService:
                 and_(Content.url == content.url, Content.user_id == content.user_id)
             )
         )
-        db_content = result.scalars().first()
+        db_content = result.unique().scalars().first()
 
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
@@ -136,6 +136,6 @@ class VideoService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        contents = result.scalars().all()
+        contents = result.unique().scalars().all()
 
         return contents

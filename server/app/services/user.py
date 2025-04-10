@@ -35,7 +35,7 @@ class UserService:
             raise HTTPException(status_code=400, detail="Invalid Google ID Token")
 
         result = await db.execute(select(User).where(User.oauth_id == google_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
 
         if not db_user:
             db_user = User(
@@ -66,7 +66,7 @@ class UserService:
             raise HTTPException(status_code=400, detail="Invalid Apple ID Token")
 
         result = await db.execute(select(User).where(User.oauth_id == apple_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
 
         if not db_user:
             db_user = User(
@@ -89,7 +89,7 @@ class UserService:
         모든 사용자 정보를 가져오는 메서드
         """
         result = await db.execute(select(User))
-        users = result.scalars().all()
+        users = result.unique().scalars().all()
 
         return users
 
@@ -118,7 +118,7 @@ class UserService:
         user 이름 변경 후 id 반환
         """
         result = await db.execute(select(User).where(User.id == user_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
 
         if not db_user:
             raise HTTPException(
@@ -139,7 +139,7 @@ class UserService:
         user 프로필 사진 변경 후 id 반환
         """
         result = await db.execute(select(User).where(User.id == user_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
 
         if not db_user:
             raise HTTPException(

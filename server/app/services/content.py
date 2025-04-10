@@ -66,7 +66,7 @@ class ContentService:
         content 정보 db에 저장 (content, metadata, tag, content_tag)
         """
         result = await db.execute(select(User).where(User.id == content.user_id))
-        db_user = result.scalars().unique().first()
+        db_user = result.unique().scalars().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User with id {content.user_id} not found"
@@ -76,7 +76,7 @@ class ContentService:
             and_(Content.url == content.url, Content.user_id == content.user_id)
         )
         result = await db.execute(stmt)
-        db_content = result.scalars().unique().first()
+        db_content = result.unique().scalars().first()
         if db_content and content.url != "":
             raise HTTPException(status_code=400, detail="Content already exists")
 

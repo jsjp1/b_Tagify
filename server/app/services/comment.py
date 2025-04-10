@@ -70,7 +70,7 @@ class CommentService:
         특정 comment 삭제 후 id 반환
         """
         result = await db.execute(select(Comment).filter(Comment.id == comment_id))
-        db_comment = result.scalars().first()
+        db_comment = result.unique().scalars().first()
         if not db_comment:
             raise HTTPException(
                 status_code=400, detail=f"Comment id {comment_id} does not exists"

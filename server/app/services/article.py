@@ -30,7 +30,7 @@ class ArticleService:
         article db에 저장 후 id 반환
         """
         result = await db.execute(select(User).where(User.id == article.user_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User id {article.user_id} does not exists"
@@ -38,7 +38,7 @@ class ArticleService:
 
         tag_list = article.tags
         result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
-        existing_tags = {tag.tagname: tag for tag in result.scalars().all()}
+        existing_tags = {tag.tagname: tag for tag in result.unique().scalars().all()}
 
         new_tags = []
         for tagname in tag_list:
@@ -80,7 +80,7 @@ class ArticleService:
         특정 article의 정보 수정 후 id 반환
         """
         result = await db.execute(select(Article).where(Article.id == article_id))
-        db_article = result.scalars().first()
+        db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400,
@@ -91,7 +91,7 @@ class ArticleService:
         db_article.body = article.body
 
         result = await db.execute(select(Tag).where(Tag.tagname.in_(article.tags)))
-        existing_tags = result.scalars().all()
+        existing_tags = result.unique().scalars().all()
         existing_tags_names = {tag.tagname for tag in existing_tags}
 
         new_tag_names = set(article.tags) - existing_tags_names
@@ -115,7 +115,7 @@ class ArticleService:
         result = await db.execute(
             select(Article).where(Article.id == article.article_id)
         )
-        db_article = result.scalars().first()
+        db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400,
@@ -153,7 +153,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_all_articles_limit(
@@ -170,7 +170,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_popular_articles(
@@ -185,7 +185,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_hot_articles(
@@ -210,7 +210,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_upvote_articles(
@@ -222,7 +222,7 @@ class ArticleService:
         result = await db.execute(
             select(Article).order_by(desc(Article.up_count)).limit(limit).offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_newest_articles(
@@ -237,7 +237,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_random_articles(
@@ -249,7 +249,7 @@ class ArticleService:
         result = await db.execute(
             select(Article).order_by(func.random()).limit(limit).offset(offset)
         )
-        return result.scalars().unique().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def download_article(
@@ -259,14 +259,14 @@ class ArticleService:
         article에 존재하는 encoded_content 파싱 및 user에 저장 후 tag id 반환
         """
         result = await db.execute(select(User).where(User.id == article.user_id))
-        db_user = result.scalars().first()
+        db_user = result.unique().scalars().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User id {article.user_id} does not exists"
             )
 
         result = await db.execute(select(Article).where(Article.id == article_id))
-        db_article = result.scalars().first()
+        db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400, detail=f"Article id {article_id} does not exists"
@@ -281,7 +281,7 @@ class ArticleService:
 
         # 태그 새로 생성
         result = await db.execute(select(Tag).where(Tag.tagname == article.tagname))
-        db_tag = result.scalars().first()
+        db_tag = result.unique().scalars().first()
         if not db_tag:
             db_tag = Tag(tagname=article.tagname, user_id=db_user.id)
             db.add(db_tag)
@@ -495,4 +495,4 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().all()
+        return result.unique().scalars().all()

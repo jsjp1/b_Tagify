@@ -58,7 +58,7 @@ class TagService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_tag_posts(tag: TagContents, db: AsyncSession) -> List[Content]:
@@ -80,7 +80,7 @@ class TagService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def post_tag(user_id: int, tag: TagPost, db: AsyncSession) -> Tag:
