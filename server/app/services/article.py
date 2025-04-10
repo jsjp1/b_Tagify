@@ -153,7 +153,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_all_articles_limit(
@@ -185,7 +185,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_hot_articles(
@@ -195,8 +195,6 @@ class ArticleService:
         마지막 article로부터 24시간 이내에 있는 articles 중
         가장 download 수 많은 articles, offset부터 limit만큼 반환
         """
-        time_threshold = datetime.utcnow() - timedelta(hours=24)
-
         result = await db.execute(select(func.max(Article.created_at)))
         last_article_time = result.scalar()
 
@@ -212,7 +210,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_upvote_articles(
@@ -224,7 +222,7 @@ class ArticleService:
         result = await db.execute(
             select(Article).order_by(desc(Article.up_count)).limit(limit).offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_newest_articles(
@@ -239,7 +237,7 @@ class ArticleService:
             .limit(limit)
             .offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def get_random_articles(
@@ -251,7 +249,7 @@ class ArticleService:
         result = await db.execute(
             select(Article).order_by(func.random()).limit(limit).offset(offset)
         )
-        return result.scalars().all()
+        return result.scalars().unique().all()
 
     @staticmethod
     async def download_article(
