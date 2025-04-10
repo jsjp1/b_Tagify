@@ -10,12 +10,8 @@ from app.models.content import Content
 from app.models.content_tag import content_tag_association
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.article import (
-    ArticleCreate,
-    ArticleDelete,
-    ArticleDownload,
-    ArticleEdit,
-)
+from app.schemas.article import (ArticleCreate, ArticleDelete, ArticleDownload,
+                                 ArticleEdit)
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError

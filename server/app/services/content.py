@@ -7,12 +7,8 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (
-    ContentPost,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -20,7 +16,7 @@ from sqlalchemy import and_, delete, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 
 class ContentService:
@@ -232,11 +228,13 @@ class ContentService:
         """
         content_id에 해당하는 content 정보 수정 후 id 반환
         """
-        stmt = select(Content).where(
+        stmt = select(Content).options(
+            selectinload(Content.tags).selectinload(Tag.contents)
+        ).where(
             and_(Content.id == content_id, Content.user_id == user_id)
         )
         result = await db.execute(stmt)
-        db_content = result.scalar_one_or_none()
+        db_content = result.unique().scalars().first()
 
         if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
@@ -266,7 +264,7 @@ class ContentService:
             result = await db.execute(
                 select(Tag).where(and_(Tag.tagname == tag_name, Tag.user_id == user_id))
             )
-            tag = result.scalar_one_or_none()
+            tag = result.unique().scalars().first()
             if not tag:
                 tag = Tag(user_id=db_content.user_id, tagname=tag_name)
                 db.add(tag)
