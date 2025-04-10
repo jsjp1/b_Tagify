@@ -19,7 +19,7 @@ class TagService:
         result = await db.execute(
             select(Tag).where(Tag.user_id == user.user_id).order_by(desc(Tag.id))
         )
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_tag_all_contents(tag: TagContents, db: AsyncSession) -> List[Content]:
@@ -36,7 +36,7 @@ class TagService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_tag_videos(tag: TagContents, db: AsyncSession) -> List[Content]:

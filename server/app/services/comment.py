@@ -17,7 +17,7 @@ class CommentService:
         article id에 속하는 모든 comments 반환
         """
         result = await db.execute(select(Article).filter(Article.id == article_id))
-        db_article = result.scalars().first()
+        db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400, detail=f"Article id {article_id} does not exists"
@@ -28,7 +28,7 @@ class CommentService:
             .filter(Comment.article_id == article_id)
             .order_by(asc(Comment.created_at))
         )
-        comments = result.scalars().all()
+        comments = result.unique().scalars().all()
 
         return comments
 
@@ -40,7 +40,7 @@ class CommentService:
         특정 article에 속하는 comment 등록 후 해당 comment 정보 반환
         """
         result = await db.execute(select(Article).filter(Article.id == article_id))
-        db_article = result.scalars().first()
+        db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
                 status_code=400, detail=f"Article id {article_id} does not exists"

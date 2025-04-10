@@ -16,7 +16,7 @@ from app.schemas.content import (
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
-from sqlalchemy import and_, desc, insert, or_
+from sqlalchemy import and_, delete, desc, insert, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -66,7 +66,7 @@ class ContentService:
         content 정보 db에 저장 (content, metadata, tag, content_tag)
         """
         result = await db.execute(select(User).where(User.id == content.user_id))
-        db_user = result.scalar_one_or_none()
+        db_user = result.scalars().unique().first()
         if not db_user:
             raise HTTPException(
                 status_code=400, detail=f"User with id {content.user_id} not found"
@@ -76,7 +76,7 @@ class ContentService:
             and_(Content.url == content.url, Content.user_id == content.user_id)
         )
         result = await db.execute(stmt)
-        db_content = result.scalar_one_or_none()
+        db_content = result.scalars().unique().first()
         if db_content and content.url != "":
             raise HTTPException(status_code=400, detail="Content already exists")
 
@@ -111,7 +111,7 @@ class ContentService:
 
         tag_list = content.tags
         result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
-        existing_tags = {tag.tagname: tag for tag in result.scalars().all()}
+        existing_tags = {tag.tagname: tag for tag in result.unique().scalars().all()}
 
         new_tags = []
         for tagname in tag_list:
@@ -164,7 +164,7 @@ class ContentService:
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def delete_content(content_id: int, db: AsyncSession):
@@ -173,7 +173,7 @@ class ContentService:
         """
 
         result = await db.execute(select(Content).where(Content.id == content_id))
-        content = result.scalar_one_or_none()
+        content = result.unique().scalar()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
 
@@ -207,6 +207,13 @@ class ContentService:
         )
 
         try:
+            await db.execute(
+                delete(VideoMetadata).where(VideoMetadata.content_id == content_id)
+            )
+            await db.execute(
+                delete(PostMetadata).where(PostMetadata.content_id == content_id)
+            )
+
             await db.delete(content)
             await db.commit()
         except IntegrityError:
@@ -303,4 +310,4 @@ class ContentService:
         )
 
         result = await db.execute(stmt)
-        return result.scalars().all()
+        return result.unique().scalars().all()
