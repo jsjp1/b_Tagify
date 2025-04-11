@@ -28,9 +28,7 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(
-                content_tag_association
-            )
+            .join(content_tag_association)
             .where(content_tag_association.c.tag_id == tag.tag_id)
             .order_by(desc(Content.created_at))
         )

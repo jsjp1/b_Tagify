@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from app.db import get_db, init_db
 from app.middleware.auth import AuthMiddleware
 from app.middleware.exception_handler import ExceptionHandlerMiddleware
+from app.middleware.time import QueryTimeMiddleware
 from app.router import router
 from config import get_settings
 from fastapi import Depends, FastAPI, HTTPException
@@ -12,8 +13,9 @@ from sqlalchemy.sql import text
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db() 
+    await init_db()
     yield
+
 
 app = FastAPI(title="tagify backend server", lifespan=lifespan)
 
@@ -21,6 +23,7 @@ app.include_router(router=router)
 
 app.add_middleware(AuthMiddleware, settings=get_settings())
 app.add_middleware(ExceptionHandlerMiddleware)
+app.add_middleware(QueryTimeMiddleware)
 
 
 @app.get("/")
