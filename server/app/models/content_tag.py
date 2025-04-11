@@ -1,6 +1,5 @@
 from app.models.base import Base
-from sqlalchemy import BIGINT, Column, ForeignKey, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy import BIGINT, Column, ForeignKey, Index, Table
 
 content_tag_association = Table(
     "content_tag",
@@ -14,4 +13,7 @@ content_tag_association = Table(
     Column(
         "tag_id", BIGINT, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True
     ),
+
+    Index("idx_contenttag_content_id", "content_id"),
+    Index("idx_content_tag_tag_id", "tag_id"),
 )
