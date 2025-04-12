@@ -7,8 +7,12 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
-                                 UserContents)
+from app.schemas.content import (
+    ContentPost,
+    ContentPutRequest,
+    UserBookmark,
+    UserContents,
+)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -106,7 +110,11 @@ class ContentService:
             raise HTTPException(status_code=404, detail="Unsupported content type")
 
         tag_list = list(set(content.tags))
-        result = await db.execute(select(Tag).where(and_(Tag.tagname.in_(tag_list), Tag.user_id == content.user_id)))
+        result = await db.execute(
+            select(Tag).where(
+                and_(Tag.tagname.in_(tag_list), Tag.user_id == content.user_id)
+            )
+        )
         existing_tags = {tag.tagname: tag for tag in result.unique().scalars().all()}
 
         new_tags = []
