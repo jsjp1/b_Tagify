@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 from app.models.base import Base
 from app.models.content_tag import content_tag_association
-from sqlalchemy import BIGINT, Boolean, Column, DateTime, Enum, ForeignKey, String, Text
+from sqlalchemy import (BIGINT, Boolean, Column, DateTime, Enum, ForeignKey,
+                        String, Text)
 from sqlalchemy.orm import relationship
 
 
@@ -43,16 +44,18 @@ class Content(Base):
         order_by="asc(Tag.id)",
         secondary=content_tag_association,
         back_populates="contents",
-        lazy="selectin",
-        join_depth=1,
+        # lazy="selectin",
+        lazy="noload",
     )
     video_metadata = relationship(
         "VideoMetadata",
         uselist=False,
-        lazy="selectin",
+        # lazy="selectin",
+        lazy="noload",
     )
     post_metadata = relationship(
         "PostMetadata",
         uselist=False,
-        lazy="selectin",
+        # lazy="selectin",
+        lazy="noload",
     )

@@ -18,11 +18,11 @@ class Tag(Base):
         "Content",
         secondary=content_tag_association,
         back_populates="tags",
-        lazy="selectin",
+        lazy="noload",
     )
     articles = relationship(
         "Article",
         secondary=article_tag_association,
         back_populates="tags",
-        lazy="selectin",
+        lazy="noload",
     )

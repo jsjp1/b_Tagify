@@ -31,22 +31,22 @@ class User(Base):
     contents = relationship(
         "Content",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="noload",
     )
     tags = relationship(
         "Tag",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="noload",
     )
     articles = relationship(
         "Article",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="noload",
     )
     comments = relationship(
         "Comment",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="noload",
     )

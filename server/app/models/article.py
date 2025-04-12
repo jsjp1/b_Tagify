@@ -33,12 +33,12 @@ class Article(Base):
     user = relationship(
         "User",
         back_populates="articles",
-        lazy="joined",
+        lazy="noload",
     )
     tags = relationship(
         "Tag",
         order_by="asc(Tag.id)",
         secondary=article_tag_association,
         back_populates="articles",
-        lazy="selectin",
+        lazy="noload",
     )

@@ -31,5 +31,5 @@ class Comment(Base):
     user = relationship(
         "User",
         back_populates="comments",
-        lazy="joined",
+        lazy="noload",
     )
