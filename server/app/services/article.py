@@ -525,6 +525,10 @@ class ArticleService:
     ) -> List[Article]:
         result = await db.execute(
             select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .where(Article.tags.any(Tag.id == tag_id))
             .order_by(desc(Article.updated_at))
             .limit(limit)

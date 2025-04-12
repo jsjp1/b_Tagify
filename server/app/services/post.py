@@ -6,7 +6,8 @@ from app.models.content import Content, ContentTypeEnum
 from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select
@@ -61,7 +62,7 @@ class PostService:
                 "Accept-Language": "ko-KR,ko;q=0.9",
             },
             timeout=3,
-            allow_redirects=False,
+            allow_redirects=True,
         )
 
         response.encoding = (
@@ -71,34 +72,42 @@ class PostService:
 
         bs = BeautifulSoup(html, "html.parser")
 
-        title = bs.find("title")
-        thumbnail = bs.find("meta", property="og:image")
-        description = bs.find("meta", property="og:description")
+        title_tag = bs.find("title")
+        og_title_tag = bs.find("meta", property="og:title")
+        title = ""
+        if og_title_tag:
+            title = og_title_tag.get("content", "").strip()
+        elif title_tag and title_tag.text:
+            title = title_tag.text.strip()
+
+        thumbnail_tag = bs.find("meta", property="og:image")
+        description_tag = bs.find("meta", property="og:description")
+        thumbnail = thumbnail_tag.get("content", "") if thumbnail_tag else ""
+        description = description_tag.get("content", "") if description_tag else ""
 
         possible_selectors = [
-            "article",  # 일반적인 블로그 글
-            "div.post-content",  # Velog, Tistory 일부
-            "div.notion-page-content",  # Notion
-            "div.tt_article_useless_p_margin",  # Tistory
-            "div.se-main-container",  # Naver Blog
+            "article",
+            "div.post-content",
+            "div.notion-page-content",
+            "div.tt_article_useless_p_margin",
+            "div.se-main-container",
         ]
-        body = None
+        body_element = None
         for selector in possible_selectors:
-            body = bs.select_one(selector)
-            if body:
+            body_element = bs.select_one(selector)
+            if body_element:
                 break
+        body = body_element.get_text(separator="\n").strip() if body_element else ""
 
-        tags = PostService._extract_tag(body if body else "")
+        tags = PostService._extract_tag(body)
         favicon = PostService._get_favicon(url, bs)
 
         return {
-            "title": title.text if title is not None else "",
-            "thumbnail": thumbnail.get("content") if thumbnail is not None else "",
-            "description": (
-                description.get("content") if description is not None else ""
-            ),
-            "favicon": favicon if favicon is not None else "",
-            "body": body.text if body is not None else "",
+            "title": title,
+            "thumbnail": thumbnail,
+            "description": description,
+            "favicon": favicon,
+            "body": body,
             "tags": tags,
         }
 

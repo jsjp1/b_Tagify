@@ -7,12 +7,8 @@ from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import (
-    ContentPost,
-    ContentPutRequest,
-    UserBookmark,
-    UserContents,
-)
+from app.schemas.content import (ContentPost, ContentPutRequest, UserBookmark,
+                                 UserContents)
 from app.services.post import PostService
 from app.services.video import VideoService
 from fastapi import HTTPException
@@ -35,7 +31,7 @@ class ContentService:
             select(Content)
             .where(Content.user_id == user.id)
             .options(
-                joinedload(Content.tags),
+                selectinload(Content.tags),
                 joinedload(Content.video_metadata),
                 joinedload(Content.post_metadata),
             )
@@ -109,14 +105,14 @@ class ContentService:
         else:
             raise HTTPException(status_code=404, detail="Unsupported content type")
 
-        tag_list = content.tags
-        result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
+        tag_list = list(set(content.tags))
+        result = await db.execute(select(Tag).where(and_(Tag.tagname.in_(tag_list), Tag.user_id == content.user_id)))
         existing_tags = {tag.tagname: tag for tag in result.unique().scalars().all()}
 
         new_tags = []
         for tagname in tag_list:
             if tagname not in existing_tags:
-                new_tag = Tag(tagname=tagname, user_id=db_user.id)
+                new_tag = Tag(tagname=tagname, user_id=content.user_id)
                 db.add(new_tag)
                 new_tags.append(new_tag)
 
@@ -160,6 +156,11 @@ class ContentService:
         """
         stmt = (
             select(Content)
+            .options(
+                selectinload(Content.tags),
+                joinedload(Content.video_metadata),
+                joinedload(Content.post_metadata),
+            )
             .where(and_(Content.user_id == user.user_id, Content.bookmark == True))
             .order_by(desc(Content.created_at))
         )
@@ -290,6 +291,11 @@ class ContentService:
 
         stmt = (
             select(Content)
+            .options(
+                selectinload(Content.tags),
+                joinedload(Content.video_metadata),
+                joinedload(Content.post_metadata),
+            )
             .outerjoin(
                 content_tag_association,
                 Content.id == content_tag_association.c.content_id,
