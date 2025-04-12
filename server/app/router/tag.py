@@ -92,17 +92,13 @@ async def contents(
             description=content.description,
             bookmark=content.bookmark,
             **(
-                {"video_length": content.video_metadata.video_length}
-                if getattr(content, "video_metadata", None)
+                {"video_length": content.video_length}
+                if content.content_type == "video"
                 else {}
             ),
-            **(
-                {"body": content.post_metadata.body}
-                if getattr(content, "post_metadata", None)
-                else {}
-            ),
-            tags=([tag.tagname for tag in content.tags] if content.tags else []),
-            type="video" if getattr(content, "video_metadata", None) else "post",
+            **({"body": content.body} if content.content_type == "post" else {}),
+            tags=content.tagname_list,
+            type=content.content_type,
         )
         for content in contents
     ]
@@ -132,13 +128,13 @@ async def contents(
             description=content.description,
             bookmark=content.bookmark,
             **(
-                {"video_length": content.video_metadata.video_length}
+                {"video_length": content.video_length}
                 if content_type == "video"
                 else {}
             ),
-            **({"body": content.post_metadata.body} if content_type == "post" else {}),
-            tags=([tag.tagname for tag in content.tags] if content.tags else []),
-            type="video" if getattr(content, "video_metadata", None) else "post",
+            **({"body": content.body} if content_type == "post" else {}),
+            tags=content.tagname_list,
+            type=content_type,
         )
         for content in contents
     ]

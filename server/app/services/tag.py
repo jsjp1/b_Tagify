@@ -2,10 +2,12 @@ from typing import List
 
 from app.models.content import Content
 from app.models.content_tag import content_tag_association
+from app.models.post_metadata import PostMetadata
 from app.models.tag import Tag
+from app.models.video_metadata import VideoMetadata
 from app.schemas.tag import TagContents, TagDelete, TagPost, TagPut, UserTags
 from fastapi import HTTPException
-from sqlalchemy import and_, desc, exists, select
+from sqlalchemy import and_, desc, exists, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,67 +19,141 @@ class TagService:
         유저가 가지고 있는 모든 태그 반환
         """
         result = await db.execute(
-            select(Tag).where(Tag.user_id == user.user_id).order_by(desc(Tag.id))
+            select(Tag.id, Tag.tagname, Tag.color)
+            .where(Tag.user_id == user.user_id)
+            .order_by(desc(Tag.id))
         )
-        return result.unique().scalars().all()
+        return result.mappings().all()
 
     @staticmethod
     async def get_tag_all_contents(tag: TagContents, db: AsyncSession) -> List[Content]:
         """
         태그와 매치되는 모든 콘텐츠 반환
         """
-        stmt = (
-            select(Content)
-            .join(content_tag_association)
-            .where(content_tag_association.c.tag_id == tag.tag_id)
-            .order_by(desc(Content.created_at))
-        )
-        result = await db.execute(stmt)
-        return result.unique().scalars().all()
+        subquery = (
+            select(content_tag_association.c.content_id).where(
+                content_tag_association.c.tag_id == tag.tag_id
+            )
+        ).subquery()
 
-    @staticmethod
-    async def get_tag_videos(tag: TagContents, db: AsyncSession) -> List[Content]:
-        """
-        태그와 매치되는 video 반환
-        """
         stmt = (
-            select(Content)
+            select(
+                Content.id,
+                Content.url,
+                Content.title,
+                Content.thumbnail,
+                Content.favicon,
+                Content.description,
+                Content.bookmark,
+                Content.content_type,
+                VideoMetadata.video_length,
+                PostMetadata.body,
+                func.array_agg(Tag.tagname).label("tagname_list"),
+            )
+            .outerjoin(VideoMetadata, Content.id == VideoMetadata.content_id)
+            .outerjoin(PostMetadata, Content.id == PostMetadata.content_id)
             .join(
                 content_tag_association,
                 Content.id == content_tag_association.c.content_id,
             )
-            .where(
-                and_(
-                    Content.content_type == "VIDEO",
-                    content_tag_association.c.tag_id == tag.tag_id,
-                )
+            .join(Tag, Tag.id == content_tag_association.c.tag_id)
+            .where(Content.id.in_(subquery))
+            .group_by(
+                Content.id,
+                VideoMetadata.video_length,
+                PostMetadata.body,
+            )
+            .order_by(desc(Content.created_at))
+        )
+
+        result = await db.execute(stmt)
+        return result.mappings().all()
+
+    @staticmethod
+    async def get_tag_videos(tag: TagContents, db: AsyncSession) -> List[dict]:
+        """
+        VIDEO 콘텐츠 + tagname 리스트를 같이 조회
+        """
+        subquery = (
+            select(content_tag_association.c.content_id).where(
+                content_tag_association.c.tag_id == tag.tag_id
+            )
+        ).subquery()
+
+        stmt = (
+            select(
+                Content.id,
+                Content.url,
+                Content.title,
+                Content.thumbnail,
+                Content.favicon,
+                Content.description,
+                Content.bookmark,
+                Content.content_type,
+                VideoMetadata.video_length,
+                PostMetadata.body,
+                func.array_agg(Tag.tagname).label("tagname_list"),
+            )
+            .outerjoin(VideoMetadata, Content.id == VideoMetadata.content_id)
+            .outerjoin(PostMetadata, Content.id == PostMetadata.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
+            .join(Tag, Tag.id == content_tag_association.c.tag_id)
+            .where(and_(Content.id.in_(subquery), Content.content_type == "VIDEO"))
+            .group_by(
+                Content.id,
+                VideoMetadata.video_length,
+                PostMetadata.body,
             )
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.unique().scalars().all()
+        return result.mappings().all()
 
     @staticmethod
     async def get_tag_posts(tag: TagContents, db: AsyncSession) -> List[Content]:
         """
         태그와 매치되는 post 반환
         """
+        subquery = (
+            select(content_tag_association.c.content_id).where(
+                content_tag_association.c.tag_id == tag.tag_id
+            )
+        ).subquery()
+
         stmt = (
-            select(Content)
+            select(
+                Content.id,
+                Content.url,
+                Content.title,
+                Content.thumbnail,
+                Content.favicon,
+                Content.description,
+                Content.bookmark,
+                Content.content_type,
+                VideoMetadata.video_length,
+                PostMetadata.body,
+                func.array_agg(Tag.tagname).label("tagname_list"),
+            )
+            .outerjoin(VideoMetadata, Content.id == VideoMetadata.content_id)
+            .outerjoin(PostMetadata, Content.id == PostMetadata.content_id)
             .join(
                 content_tag_association,
                 Content.id == content_tag_association.c.content_id,
             )
-            .where(
-                and_(
-                    Content.content_type == "POST",
-                    content_tag_association.c.tag_id == tag.tag_id,
-                )
+            .join(Tag, Tag.id == content_tag_association.c.tag_id)
+            .where(and_(Content.id.in_(subquery), Content.content_type == "POST"))
+            .group_by(
+                Content.id,
+                VideoMetadata.video_length,
+                PostMetadata.body,
             )
             .order_by(desc(Content.created_at))
         )
         result = await db.execute(stmt)
-        return result.unique().scalars().all()
+        return result.mappings().all()
 
     @staticmethod
     async def post_tag(user_id: int, tag: TagPost, db: AsyncSession) -> Tag:
@@ -105,7 +181,6 @@ class TagService:
         try:
             db.add(new_tag)
             await db.commit()
-            await db.refresh(new_tag)
         except IntegrityError:
             await db.rollback()
             raise HTTPException(status_code=500, detail="DB error while creating tag")
@@ -136,7 +211,6 @@ class TagService:
             db_tag.color = tag.color
 
         await db.commit()
-        await db.refresh(db_tag)
 
         return db_tag.id
 
