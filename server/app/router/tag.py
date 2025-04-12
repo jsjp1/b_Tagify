@@ -1,18 +1,10 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (
-    TagContents,
-    TagContentsResponse,
-    TagDelete,
-    TagDeleteResponse,
-    TagPost,
-    TagPostResponse,
-    TagPut,
-    TagPutResponse,
-    UserTags,
-    UserTagsResponse,
-)
+from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
+                             TagDeleteResponse, TagPost, TagPostResponse,
+                             TagPut, TagPutResponse, UserTags,
+                             UserTagsResponse)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -92,12 +84,12 @@ async def contents(
             description=content.description,
             bookmark=content.bookmark,
             **(
-                {"video_length": content.video_length}
-                if content.content_type == "video"
+                {"video_length": content.video_metadata.video_length}
+                if content.video_metadata != None and content.content_type == "video"
                 else {}
             ),
-            **({"body": content.body} if content.content_type == "post" else {}),
-            tags=content.tagname_list,
+            **({"body": content.post_metadata.body} if content.post_metadata != None and content.content_type == "post" else {}),
+            tags=[tag.tagname for tag in content.tags],
             type=content.content_type,
         )
         for content in contents
@@ -128,13 +120,13 @@ async def contents(
             description=content.description,
             bookmark=content.bookmark,
             **(
-                {"video_length": content.video_length}
-                if content_type == "video"
+                {"video_length": content.video_metadata.video_length}
+                if content.video_metadata != None and content.content_type == "video"
                 else {}
             ),
-            **({"body": content.body} if content_type == "post" else {}),
-            tags=content.tagname_list,
-            type=content_type,
+            **({"body": content.post_metadata.body} if content.post_metadata != None and content.content_type == "post" else {}),
+            tags=[tag.tagname for tag in content.tags],
+            type=content.content_type,
         )
         for content in contents
     ]
