@@ -1,6 +1,5 @@
 from app.models.base import Base
 from sqlalchemy import BIGINT, Column, ForeignKey, Text
-from sqlalchemy.orm import relationship
 
 
 class PostMetadata(Base):
@@ -12,10 +11,4 @@ class PostMetadata(Base):
         BIGINT,
         ForeignKey("contents.id", ondelete="CASCADE"),
         nullable=False,
-    )
-
-    content = relationship(
-        "Content",
-        back_populates="post_metadata",
-        lazy="joined",
     )

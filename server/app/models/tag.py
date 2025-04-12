@@ -14,11 +14,6 @@ class Tag(Base):
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))
 
-    user = relationship(
-        "User",
-        back_populates="tags",
-        lazy="joined",
-    )
     contents = relationship(
         "Content",
         secondary=content_tag_association,

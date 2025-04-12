@@ -13,7 +13,6 @@ content_tag_association = Table(
     Column(
         "tag_id", BIGINT, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True
     ),
-
     Index("idx_contenttag_content_id", "content_id"),
     Index("idx_content_tag_tag_id", "tag_id"),
 )
