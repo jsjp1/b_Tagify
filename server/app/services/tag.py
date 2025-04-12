@@ -33,7 +33,10 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, content_tag_association.c.content_id == Content.id)
+            .join(
+                content_tag_association,
+                content_tag_association.c.content_id == Content.id,
+            )
             .options(
                 selectinload(Content.tags),
                 joinedload(Content.video_metadata),
@@ -53,7 +56,10 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, Content.id == content_tag_association.c.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
             .options(
                 selectinload(Content.tags),
                 joinedload(Content.video_metadata),
@@ -78,7 +84,10 @@ class TagService:
         """
         stmt = (
             select(Content)
-            .join(content_tag_association, Content.id == content_tag_association.c.content_id)
+            .join(
+                content_tag_association,
+                Content.id == content_tag_association.c.content_id,
+            )
             .options(
                 selectinload(Content.tags),
                 joinedload(Content.video_metadata),

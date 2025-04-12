@@ -127,7 +127,6 @@ class UserService:
 
         db_user.username = user.username
         await db.commit()
-        await db.refresh(db_user)
 
         return db_user.id
 

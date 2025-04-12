@@ -1,10 +1,18 @@
 from typing import List
 
 from app.db import get_db
-from app.schemas.tag import (TagContents, TagContentsResponse, TagDelete,
-                             TagDeleteResponse, TagPost, TagPostResponse,
-                             TagPut, TagPutResponse, UserTags,
-                             UserTagsResponse)
+from app.schemas.tag import (
+    TagContents,
+    TagContentsResponse,
+    TagDelete,
+    TagDeleteResponse,
+    TagPost,
+    TagPostResponse,
+    TagPut,
+    TagPutResponse,
+    UserTags,
+    UserTagsResponse,
+)
 from app.services.tag import TagService
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -88,7 +96,11 @@ async def contents(
                 if content.video_metadata != None and content.content_type == "video"
                 else {}
             ),
-            **({"body": content.post_metadata.body} if content.post_metadata != None and content.content_type == "post" else {}),
+            **(
+                {"body": content.post_metadata.body}
+                if content.post_metadata != None and content.content_type == "post"
+                else {}
+            ),
             tags=[tag.tagname for tag in content.tags],
             type=content.content_type,
         )
@@ -124,7 +136,11 @@ async def contents(
                 if content.video_metadata != None and content.content_type == "video"
                 else {}
             ),
-            **({"body": content.post_metadata.body} if content.post_metadata != None and content.content_type == "post" else {}),
+            **(
+                {"body": content.post_metadata.body}
+                if content.post_metadata != None and content.content_type == "post"
+                else {}
+            ),
             tags=[tag.tagname for tag in content.tags],
             type=content.content_type,
         )

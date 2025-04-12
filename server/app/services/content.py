@@ -172,7 +172,11 @@ class ContentService:
         특정 콘텐츠 삭제
         """
 
-        result = await db.execute(select(Content).where(Content.id == content_id))
+        result = await db.execute(
+            select(Content)
+            .options(selectinload(Content.tags))
+            .where(Content.id == content_id)
+        )
         content = result.unique().scalar()
         if not content:
             raise HTTPException(status_code=404, detail="Content not found")
@@ -198,13 +202,6 @@ class ContentService:
 
         for tag in orphan_tags:
             await db.delete(tag)
-
-        await db.execute(
-            select(VideoMetadata).where(VideoMetadata.content_id == content_id)
-        )
-        await db.execute(
-            select(PostMetadata).where(PostMetadata.content_id == content_id)
-        )
 
         try:
             await db.execute(
@@ -278,7 +275,6 @@ class ContentService:
             return_tags.append({"id": tag.id, "tagname": tag.tagname})
 
         await db.commit()
-        await db.refresh(db_content)
 
         return return_tags
 

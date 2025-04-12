@@ -20,7 +20,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 
 class ArticleService:
@@ -148,6 +148,10 @@ class ArticleService:
         """
         result = await db.execute(
             select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .where(Article.user_id == user_id)
             .order_by(desc(Article.created_at))
             .limit(limit)
@@ -165,7 +169,10 @@ class ArticleService:
         result = await db.execute(
             select(Article)
             .join(User, User.id == Article.user_id)
-            .options(joinedload(Article.user))
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
@@ -181,6 +188,10 @@ class ArticleService:
         """
         result = await db.execute(
             select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .order_by(desc(Article.down_count))
             .limit(limit)
             .offset(offset)
@@ -200,6 +211,10 @@ class ArticleService:
 
         result = await db.execute(
             select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .where(
                 and_(
                     Article.created_at >= (last_article_time - timedelta(hours=24)),
@@ -220,7 +235,14 @@ class ArticleService:
         upvote 수 내림차순으로 offset부터 limit만큼 articles 반환
         """
         result = await db.execute(
-            select(Article).order_by(desc(Article.up_count)).limit(limit).offset(offset)
+            select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
+            .order_by(desc(Article.up_count))
+            .limit(limit)
+            .offset(offset)
         )
         return result.unique().scalars().all()
 
@@ -233,6 +255,10 @@ class ArticleService:
         """
         result = await db.execute(
             select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
             .order_by(desc(Article.created_at))
             .limit(limit)
             .offset(offset)
@@ -247,7 +273,14 @@ class ArticleService:
         offset부터 limit만큼 임의의 articles 반환
         """
         result = await db.execute(
-            select(Article).order_by(func.random()).limit(limit).offset(offset)
+            select(Article)
+            .options(
+                selectinload(Article.user),
+                selectinload(Article.tags),
+            )
+            .order_by(func.random())
+            .limit(limit)
+            .offset(offset)
         )
         return result.unique().scalars().all()
 
@@ -352,8 +385,6 @@ class ArticleService:
         마지막 article로부터 24시간 이내에 있는 articles 중
         가장 download 수 많은 tags, count만큼 반환
         """
-        time_threshold = datetime.utcnow() - timedelta(hours=24)
-
         result = await db.execute(select(func.max(Article.created_at)))
         last_article_time = result.scalar()
 

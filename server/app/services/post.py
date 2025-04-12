@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 
 class PostService:
@@ -144,7 +144,7 @@ class PostService:
             .where(Content.content_type == ContentTypeEnum.POST)
             .options(
                 selectinload(Content.tags),
-                selectinload(Content.post_metadata),
+                joinedload(Content.post_metadata),
             )
             .order_by(desc(Content.id))
         )

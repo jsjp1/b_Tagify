@@ -8,6 +8,7 @@ from sqlalchemy import asc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 
 class CommentService:
@@ -25,6 +26,9 @@ class CommentService:
 
         result = await db.execute(
             select(Comment)
+            .options(
+                selectinload(Comment.user),
+            )
             .filter(Comment.article_id == article_id)
             .order_by(asc(Comment.created_at))
         )
@@ -55,7 +59,6 @@ class CommentService:
         try:
             db.add(new_comment)
             await db.commit()
-            await db.refresh(new_comment)
         except IntegrityError:
             await db.rollback()
             raise HTTPException(
