@@ -32,103 +32,160 @@ class PostService:
         parsed = urlparse(url)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
 
-        icon_link = bs.find("link", rel=lambda r: r and "icon" in r) or bs.find(
-            "link", rel="shortcut icon"
-        )
+        icon_links = bs.find_all("link", rel=lambda r: r and "icon" in r.lower())
 
-        if icon_link:
+        for icon_link in icon_links:
             icon_href = icon_link.get("href", "")
-            if icon_href.startswith("http"):
-                return icon_href
-            elif icon_href.startswith("/"):
-                return urljoin(base_url, icon_href)
-            else:
-                return urljoin(base_url + "/", icon_href)
-        else:
-            return f"{base_url}/favicon.ico"
+            if icon_href:
+                if icon_href.startswith("http"):
+                    return icon_href
+                elif icon_href.startswith("/"):
+                    return urljoin(base_url, icon_href)
+                else:
+                    return urljoin(base_url + "/", icon_href)
+
+        return f"{base_url}/favicon.ico"
 
     @staticmethod
-    def _analyze(url: str) -> dict:
+    def follow_redirects_until_valid(url: str, max_redirects: int = 5) -> str:
         """
-        주어진 URL에서 콘텐츠 관련 정보를 추출하여 딕셔너리로 반환
+        수동 리디렉션을 따라가며 최종 유효한 URL 반환
+        intent:// 등 requests가 지원하지 않는 스킴을 피함
         """
-        try:
-            parsed_url = urlparse(url)
-            if not parsed_url.scheme:
-                url = "http://" + url
-
+        for _ in range(max_redirects):
             response = requests.get(
                 url,
                 headers={
                     "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
                     "Accept-Language": "ko-KR,ko;q=0.9",
                 },
-                timeout=5,
+                timeout=1,
+                allow_redirects=False,
+            )
+            if 300 <= response.status_code < 400:
+                next_url = response.headers.get("Location", "")
+                if next_url.startswith("intent://"):
+                    parsed = urlparse(next_url)
+                    query = parsed.fragment
+                    fallback_key = "S.browser_fallback_url="
+                    if fallback_key in query:
+                        from urllib.parse import unquote
+
+                        fallback_url = unquote(
+                            query.split(fallback_key)[-1].split(";")[0]
+                        )
+                        return fallback_url
+                    raise Exception("No fallback URL in intent scheme")
+                elif next_url.startswith("http"):
+                    url = next_url
+                else:
+                    url = urljoin(url, next_url)
+            else:
+                break
+        return url
+
+    @staticmethod
+    def _analyze(url: str) -> dict:
+        """
+        주어진 URL에서 콘텐츠 관련 정보를 추출하여 딕셔너리로 반환
+        """
+        final_url = PostService.follow_redirects_until_valid(url)
+        try:
+            response = requests.get(
+                final_url,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/122.0.0.0 Safari/537.36"
+                    ),
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                    ),
+                    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Connection": "keep-alive",
+                    "DNT": "1",  # Do Not Track 요청
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
+                    "Referer": "https://www.google.com/",
+                },
+                timeout=2,
                 allow_redirects=True,
             )
-            response.encoding = response.apparent_encoding
-            html = response.text
-
-            soup = BeautifulSoup(html, "html.parser")
-
-            # 제목
-            title_tag = soup.find("meta", property="og:title")
-            title = (
-                title_tag.get("content", "").strip()
-                if title_tag
-                else soup.title.string.strip() if soup.title else ""
-            )
-
-            # 썸네일 / 설명
-            thumbnail_tag = soup.find("meta", property="og:image")
-            description_tag = soup.find("meta", property="og:description")
-            thumbnail = (
-                thumbnail_tag.get("content", "").strip() if thumbnail_tag else ""
-            )
-            description = (
-                description_tag.get("content", "").strip() if description_tag else ""
-            )
-
-            # 본문 텍스트 추출
-            possible_selectors = [
-                "article",
-                "div.post-content",
-                "div.notion-page-content",
-                "div.tt_article_useless_p_margin",
-                "div.se-main-container",
-            ]
-            body_element = next(
-                (
-                    soup.select_one(sel)
-                    for sel in possible_selectors
-                    if soup.select_one(sel)
-                ),
-                None,
-            )
-            body = body_element.get_text(separator="\n").strip() if body_element else ""
-
-            tags = PostService._extract_tag(body)
-            favicon = PostService._get_favicon(url, soup)
-
-            return {
-                "title": title,
-                "thumbnail": thumbnail,
-                "description": description,
-                "favicon": favicon,
-                "body": body,
-                "tags": tags,
-            }
-
         except Exception as e:
-            return {
-                "title": "",
-                "thumbnail": "",
-                "description": "",
-                "favicon": "",
-                "body": "",
-                "tags": [],
-                "error": str(e),
-            }
+            print(e)
+            response = requests.get(
+                final_url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
+                    "Accept": (
+                        "text/html,application/xhtml+xml,application/xml;"
+                        "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                    ),
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Connection": "keep-alive",
+                    "DNT": "1",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
+                    "Referer": "https://www.google.com/",
+                },
+                timeout=1,
+                allow_redirects=True,
+            )
+        response.encoding = response.apparent_encoding
+
+        html = response.text
+        bs = BeautifulSoup(html, "html.parser")
+
+        title_tag = bs.find("title")
+        og_title_tag = bs.find("meta", property="og:title")
+        title = (
+            og_title_tag.get("content", "").strip()
+            if og_title_tag
+            else (title_tag.text.strip() if title_tag else "")
+        )
+
+        thumbnail_tag = bs.find("meta", property="og:image")
+        description_tag = bs.find("meta", property="og:description")
+        thumbnail = thumbnail_tag.get("content", "") if thumbnail_tag else ""
+        description = description_tag.get("content", "") if description_tag else ""
+
+        possible_selectors = [
+            "article",
+            "div.post-content",
+            "div.notion-page-content",
+            "div.tt_article_useless_p_margin",
+            "div.se-main-container",
+        ]
+        body_element = next(
+            (
+                bs.select_one(selector)
+                for selector in possible_selectors
+                if bs.select_one(selector)
+            ),
+            None,
+        )
+        body = body_element.get_text(separator="\n").strip() if body_element else ""
+
+        tags = PostService._extract_tag(body)
+        favicon = PostService._get_favicon(url, bs)
+
+        return {
+            "title": title,
+            "thumbnail": thumbnail,
+            "description": description,
+            "favicon": favicon,
+            "body": body,
+            "tags": tags,
+        }
 
     @staticmethod
     async def analyze_post(
