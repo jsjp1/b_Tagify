@@ -1,12 +1,10 @@
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 
-import httpx
 import jwt
 import requests as apple_requests
 from config import Settings
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
@@ -15,7 +13,7 @@ from google.oauth2 import id_token
 def create_access_token(settings, data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "jti": str(uuid.uuid4())})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
@@ -105,4 +103,5 @@ async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
     except jwt.InvalidTokenError as e:
         raise HTTPException(status_code=400, detail=f"Invalid Apple ID Token: {str(e)}")
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

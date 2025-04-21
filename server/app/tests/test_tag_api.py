@@ -48,7 +48,6 @@ async def test_get_tags_success_with_exist_user(
 
         response_json = response.json()
 
-        # 없는 user(없는 oauth_id)더라도 200 status code 반환
         assert (
             response.status_code == 200
         ), f"Get User Videos API Failed: {response.text}"

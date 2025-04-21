@@ -215,7 +215,6 @@ async def test_refresh_token_success(client, test_user):
             json=login_user,
         )
 
-        # 로그인 이후 access token 이용해 refresh token 재발급
         response = await async_client.post(
             "/api/users/token/refresh",
             json={

@@ -20,7 +20,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 
 
 class ArticleService:
@@ -37,7 +37,11 @@ class ArticleService:
             )
 
         tag_list = article.tags
-        result = await db.execute(select(Tag).where(Tag.tagname.in_(tag_list)))
+        result = await db.execute(
+            select(Tag).where(
+                and_(Tag.tagname.in_(tag_list), Tag.user_id == article.user_id)
+            )
+        )
         existing_tags = {tag.tagname: tag for tag in result.unique().scalars().all()}
 
         new_tags = []
@@ -63,7 +67,6 @@ class ArticleService:
         try:
             db.add(new_article)
             await db.commit()
-            await db.refresh(new_article)
         except IntegrityError:
             await db.rollback()
             raise HTTPException(
@@ -79,7 +82,11 @@ class ArticleService:
         """
         특정 article의 정보 수정 후 id 반환
         """
-        result = await db.execute(select(Article).where(Article.id == article_id))
+        result = await db.execute(
+            select(Article)
+            .options(selectinload(Article.tags))
+            .where(Article.id == article_id)
+        )
         db_article = result.unique().scalars().first()
         if not db_article:
             raise HTTPException(
@@ -97,10 +104,11 @@ class ArticleService:
         new_tag_names = set(article.tags) - existing_tags_names
         new_tags = [Tag(tagname=name) for name in new_tag_names]
         db.add_all(new_tags)
-        await db.commit()
-        await db.refresh(db_article)
 
         all_tags = existing_tags + new_tags
+        db_article.tags.clear()
+        await db.flush()
+
         db_article.tags = all_tags
 
         await db.commit()
@@ -111,33 +119,79 @@ class ArticleService:
     async def delete_article(article: ArticleDelete, db: AsyncSession) -> int:
         """
         특정 user의 특정 article 삭제 후 id 반환
+        삭제 후 해당 article에 연결되었던 태그들 중 orphaned 태그(다른 article/content와 연결되지 않은 태그)도 함께 삭제
         """
         result = await db.execute(
             select(Article).where(Article.id == article.article_id)
         )
         db_article = result.unique().scalars().first()
+
         if not db_article:
             raise HTTPException(
-                status_code=400,
-                detail=f"Article id {article.article_id} does not exists",
+                status_code=404,
+                detail=f"Article id {article.article_id} does not exist",
             )
 
-        if db_article.user_id is not article.user_id:
+        if db_article.user_id != article.user_id:
             raise HTTPException(
-                status_code=400,
+                status_code=403,
                 detail=f"Article {article.article_id} is not owned by user {article.user_id}",
             )
 
         try:
+            tag_ids_result = await db.execute(
+                select(article_tag_association.c.tag_id).where(
+                    article_tag_association.c.article_id == article.article_id
+                )
+            )
+            tag_ids = tag_ids_result.scalars().all()
+
             await db.delete(db_article)
+
+            if tag_ids:
+                orphan_tags_stmt = (
+                    select(Tag)
+                    .where(Tag.id.in_(tag_ids))
+                    .outerjoin(
+                        article_tag_association,
+                        and_(
+                            Tag.id == article_tag_association.c.tag_id,
+                            article_tag_association.c.article_id != article.article_id,
+                        ),
+                    )
+                    .outerjoin(
+                        content_tag_association,
+                        Tag.id == content_tag_association.c.tag_id,
+                    )
+                    .group_by(Tag.id)
+                    .having(
+                        and_(
+                            func.count(article_tag_association.c.tag_id) == 0,
+                            func.count(content_tag_association.c.tag_id) == 0,
+                        )
+                    )
+                )
+
+                result = await db.execute(orphan_tags_stmt)
+                orphan_tags = result.unique().scalars().all()
+
+                for tag in orphan_tags:
+                    await db.delete(tag)
+
             await db.commit()
-        except IntegrityError:
+            return db_article.id
+
+        except IntegrityError as e:
             await db.rollback()
             raise HTTPException(
-                status_code=500, detail="DB error while deleting article"
+                status_code=500,
+                detail=f"Database error while deleting article: {str(e)}",
             )
-
-        return db_article.id
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(
+                status_code=500, detail=f"Unexpected error occurred: {str(e)}"
+            )
 
     @staticmethod
     async def get_all_user_articles_limit(

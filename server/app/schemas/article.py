@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -82,7 +82,7 @@ class ArticleDownloadResponse(BaseModel):
 
 
 class ArticleTagResponse(BaseModel):
-    tags: List[Dict[str, str | int]]
+    tags: List[Dict[str, Any]]
 
     model_config = {"from_attributes": True}
 

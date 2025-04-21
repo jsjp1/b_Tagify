@@ -1,185 +1,148 @@
 import random
 import uuid
-from typing import Any, Generator
+from typing import Any, AsyncGenerator
 
 import faker
-import pytest
+import pytest_asyncio
 from app.db import get_db
-from app.main import get_application
+from app.main import app as main_app
 from app.models.base import Base
-from app.models.content import Content, ContentTypeEnum
-from app.models.content_tag import content_tag_association
-from app.models.tag import Tag
 from app.models.user import User
-from app.models.video_metadata import VideoMetadata
 from app.util.auth import create_access_token
 from config import get_settings
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-POSTGRES_TEST_DB_URL = "postgresql+aysncpg://test:1234@localhost:5432/test_db"
+POSTGRES_TEST_DB_URL = "postgresql+asyncpg://test:1234@localhost:5432/test_db"
 
-engine = create_engine(POSTGRES_TEST_DB_URL)
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_async_engine(POSTGRES_TEST_DB_URL, future=True, echo=False)
+AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-@pytest.fixture()
-def app() -> Generator[FastAPI, Any, None]:
-    _app = get_application()
+@pytest_asyncio.fixture()
+async def app() -> AsyncGenerator[FastAPI, Any]:
+    _app = main_app
     yield _app
-    engine.dispose()
+    await engine.dispose()
 
 
-@pytest.fixture()
-def db_session() -> Generator[Session, Any, None]:
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    session = TestSessionLocal(bind=connection)
+@pytest_asyncio.fixture()
+async def db_session() -> AsyncGenerator[AsyncSession, Any]:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
-    yield session
+    async with AsyncSessionLocal() as session:
+        yield session
 
-    session.rollback()
-    session.close()
-    connection.close()
-    Base.metadata.drop_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
-@pytest.fixture()
-def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
-    def _get_test_db():
+@pytest_asyncio.fixture()
+async def client(
+    app: FastAPI, db_session: AsyncSession
+) -> AsyncGenerator[AsyncClient, Any]:
+    async def _get_test_db():
         try:
             yield db_session
         finally:
             pass
 
     app.dependency_overrides[get_db] = _get_test_db
-    with TestClient(app) as client:
-        yield client
+
+    from httpx import ASGITransport
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
+
+    app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def auth_client(client):
+@pytest_asyncio.fixture()
+async def auth_client(client):
     settings = get_settings()
     access_token = create_access_token(settings, data={"sub": "test@example.com"})
-
-    client.headers.update(
-        {
-            "Authorization": f"Bearer {access_token}",
-        }
-    )
-
+    client.headers.update({"Authorization": f"Bearer {access_token}"})
     yield client
 
 
 f = faker.Faker("ko-KR")
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 def oauth_id():
     return str(uuid.uuid4())
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 def oauth_provider():
-    providers = ["Google", "Apple", "Kakao"]
-    rand_idx = random.randrange(0, len(providers))
-
-    return providers[rand_idx]
+    return random.choice(["Google", "apple"])
 
 
-@pytest.fixture()
-def test_user(oauth_id, oauth_provider):
-    user = {
-        "id": f.random_int(min=1, max=100),
-        "username": f.user_name(),
-        "oauth_id": oauth_id,
-        "oauth_provider": oauth_provider,
-        "email": "test@example.com",  # token 로직 때문에 고정
-        "profile_image": f.image_url(),
-    }
-
-    return user
-
-
-@pytest.fixture(scope="function")
-def test_user_persist(db_session, oauth_id, oauth_provider):
-    user = User(
-        username=f.user_name(),
-        oauth_id=oauth_id,
-        oauth_provider=oauth_provider,
-        email="test@example.com",
-        profile_image=f.image_url(),
-    )
-    db_session.add(user)
-    db_session.commit()
-    db_session.refresh(user)
-
-    return user
-
-
-@pytest.fixture()
+@pytest_asyncio.fixture()
 def test_video_url():
-    video = {
+    return {
         "url": "https://youtu.be/rAE4tYftFfo?si=52kXe2o9wpk5VHnR",
-        "tag_count": 0,  # test code에서 수정
-        "detail_degree": 0,  # test code에서 수정
+        "tag_count": 0,
+        "detail_degree": 0,
     }
 
-    return video
 
-
-@pytest.fixture(scope="function")
-def test_user_with_video_and_tag(db_session, oauth_id, oauth_provider, test_video_url):
-    """
-    비디오와 태그를 저장한 테스트 유저 반환
-    """
+@pytest_asyncio.fixture()
+async def test_user_persist(db_session: AsyncSession, oauth_id, oauth_provider):
+    # 신규 가입한 후 어떠한 활동도 하지 않은 user
     user = User(
         username=f.user_name(),
         oauth_id=oauth_id,
         oauth_provider=oauth_provider,
         email="test@example.com",
         profile_image=f.image_url(),
+        is_premium=False,
     )
+
     db_session.add(user)
-    db_session.flush()
+    await db_session.commit()
+    await db_session.refresh(user)
 
-    content = Content(
-        url=test_video_url["url"],
-        title=f.sentence(),
-        thumbnail=f.image_url(),
-        description=f.sentence(),
-        bookmark=True,
-        content_type=ContentTypeEnum.VIDEO,
-        user_id=user.id,
+    return user
+
+
+@pytest_asyncio.fixture()
+async def test_google_user_persist(db_session: AsyncSession, oauth_id):
+    # 신규 가입한 후 어떠한 활동도 하지 않은 user
+    user = User(
+        username=f.user_name(),
+        oauth_id=oauth_id,
+        oauth_provider="Google",
+        email="test@example.com",
+        profile_image=f.image_url(),
+        is_premium=False,
     )
-    db_session.add(content)
-    db_session.flush()
 
-    video_metadata = VideoMetadata(
-        content_id=content.id,
-        video_length="360",
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest_asyncio.fixture()
+async def test_apple_user_persist(db_session: AsyncSession, oauth_id):
+    # 신규 가입한 후 어떠한 활동도 하지 않은 user
+    user = User(
+        username=f.user_name(),
+        oauth_id=oauth_id,
+        oauth_provider="apple",
+        email="test@example.com",
+        profile_image=f.image_url(),
+        is_premium=False,
     )
-    db_session.add(video_metadata)
 
-    tagnames = ["AI", "Machine Learning", "Tech"]
-    tags = []
-    for tagname in tagnames:
-        tag = db_session.query(Tag).filter(Tag.tagname == tagname).first()
-        if not tag:
-            tag = Tag(tagname=tagname, user_id=user.id)
-            db_session.add(tag)
-            db_session.flush()
-        tags.append(tag)
-
-    for tag in tags:
-        db_session.execute(
-            content_tag_association.insert().values(
-                content_id=content.id, tag_id=tag.id
-            )
-        )
-
-    db_session.commit()
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
 
     return user

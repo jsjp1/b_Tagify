@@ -16,7 +16,7 @@ from app.util.auth import (
 )
 from config import Settings
 from fastapi import HTTPException
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -39,7 +39,7 @@ class UserService:
 
         if not db_user:
             db_user = User(
-                user_name=user.username,
+                username=user.username,
                 oauth_provider=user.oauth_provider,
                 oauth_id=user.oauth_id,
                 email=user.email,
@@ -102,7 +102,9 @@ class UserService:
             payload = decode_token(settings, token.refresh_token)
 
             if not payload:
-                raise jwt.InvalidTokenError(status_code=401, detail="Invalid token")
+                raise jwt.InvalidTokenError(
+                    status_code=401, detail="Invalid refresh token"
+                )
 
             # TODO : 저장된 refresh_token 과 비교해서 존재하면 create access token
             new_access_token = create_access_token(settings, data={"sub": f"{payload}"})

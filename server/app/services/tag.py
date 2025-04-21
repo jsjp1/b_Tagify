@@ -20,11 +20,12 @@ class TagService:
         유저가 가지고 있는 모든 태그 반환
         """
         result = await db.execute(
-            select(Tag.id, Tag.tagname, Tag.color)
+            select(Tag)
+            .join(content_tag_association, content_tag_association.c.tag_id == Tag.id)
             .where(Tag.user_id == user.user_id)
             .order_by(desc(Tag.id))
         )
-        return result.mappings().all()
+        return result.unique().scalars().all()
 
     @staticmethod
     async def get_tag_all_contents(tag: TagContents, db: AsyncSession) -> List[Content]:
