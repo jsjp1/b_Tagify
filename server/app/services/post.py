@@ -3,10 +3,9 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from app.models.content import Content, ContentTypeEnum
-from app.models.post_metadata import PostMetadata
-from app.models.tag import Tag
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select
@@ -59,7 +58,7 @@ class PostService:
                     "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
                     "Accept-Language": "ko-KR,ko;q=0.9",
                 },
-                timeout=1,
+                timeout=3,
                 allow_redirects=False,
             )
             if 300 <= response.status_code < 400:
@@ -113,7 +112,7 @@ class PostService:
                     "Sec-Fetch-User": "?1",
                     "Referer": "https://www.google.com/",
                 },
-                timeout=2,
+                timeout=4,
                 allow_redirects=True,
             )
         except Exception as e:
@@ -137,12 +136,17 @@ class PostService:
                     "Sec-Fetch-User": "?1",
                     "Referer": "https://www.google.com/",
                 },
-                timeout=1,
+                timeout=4,
                 allow_redirects=True,
             )
         response.encoding = response.apparent_encoding
 
         html = response.text
+
+        parsed_url = urlparse(final_url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        html = html.replace("%PUBLIC_URL%", base_url)
+
         bs = BeautifulSoup(html, "html.parser")
 
         title_tag = bs.find("title")
