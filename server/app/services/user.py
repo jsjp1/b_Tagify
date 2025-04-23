@@ -3,19 +3,13 @@ from typing import List
 
 import jwt
 from app.models.user import User
-from app.schemas.user import (
-    TokenRefresh,
-    UserDelete,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateProfileImage,
-)
-from app.util.auth import (
-    create_access_token,
-    decode_token,
-    verify_apple_token,
-    verify_google_token,
-)
+from app.schemas.content import ContentPost
+from app.schemas.user import (TokenRefresh, UserDelete, UserLogin,
+                              UserUpdateName, UserUpdateProfileImage)
+from app.services.content import ContentService
+from app.services.post import PostService
+from app.util.auth import (create_access_token, decode_token,
+                           verify_apple_token, verify_google_token)
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -23,6 +17,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class UserService:
+    @staticmethod
+    async def _insert_tutorial(db_user: User, db: AsyncSession):
+        """
+        신규 가입자일 시 튜토리얼 컨텐츠 집어넣기
+        """
+        # TODO: localization -> 일단 한글로
+        tutorial_url = (
+            "https://jieeen.notion.site/Tagify-1c816dae3fdf809d8ad4fa66a417f1dd?pvs=4"
+        )
+        analyzed_post = PostService._analyze(tutorial_url)
+
+        content = ContentPost(
+            user_id=db_user.id,
+            bookmark=True,
+            url=tutorial_url,
+            title="Tagify를 이용하는 방법🚀",
+            thumbnail=analyzed_post["thumbnail"],
+            favicon=analyzed_post["favicon"],
+            description="Tagify를 이용하는 방법을 확인해보세요!",
+            video_length=0,
+            body="",
+            tags=["튜토리얼", "환영합니다!"],
+        )
+
+        await ContentService.post_content("post", content, db)
+
     @staticmethod
     async def login_google(
         user: UserLogin, db: AsyncSession, settings: Settings
@@ -49,8 +69,8 @@ class UserService:
                 is_premium=False,
             )
             db.add(db_user)
-            await db.commit()
-            await db.refresh(db_user)
+            await db.flush()
+            await UserService._insert_tutorial(db_user, db)
 
         return db_user
 
@@ -80,8 +100,8 @@ class UserService:
                 is_premium=False,
             )
             db.add(db_user)
-            await db.commit()
-            await db.refresh(db_user)
+            await db.flush()
+            await UserService._insert_tutorial(db_user, db)
 
         return db_user
 

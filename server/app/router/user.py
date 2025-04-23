@@ -57,12 +57,7 @@ async def login(
     db_user.access_token = access_token
     db_user.refresh_token = refresh_token
 
-    return UserWithTokens(
-        id=db_user.id,
-        access_token=access_token,
-        refresh_token=refresh_token,
-        is_premium=db_user.is_premium,
-    )
+    return UserWithTokens.model_validate(db_user, from_attributes=True)
 
 
 @router.delete("/me")
