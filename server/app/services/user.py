@@ -1,9 +1,11 @@
+from sqlite3 import IntegrityError
 from typing import List
 
 import jwt
 from app.models.user import User
 from app.schemas.user import (
     TokenRefresh,
+    UserDelete,
     UserLogin,
     UserUpdateName,
     UserUpdateProfileImage,
@@ -82,6 +84,31 @@ class UserService:
             await db.refresh(db_user)
 
         return db_user
+
+    @staticmethod
+    async def delete_user(user: UserDelete, db: AsyncSession):
+        """
+        user_id에 해당하는 user 삭제
+        """
+        result = await db.execute(select(User).where(User.id == user.id))
+        db_user = result.unique().scalars().first()
+        if not db_user:
+            raise HTTPException(
+                status_code=400, detail=f"User with id {user.id} not found"
+            )
+
+        # TODO: user.reason에 해당하는 탈퇴 이유 및 피드백 저장하기
+
+        try:
+            await db.delete(db_user)
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
+            raise HTTPException(
+                status_code=500, detail="DB error while deleting comment"
+            )
+
+        return db_user.id
 
     @staticmethod
     async def get_all_users(db: AsyncSession) -> List[User]:

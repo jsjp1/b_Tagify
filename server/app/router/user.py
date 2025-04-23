@@ -4,6 +4,8 @@ from app.schemas.user import (
     TokenRefresh,
     TokenRefreshResponse,
     User,
+    UserDelete,
+    UserDeleteResponse,
     UserLogin,
     UserUpdateName,
     UserUpdateNameResponse,
@@ -55,7 +57,21 @@ async def login(
     db_user.access_token = access_token
     db_user.refresh_token = refresh_token
 
-    return UserWithTokens.model_validate(db_user, from_attributes=True)
+    return UserWithTokens(
+        id=db_user.id,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        is_premium=db_user.is_premium,
+    )
+
+
+@router.delete("/me")
+async def delete(
+    request: UserDelete,
+    db: AsyncSession = Depends(get_db),
+) -> UserDeleteResponse:
+    deleted_user_id = await UserService.delete_user(request, db)
+    return UserDeleteResponse(id=deleted_user_id)
 
 
 @router.post("/token/refresh")

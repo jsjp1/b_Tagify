@@ -24,6 +24,19 @@ class UserWithTokens(User):
     token_type: str = "bearer"
     is_premium: bool
 
+    model_config = {"from_attributes": True}
+
+
+class UserDelete(BaseModel):
+    id: int
+    reason: str | None = None
+
+
+class UserDeleteResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
+
 
 class AllUsersResponse(BaseModel):
     users: List[User]
