@@ -1,7 +1,7 @@
 import base64
 import gzip
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 
 from app.models.article import Article

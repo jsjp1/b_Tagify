@@ -9,6 +9,7 @@ from app.schemas.user import (
     UserLogin,
     UserUpdateName,
     UserUpdateNameResponse,
+    UserUpdatePremiumStateResponse,
     UserUpdateProfileImage,
     UserUpdateProfileImageResponse,
     UserWithTokens,
@@ -96,3 +97,12 @@ async def update_name(
 ) -> UserUpdateProfileImageResponse:
     updated_user_id = await UserService.update_profile_image(request, user_id, db)
     return UserUpdateProfileImageResponse(id=updated_user_id)
+
+
+@router.put("/premium/{user_id}")
+async def update_premium(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> UserUpdatePremiumStateResponse:
+    updated_user_id = await UserService.update_premium_status(user_id, db)
+    return UserUpdatePremiumStateResponse(id=updated_user_id)

@@ -72,3 +72,9 @@ class UserUpdateProfileImageResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class UserUpdatePremiumStateResponse(BaseModel):
+    id: int
+
+    model_config = {"from_attributes": True}
