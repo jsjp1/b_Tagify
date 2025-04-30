@@ -4,12 +4,21 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.schemas.content import ContentPost
-from app.schemas.user import (TokenRefresh, UserDelete, UserLogin,
-                              UserUpdateName, UserUpdateProfileImage)
+from app.schemas.user import (
+    TokenRefresh,
+    UserDelete,
+    UserLogin,
+    UserUpdateName,
+    UserUpdateProfileImage,
+)
 from app.services.content import ContentService
 from app.services.post import PostService
-from app.util.auth import (create_access_token, decode_token,
-                           verify_apple_token, verify_google_token)
+from app.util.auth import (
+    create_access_token,
+    decode_token,
+    verify_apple_token,
+    verify_google_token,
+)
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -187,8 +196,8 @@ class UserService:
             )
 
         db_user.username = user.username
-        await db.commit()
         await db.refresh(db_user.id)
+        await db.commit()
 
         return db_user.id
 
@@ -208,8 +217,8 @@ class UserService:
             )
 
         db_user.profile_image = user.profile_image
-        await db.commit()
         await db.refresh(db_user)
+        await db.commit()
 
         return db_user.id
 
@@ -227,7 +236,7 @@ class UserService:
             )
 
         db_user.is_premium = True
-        await db.commit()
         await db.refresh(db_user)
+        await db.commit()
 
         return db_user.id

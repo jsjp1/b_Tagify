@@ -17,6 +17,7 @@ class ContentModel(BaseModel):
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]
+    created_at: str
 
     model_config = {"from_attributes": True}
 
@@ -32,5 +33,6 @@ class ContentResponseModel(BaseModel):
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]
+    created_at: str
 
     model_config = {"from_attributes": True}

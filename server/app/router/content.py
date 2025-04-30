@@ -103,6 +103,7 @@ async def contents(
                 else {}
             ),
             tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            created_at=content.created_at,
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
@@ -133,6 +134,7 @@ async def contents(
             ),
             **({"body": content.post_metadata.body} if content_type == "post" else {}),
             tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            created_at=content.created_at,
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
@@ -165,6 +167,7 @@ async def bookmark(
                 else {}
             ),
             tags=([tag.tagname for tag in content.tags] if content.tags else []),
+            created_at=content.created_at,
             type="video" if getattr(content, "video_metadata", None) else "post",
         )
         for content in contents
@@ -214,6 +217,7 @@ async def search(
                     else {}
                 ),
                 tags=([tag.tagname for tag in content.tags] if content.tags else []),
+                created_at=content.created_at,
             )
             for content in contents
         ]

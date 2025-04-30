@@ -92,7 +92,6 @@ class ContentService:
         )
         db.add(new_content)
         await db.flush()
-        # await db.refresh(new_content)
 
         if content_type == "video":
             video_metadata = VideoMetadata(
