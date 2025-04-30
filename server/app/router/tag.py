@@ -102,6 +102,7 @@ async def contents(
                 else {}
             ),
             tags=[tag.tagname for tag in content.tags],
+            created_at=content.created_at,
             type=content.content_type,
         )
         for content in contents
@@ -142,6 +143,7 @@ async def contents(
                 else {}
             ),
             tags=[tag.tagname for tag in content.tags],
+            created_at=content.created_at,
             type=content.content_type,
         )
         for content in contents

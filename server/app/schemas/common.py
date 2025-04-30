@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -17,7 +18,7 @@ class ContentModel(BaseModel):
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]
-    created_at: str
+    created_at: datetime
 
     model_config = {"from_attributes": True}
 
@@ -33,6 +34,6 @@ class ContentResponseModel(BaseModel):
     video_length: Optional[int] = Field(default=0)
     body: Optional[str] = Field(default="")
     tags: List[str]
-    created_at: str
+    created_at: datetime
 
     model_config = {"from_attributes": True}
