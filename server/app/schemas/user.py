@@ -15,6 +15,7 @@ class User(BaseModel):
 
 class UserLogin(User):
     id_token: str
+    lang: str
 
 
 class UserWithTokens(User):

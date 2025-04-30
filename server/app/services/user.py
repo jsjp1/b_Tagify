@@ -27,27 +27,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class UserService:
     @staticmethod
-    async def _insert_tutorial(db_user: User, db: AsyncSession):
+    async def _insert_tutorial(db_user: User, db: AsyncSession, lang: str = "en"):
         """
         신규 가입자일 시 튜토리얼 컨텐츠 집어넣기
         """
-        # TODO: localization -> 일단 한글로
-        tutorial_url = (
-            "https://jieeen.notion.site/Tagify-1c816dae3fdf809d8ad4fa66a417f1dd?pvs=4"
-        )
+        tutorial_url = "https://jieeen.notion.site/How-to-use-Tagify-1c816dae3fdf80bab3e3dfc7fb6f387d?pvs=4"
+        tutorial_title = 'How to use "Tagify"? 🚀'
+        tutorial_description = "Check out how to use Tagify!"
+        tutorial_tags = ["Tutorial", "Tagify"]
+
+        if lang == "ko":
+            tutorial_url = "https://jieeen.notion.site/Tagify-1c816dae3fdf809d8ad4fa66a417f1dd?pvs=4"
+            tutorial_title = "Tagify를 이용하는 방법 🚀"
+            tutorial_description = "Tagify를 이용하는 방법을 확인해보세요!"
+            tutorial_tags = ["튜토리얼", "Tagify"]
+        elif lang == "ja":
+            tutorial_url = "https://jieeen.notion.site/Tagify-1e416dae3fdf80d28f90f7b7a54a8f71?pvs=4"
+            tutorial_title = "Tagifyの使い方 🚀"
+            tutorial_description = "Tagifyの使い方をチェックしてみてください!"
+            tutorial_tags = ["チュートリアル", "Tagify"]
+
         analyzed_post = PostService._analyze(tutorial_url)
 
         content = ContentPost(
             user_id=db_user.id,
             bookmark=True,
             url=tutorial_url,
-            title="Tagify를 이용하는 방법🚀",
+            title=tutorial_title,
             thumbnail=analyzed_post["thumbnail"],
             favicon=analyzed_post["favicon"],
-            description="Tagify를 이용하는 방법을 확인해보세요!",
+            description=tutorial_description,
             video_length=0,
             body="",
-            tags=["튜토리얼", "환영합니다!"],
+            tags=tutorial_tags,
         )
 
         await ContentService.post_content("post", content, db)
@@ -79,7 +91,7 @@ class UserService:
             )
             db.add(db_user)
             await db.flush()
-            await UserService._insert_tutorial(db_user, db)
+            await UserService._insert_tutorial(db_user, db, user.lang)
 
         return db_user
 
