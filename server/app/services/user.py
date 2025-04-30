@@ -4,21 +4,12 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.schemas.content import ContentPost
-from app.schemas.user import (
-    TokenRefresh,
-    UserDelete,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateProfileImage,
-)
+from app.schemas.user import (TokenRefresh, UserDelete, UserLogin,
+                              UserUpdateName, UserUpdateProfileImage)
 from app.services.content import ContentService
 from app.services.post import PostService
-from app.util.auth import (
-    create_access_token,
-    decode_token,
-    verify_apple_token,
-    verify_google_token,
-)
+from app.util.auth import (create_access_token, decode_token,
+                           verify_apple_token, verify_google_token)
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -122,7 +113,7 @@ class UserService:
             )
             db.add(db_user)
             await db.flush()
-            await UserService._insert_tutorial(db_user, db)
+            await UserService._insert_tutorial(db_user, db, user.lang)
 
         return db_user
 
