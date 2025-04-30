@@ -1,7 +1,5 @@
-from typing import List, Literal, Optional
-
-from app.schemas.common import ContentModel
-from pydantic import BaseModel, Field
+from app.schemas.common import ContentResponseModel
+from pydantic import BaseModel
 
 
 class UserTags(BaseModel):
@@ -20,7 +18,7 @@ class TagContents(BaseModel):
     tag_id: int
 
 
-class TagContentsResponse(ContentModel):
+class TagContentsResponse(ContentResponseModel):
     id: int
     type: str
 

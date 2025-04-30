@@ -29,7 +29,7 @@ class UserContents(BaseModel):
     id: int
 
 
-class UserContentsResponse(ContentModel):
+class UserContentsResponse(ContentResponseModel):
     id: int
     type: str
 
@@ -40,7 +40,7 @@ class UserBookmark(BaseModel):
     user_id: int
 
 
-class UserBookmarkResponse(ContentModel):
+class UserBookmarkResponse(ContentResponseModel):
     id: int
     type: str
 
