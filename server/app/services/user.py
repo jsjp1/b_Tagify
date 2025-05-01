@@ -196,7 +196,6 @@ class UserService:
             )
 
         db_user.username = user.username
-        await db.refresh(db_user.id)
         await db.commit()
 
         return db_user.id
@@ -217,7 +216,6 @@ class UserService:
             )
 
         db_user.profile_image = user.profile_image
-        await db.refresh(db_user)
         await db.commit()
 
         return db_user.id
@@ -236,7 +234,6 @@ class UserService:
             )
 
         db_user.is_premium = True
-        await db.refresh(db_user)
         await db.commit()
 
         return db_user.id
