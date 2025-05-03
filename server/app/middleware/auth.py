@@ -18,7 +18,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/openapi.json",
             "/api/users/login",
             "/api/users/token/refresh",
-            "/api/users/token/",
+            "/api/users/token/check/refresh_token",
         ]:
             authorization: str = request.headers.get("Authorization")
             if not authorization or not authorization.startswith("Bearer "):
