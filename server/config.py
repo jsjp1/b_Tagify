@@ -20,11 +20,16 @@ class Settings(BaseSettings):
     GOOGLE_IOS_CLIENT_ID: str = "GOOGLE_IOS_CLIENT_ID"
     GOOGLE_ANDROID_CLIENT_ID: str = "GOOGLE_ANDROID_CLIENT_ID"
 
-    APPLE_CLIENT_ID: str = "com.ellipsoid.tagi"
+    APPLE_CLIENT_ID_IOS: str = "com.ellipsoid.tagi"
+    APPLE_CLIENT_ID_ANDROID: str = "com.ellipsoid.tagi.socialLogin"
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )
+
+    @property
+    def apple_audiences(self) -> list[str]:
+        return [self.APPLE_CLIENT_ID_IOS, self.APPLE_CLIENT_ID_ANDROID]
 
 
 def get_settings():

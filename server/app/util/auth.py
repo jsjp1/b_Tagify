@@ -92,7 +92,7 @@ async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
             id_token_str,
             public_key,
             algorithms=["RS256"],
-            audience=settings.APPLE_CLIENT_ID,
+            audience=settings.apple_audiences,
             issuer="https://appleid.apple.com",
         )
 
