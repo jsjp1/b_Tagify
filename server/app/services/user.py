@@ -5,6 +5,7 @@ import jwt
 from app.models.user import User
 from app.schemas.content import ContentPost
 from app.schemas.user import (
+    CheckRefreshToken,
     TokenRefresh,
     UserDelete,
     UserLogin,
@@ -248,3 +249,21 @@ class UserService:
         await db.commit()
 
         return db_user.id
+
+    @staticmethod
+    async def check_refresh_token(token: CheckRefreshToken, settings: Settings) -> bool:
+        """
+        refresh token이 유효한지(만료기간, 등...) 확인 후 반환
+        """
+        refresh_token = token.refresh_token
+
+        try:
+            payload = decode_token(settings, refresh_token)
+            if not payload:
+                return False
+            return True
+
+        except jwt.ExpiredSignatureError:
+            return False
+        except jwt.InvalidTokenError:
+            return False

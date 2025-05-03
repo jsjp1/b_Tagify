@@ -79,3 +79,13 @@ class UserUpdatePremiumStateResponse(BaseModel):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class CheckRefreshToken(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenCheckResponse(BaseModel):
+    valid: bool
+
+    model_config = {"from_attributes": True}

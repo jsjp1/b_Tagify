@@ -1,6 +1,8 @@
 from app.db import get_db
 from app.schemas.user import (
     AllUsersResponse,
+    CheckRefreshToken,
+    RefreshTokenCheckResponse,
     TokenRefresh,
     TokenRefreshResponse,
     User,
@@ -16,7 +18,7 @@ from app.schemas.user import (
 )
 from app.services.user import UserService
 from app.util.auth import create_access_token, create_refresh_token
-from config import get_settings
+from config import Settings, get_settings
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -106,3 +108,12 @@ async def update_premium(
 ) -> UserUpdatePremiumStateResponse:
     updated_user_id = await UserService.update_premium_status(user_id, db)
     return UserUpdatePremiumStateResponse(id=updated_user_id)
+
+
+@router.post("/token/check/refresh_token")
+async def check_refresh_token(
+    request: CheckRefreshToken,
+    settings=Depends(get_settings),
+) -> RefreshTokenCheckResponse:
+    is_valid = await UserService.check_refresh_token(request, settings)
+    return RefreshTokenCheckResponse(valid=is_valid)
