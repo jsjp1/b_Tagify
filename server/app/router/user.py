@@ -75,8 +75,8 @@ async def refresh(
     request: TokenRefresh,
     settings=Depends(get_settings),
 ) -> TokenRefreshResponse:
-    new_access_token = await UserService.token_refresh(request, settings)
-    return TokenRefreshResponse(access_token=new_access_token)
+    new_tokens = await UserService.token_refresh(request, settings)
+    return TokenRefreshResponse(tokens=new_tokens)
 
 
 @router.put("/name/{user_id}")

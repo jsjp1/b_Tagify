@@ -104,4 +104,3 @@ async def verify_apple_token(id_token_str: str, settings: Settings) -> dict:
         raise HTTPException(status_code=400, detail=f"Invalid Apple ID Token: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

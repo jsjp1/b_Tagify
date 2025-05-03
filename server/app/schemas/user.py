@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -50,7 +50,7 @@ class TokenRefresh(BaseModel):
 
 
 class TokenRefreshResponse(BaseModel):
-    access_token: str
+    tokens: Dict[str, Any]
 
     model_config = {"from_attributes": True}
 

@@ -284,7 +284,7 @@ class ContentService:
 
         await db.commit()
 
-        return return_tags
+        return db_content.tags
 
     @staticmethod
     async def get_search_contents(

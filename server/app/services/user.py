@@ -15,6 +15,7 @@ from app.services.content import ContentService
 from app.services.post import PostService
 from app.util.auth import (
     create_access_token,
+    create_refresh_token,
     decode_token,
     verify_apple_token,
     verify_google_token,
@@ -162,7 +163,7 @@ class UserService:
         return users
 
     @staticmethod
-    async def token_refresh(token: TokenRefresh, settings: Settings) -> str:
+    async def token_refresh(token: TokenRefresh, settings: Settings) -> dict:
         """
         refresh 토큰 검증 후 access token 새로 발급
         """
@@ -174,13 +175,23 @@ class UserService:
                     status_code=401, detail="Invalid refresh token"
                 )
 
-            # TODO : 저장된 refresh_token 과 비교해서 존재하면 create access token
+            # TODO: redis 같은 캐시 이용해 최신 refresh token인지 검증하는 로직 추가
             new_access_token = create_access_token(settings, data={"sub": f"{payload}"})
+            new_refresh_token = create_refresh_token(
+                settings, data={"sub": f"{payload}"}
+            )
 
-            return new_access_token
+            return {
+                "access_token": new_access_token,
+                "refresh_token": new_refresh_token,
+            }
 
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Refresh token has expired")
         except jwt.InvalidSignatureError:
             raise HTTPException(status_code=401, detail="Invalid token signature")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     @staticmethod
     async def update_name(user: UserUpdateName, user_id: int, db: AsyncSession) -> int:
