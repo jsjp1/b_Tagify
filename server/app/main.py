@@ -26,7 +26,7 @@ app.include_router(router=router)
 
 app.add_middleware(AuthMiddleware, settings=get_settings())
 app.add_middleware(ExceptionHandlerMiddleware)
-app.add_middleware(QueryTimeMiddleware)
+# app.add_middleware(QueryTimeMiddleware)
 
 
 @app.get("/")
