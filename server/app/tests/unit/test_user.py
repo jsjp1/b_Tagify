@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from app.models.user import User
+from sqlalchemy import select
 
 
 @pytest.mark.asyncio
@@ -75,6 +77,7 @@ async def test_login_google_new_user(mock_verify, field, client):
         "oauth_id": "google123",
         "email": "test@example.com",
         "profile_image": "https://example.com/image.png",
+        "lang": "kr",
     }
 
     response = await client.post(
@@ -87,7 +90,7 @@ async def test_login_google_new_user(mock_verify, field, client):
     assert response.status_code == 200, "User Google Login api failed"
     assert field in response_json
     for k in user_login.keys():
-        if k == "id_token":
+        if k in ("id_token", "lang"):
             continue
 
         assert user_login[k] == response_json[k]
@@ -115,6 +118,7 @@ async def test_login_google_existing_user(
         "oauth_id": test_google_user_persist.oauth_id,
         "email": test_google_user_persist.email,
         "profile_image": test_google_user_persist.profile_image,
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=user_login)
@@ -160,6 +164,7 @@ async def test_login_apple_new_user(mock_verify, field, client):
         "oauth_id": "apple123",
         "email": "apple@example.com",
         "profile_image": "https://example.com/apple.png",
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=user_login)
@@ -168,8 +173,9 @@ async def test_login_apple_new_user(mock_verify, field, client):
     assert response.status_code == 200
     assert field in response_json
     for k in user_login:
-        if k == "id_token":
+        if k in ("id_token", "lang"):
             continue
+
         assert k in response_json
         assert user_login[k] == response_json[k]
 
@@ -192,6 +198,7 @@ async def test_login_apple_existing_user(mock_verify, client, test_apple_user_pe
         "oauth_id": test_apple_user_persist.oauth_id,
         "email": test_apple_user_persist.email,
         "profile_image": test_apple_user_persist.profile_image,
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=user_login)
@@ -221,6 +228,7 @@ async def test_login_google_invalid_token(mock_verify, client):
         "oauth_id": "doesnotmatter",
         "email": "invalid@example.com",
         "profile_image": "https://example.com/fake.png",
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=user_login)
@@ -247,6 +255,7 @@ async def test_login_apple_invalid_token(mock_verify, client):
         "oauth_id": "anything",
         "email": "apple_invalid@example.com",
         "profile_image": "https://example.com/apple.png",
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=user_login)
@@ -275,6 +284,7 @@ async def test_refresh_token_success(mock_verify, client, test_google_user_persi
         "oauth_id": test_google_user_persist.oauth_id,
         "email": test_google_user_persist.email,
         "profile_image": test_google_user_persist.profile_image,
+        "lang": "kr",
     }
 
     response = await client.post("/api/users/login", json=login_data)
@@ -289,11 +299,16 @@ async def test_refresh_token_success(mock_verify, client, test_google_user_persi
     )
 
     assert response.status_code == 200
-    new_access_token = response.json().get("access_token")
+    new_access_token = response.json()["tokens"]["access_token"]
+    new_refresh_token = response.json()["tokens"]["refresh_token"]
+
     assert isinstance(new_access_token, str)
     assert (
         new_access_token != response_json["access_token"]
     ), "Refresh token did not issue a new access_token"
+    assert (
+        new_refresh_token != response_json["refresh_token"]
+    ), "Refresh token did not issue a new refresh_token"
 
 
 @pytest.mark.asyncio
@@ -411,3 +426,61 @@ async def test_update_profile_image_invalid_user(auth_client):
     )
 
     assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_delete_user_success(auth_client, test_user_persist, db_session):
+    """
+    사용자 삭제 후 제대로 삭제됐는지 확인
+    """
+    response = await auth_client.post(
+        f"/api/users/me/delete",
+        json={"id": test_user_persist.id, "reason": ""},
+    )
+
+    assert response.status_code == 200
+    assert "id" in response.json()
+    assert test_user_persist.id == response.json()["id"]
+
+    async with db_session as session:
+        result = await session.execute(
+            select(User).where(User.id == test_user_persist.id)
+        )
+        user = result.scalar_one_or_none()
+        assert user is None
+
+
+@pytest.mark.asyncio
+async def test_delete_user_fail(auth_client, test_user_persist):
+    """
+    없는 사용자 삭제하려고 했을 때 실패, 400 Error
+    """
+    fake_id = 999999
+    response = await auth_client.post(
+        f"/api/users/me/delete",
+        json={"id": fake_id, "reason": ""},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == f"User with id {fake_id} not found"
+
+
+@pytest.mark.asyncio
+async def test_update_premium_success(auth_client, test_user_persist, db_session):
+    """
+    사용자 프리미엄 업그레이드 성공
+    """
+    response = await auth_client.put(
+        f"/api/users/premium/{test_user_persist.id}",
+    )
+
+    assert response.status_code == 200
+    assert "id" in response.json()
+    assert response.json()["id"] == test_user_persist.id
+
+    async with db_session as session:
+        result = await session.execute(
+            select(User).where(User.id == test_user_persist.id)
+        )
+        user = result.scalar_one_or_none()
+        assert user.is_premium
