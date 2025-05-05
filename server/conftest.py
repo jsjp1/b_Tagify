@@ -152,7 +152,8 @@ async def test_apple_user_persist(db_session: AsyncSession, oauth_id):
 
 @pytest_asyncio.fixture()
 async def test_user_persist_with_content(
-    test_google_user_persist, db_session: AsyncSession, oauth_id
+    test_google_user_persist,
+    db_session: AsyncSession,
 ):
     # 신규 가입한 후 유효 content 저장한 user
     content = Content(

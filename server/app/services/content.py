@@ -179,7 +179,6 @@ class ContentService:
         """
         특정 콘텐츠 삭제
         """
-
         result = await db.execute(
             select(Content)
             .options(selectinload(Content.tags))
