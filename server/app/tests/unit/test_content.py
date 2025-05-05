@@ -1,6 +1,6 @@
 import pytest
 from app.models.content import Content
-from sqlalchemy import select
+from sqlalchemy import and_, select
 
 
 @pytest.mark.asyncio
