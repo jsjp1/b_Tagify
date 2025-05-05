@@ -43,9 +43,9 @@ async def analyze(
     settings=Depends(get_settings),
 ) -> ContentAnalyzeResponse:
     if content_type == "video":
-        return await VideoService.analyze_video(content_type, request, db, settings)
+        return await VideoService.analyze_video(request, db, settings)
     elif content_type == "post":
-        return await PostService.analyze_post(content_type, request, db)
+        return await PostService.analyze_post(request, db)
     raise HTTPException(status_code=400, detail="Invalid content type")
 
 

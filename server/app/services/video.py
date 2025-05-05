@@ -56,6 +56,9 @@ class VideoService:
         request = youtube.videos().list(part="snippet,contentDetails", id=video_id)
         response = request.execute()
 
+        if len(response["items"]) == 0:
+            raise HTTPException(status_code=404, detail="Video not found on YouTube")
+
         if not response["items"]:
             return {
                 "title": "",
@@ -87,7 +90,7 @@ class VideoService:
 
     @staticmethod
     async def analyze_video(
-        content_type: str, content: ContentAnalyze, db: AsyncSession, settings: Settings
+        content: ContentAnalyze, db: AsyncSession, settings: Settings
     ) -> ContentAnalyzeResponse:
         """
         video 정보 추출 후 반환
@@ -138,4 +141,6 @@ class VideoService:
         result = await db.execute(stmt)
         contents = result.unique().scalars().all()
 
+        return contents
+        return contents
         return contents

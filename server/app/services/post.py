@@ -1,5 +1,5 @@
 from typing import List
-from urllib.parse import urljoin, urlparse
+from urllib.parse import unquote, urljoin, urlparse
 
 import requests
 from app.models.content import Content, ContentTypeEnum
@@ -50,37 +50,50 @@ class PostService:
         수동 리디렉션을 따라가며 최종 유효한 URL 반환
         intent:// 등 requests가 지원하지 않는 스킴을 피함
         """
-        for _ in range(max_redirects):
-            response = requests.get(
-                url,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
-                    "Accept-Language": "ko-KR,ko;q=0.9",
-                },
-                timeout=3,
-                allow_redirects=False,
-            )
-            if 300 <= response.status_code < 400:
-                next_url = response.headers.get("Location", "")
-                if next_url.startswith("intent://"):
-                    parsed = urlparse(next_url)
-                    query = parsed.fragment
-                    fallback_key = "S.browser_fallback_url="
-                    if fallback_key in query:
-                        from urllib.parse import unquote
-
-                        fallback_url = unquote(
-                            query.split(fallback_key)[-1].split(";")[0]
+        try:
+            for _ in range(max_redirects):
+                response = requests.get(
+                    url,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
+                        "Accept-Language": "ko-KR,ko;q=0.9",
+                    },
+                    timeout=3,
+                    allow_redirects=False,
+                )
+                if 300 <= response.status_code < 400:
+                    next_url = response.headers.get("Location", "")
+                    if next_url.startswith("intent://"):
+                        parsed = urlparse(next_url)
+                        query = parsed.fragment
+                        fallback_key = "S.browser_fallback_url="
+                        if fallback_key in query:
+                            fallback_url = unquote(
+                                query.split(fallback_key)[-1].split(";")[0]
+                            )
+                            return fallback_url
+                        raise HTTPException(
+                            status_code=400, detail="No fallback URL in intent scheme"
                         )
-                        return fallback_url
-                    raise Exception("No fallback URL in intent scheme")
-                elif next_url.startswith("http"):
-                    url = next_url
+                    elif next_url.startswith("http"):
+                        url = next_url
+                    else:
+                        url = urljoin(url, next_url)
+                elif 200 <= response.status_code < 300:
+                    return url
                 else:
-                    url = urljoin(url, next_url)
-            else:
-                break
-        return url
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Invalid response while resolving redirect",
+                    )
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(
+                status_code=422, detail=f"Failed to resolve URL: {str(e)}"
+            )
+
+        raise HTTPException(
+            status_code=422, detail="Max redirects exceeded or no valid URL found"
+        )
 
     @staticmethod
     def _analyze(url: str) -> dict:
@@ -192,7 +205,7 @@ class PostService:
 
     @staticmethod
     async def analyze_post(
-        content_type: str, content: ContentAnalyze, db: AsyncSession
+        content: ContentAnalyze, db: AsyncSession
     ) -> ContentAnalyzeResponse:
         """
         post 정보 추출 후 반환

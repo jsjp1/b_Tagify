@@ -1,3 +1,4 @@
+import datetime
 import random
 import uuid
 from typing import Any, AsyncGenerator
@@ -7,6 +8,7 @@ import pytest_asyncio
 from app.db import get_db
 from app.main import app as main_app
 from app.models.base import Base
+from app.models.content import Content, ContentTypeEnum
 from app.models.user import User
 from app.util.auth import create_access_token
 from config import get_settings
@@ -146,3 +148,26 @@ async def test_apple_user_persist(db_session: AsyncSession, oauth_id):
     await db_session.refresh(user)
 
     return user
+
+
+@pytest_asyncio.fixture()
+async def test_user_persist_with_content(
+    test_google_user_persist, db_session: AsyncSession, oauth_id
+):
+    # 신규 가입한 후 유효 content 저장한 user
+    content = Content(
+        url="https://www.github.com/",
+        title="GitHub · Build software better, together.",
+        description="GitHub is where over 100 million developers shape the future of software, together.",
+        bookmark=False,
+        thumbnail="https://github.githubassets.com/images/modules/open_graph/github-mark.png",
+        favicon="https://github.com/favicon.ico",
+        content_type=ContentTypeEnum.POST,
+        user_id=test_google_user_persist.id,
+    )
+
+    db_session.add(content)
+    await db_session.commit()
+    await db_session.refresh(content)
+
+    return test_google_user_persist
