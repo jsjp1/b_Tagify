@@ -30,7 +30,7 @@ class UserWithTokens(User):
 
 class UserDelete(BaseModel):
     id: int
-    reason: str | None = None
+    reason: str = ""
 
 
 class UserDeleteResponse(BaseModel):

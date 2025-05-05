@@ -63,7 +63,7 @@ async def login(
     return UserWithTokens.model_validate(db_user, from_attributes=True)
 
 
-@router.delete("/me")
+@router.post("/me/delete")
 async def delete(
     request: UserDelete,
     db: AsyncSession = Depends(get_db),
