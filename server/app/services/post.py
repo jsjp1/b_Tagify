@@ -102,7 +102,21 @@ class PostService:
         """
         주어진 URL에서 콘텐츠 관련 정보를 추출하여 딕셔너리로 반환
         """
-        final_url = PostService.follow_redirects_until_valid(url)
+        try:
+            final_url = PostService.follow_redirects_until_valid(url)
+        except Exception as e:
+            parsed_url = urlparse(url)
+            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+            return {
+                "title": "",
+                "thumbnail": "",
+                "description": "",
+                "favicon": base_url + "/favicon.ico",
+                "body": "",
+                "tags": [],
+            }
+
         try:
             response = requests.get(
                 final_url,
@@ -134,7 +148,6 @@ class PostService:
             response = requests.get(
                 final_url,
                 headers={
-                    # "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
                     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
                     "Accept": (
                         "text/html,application/xhtml+xml,application/xml;"
