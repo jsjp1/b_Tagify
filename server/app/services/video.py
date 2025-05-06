@@ -6,7 +6,8 @@ from app.models.content import Content, ContentTypeEnum
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.video_metadata import VideoMetadata
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from config import Settings
 from fastapi import HTTPException
 from googleapiclient.discovery import build
@@ -23,7 +24,7 @@ class VideoService:
         """
         parsed_url = urlparse(video_url)
 
-        if parsed_url.hostname in ["www.youtube.com", "youtube.com"]:
+        if parsed_url.hostname in ["www.youtube.com", "youtube.com", "music.youtube.com"]:
             if "shorts" in parsed_url.path:
                 return parsed_url.path.split("/")[-1].split("?")[0]
             return parse_qs(parsed_url.query).get("v", [""])[0]
@@ -141,6 +142,4 @@ class VideoService:
         result = await db.execute(stmt)
         contents = result.unique().scalars().all()
 
-        return contents
-        return contents
         return contents
