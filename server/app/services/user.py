@@ -137,7 +137,7 @@ class UserService:
         db_user = result.unique().scalars().first()
         if not db_user:
             raise HTTPException(
-                status_code=400, detail=f"User with id {user.id} not found"
+                status_code=404, detail=f"User with id {user.id} not found"
             )
 
         # TODO: user.reason에 해당하는 탈퇴 이유 및 피드백 저장하기
@@ -204,7 +204,7 @@ class UserService:
 
         if not db_user:
             raise HTTPException(
-                status_code=400, detail=f"User with id {user_id} not found"
+                status_code=404, detail=f"User with id {user_id} not found"
             )
 
         db_user.username = user.username
@@ -224,7 +224,7 @@ class UserService:
 
         if not db_user:
             raise HTTPException(
-                status_code=400, detail=f"User with id {user_id} not found"
+                status_code=404, detail=f"User with id {user_id} not found"
             )
 
         db_user.profile_image = user.profile_image
@@ -242,7 +242,7 @@ class UserService:
 
         if not db_user:
             raise HTTPException(
-                status_code=400, detail=f"User with id {user_id} not found"
+                status_code=404, detail=f"User with id {user_id} not found"
             )
 
         db_user.is_premium = True

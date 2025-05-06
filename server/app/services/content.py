@@ -69,7 +69,7 @@ class ContentService:
         db_user = result.unique().scalars().first()
         if not db_user:
             raise HTTPException(
-                status_code=400, detail=f"User with id {content.user_id} not found"
+                status_code=404, detail=f"User with id {content.user_id} not found"
             )
 
         stmt = select(Content).where(
@@ -147,11 +147,11 @@ class ContentService:
         result = await db.execute(
             select(Content).where(Content.id == content_id).with_for_update()
         )
-        content = result.scalar_one_or_none()
-        if not content:
+        db_content = result.scalar_one_or_none()
+        if not db_content:
             raise HTTPException(status_code=404, detail="Content not found")
 
-        content.bookmark = not content.bookmark
+        db_content.bookmark = not db_content.bookmark
         await db.commit()
 
     @staticmethod

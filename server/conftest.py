@@ -9,13 +9,16 @@ from app.db import get_db
 from app.main import app as main_app
 from app.models.base import Base
 from app.models.content import Content, ContentTypeEnum
+from app.models.content_tag import content_tag_association
+from app.models.tag import Tag
 from app.models.user import User
 from app.util.auth import create_access_token
 from config import get_settings
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
+from regex import T
+from sqlalchemy import insert
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 POSTGRES_TEST_DB_URL = "postgresql+asyncpg://test:1234@localhost:5432/test_db"
 
@@ -179,8 +182,45 @@ async def test_user_persist_with_content(
         user_id=test_google_user_persist.id,
     )
 
+    tag1 = Tag(
+        tagname="programming",
+        user_id=test_google_user_persist.id,
+    )
+    tag2 = Tag(
+        tagname="github",
+        user_id=test_google_user_persist.id,
+    )
+    tag3 = Tag(
+        tagname="naver",
+        user_id=test_google_user_persist.id,
+    )
+
     db_session.add(content1)
     db_session.add(content2)
+
+    db_session.add(tag1)
+    db_session.add(tag2)
+    db_session.add(tag3)
+
+    await db_session.flush()
+
+    await db_session.execute(
+        insert(content_tag_association),
+        {"content_id": content1.id, "tag_id": tag1.id},
+    )
+    await db_session.execute(
+        insert(content_tag_association),
+        {"content_id": content1.id, "tag_id": tag2.id},
+    )
+    await db_session.execute(
+        insert(content_tag_association),
+        {"content_id": content2.id, "tag_id": tag1.id},
+    )
+    await db_session.execute(
+        insert(content_tag_association),
+        {"content_id": content2.id, "tag_id": tag3.id},
+    )
+
     await db_session.flush()
     await db_session.commit()
 

@@ -357,7 +357,7 @@ async def test_update_user_name_success(auth_client, test_user_persist):
 @pytest.mark.asyncio
 async def test_update_user_name_validation_error(auth_client, test_user_persist):
     """
-    username이 없는 경우 422 Validation Error 발생
+    username이 없는 경우 422 -> Validation Error
     """
     response = await auth_client.put(
         f"/api/users/name/{test_user_persist.id}", json={}  # username 빠짐
@@ -372,14 +372,15 @@ async def test_update_user_name_validation_error(auth_client, test_user_persist)
 @pytest.mark.asyncio
 async def test_update_user_name_invalid_user(auth_client):
     """
-    존재하지 않는 user_id인 경우 정상 처리인지 확인 (예: 404 혹은 200)
+    존재하지 않는 user_id인 경우 -> 404 Not found
     """
     invalid_user_id = 999999
     response = await auth_client.put(
         f"/api/users/name/{invalid_user_id}", json={"username": "testUser"}
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"User with id {invalid_user_id} not found"
 
 
 @pytest.mark.asyncio
@@ -402,7 +403,7 @@ async def test_update_profile_image_success(auth_client, test_user_persist):
 @pytest.mark.asyncio
 async def test_update_profile_image_validation_error(auth_client, test_user_persist):
     """
-    profile_image가 body에 없을 경우 422 Validation Error
+    profile_image가 body에 없을 경우 -> 422 Validation Error
     """
     response = await auth_client.put(
         f"/api/users/profile_image/{test_user_persist.id}", json={}
@@ -417,7 +418,7 @@ async def test_update_profile_image_validation_error(auth_client, test_user_pers
 @pytest.mark.asyncio
 async def test_update_profile_image_invalid_user(auth_client):
     """
-    존재하지 않는 user_id로 요청했을 경우 에러 or graceful 처리
+    존재하지 않는 user_id로 요청했을 경우 -> 404 Not found
     """
     fake_user_id = 999999
     response = await auth_client.put(
@@ -425,7 +426,8 @@ async def test_update_profile_image_invalid_user(auth_client):
         json={"profile_image": "https://example.com/ghost.png"},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"User with id {fake_user_id} not found"
 
 
 @pytest.mark.asyncio
@@ -453,7 +455,7 @@ async def test_delete_user_success(auth_client, test_user_persist, db_session):
 @pytest.mark.asyncio
 async def test_delete_user_fail(auth_client, test_user_persist):
     """
-    없는 사용자 삭제하려고 했을 때 실패, 400 Error
+    없는 사용자 삭제하려고 했을 때 실패, 404 Not found
     """
     fake_id = 999999
     response = await auth_client.post(
@@ -461,7 +463,7 @@ async def test_delete_user_fail(auth_client, test_user_persist):
         json={"id": fake_id, "reason": ""},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.json()["detail"] == f"User with id {fake_id} not found"
 
 
@@ -484,3 +486,17 @@ async def test_update_premium_success(auth_client, test_user_persist, db_session
         )
         user = result.scalar_one_or_none()
         assert user.is_premium
+
+
+@pytest.mark.asyncio
+async def test_update_premium_fail(auth_client):
+    """
+    존재하지 않는 사용자의 프리미엄 업그레이드 -> 404 Not found
+    """
+    fake_id = 999999
+    response = await auth_client.put(
+        f"/api/users/premium/{fake_id}",
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"User with id {fake_id} not found"

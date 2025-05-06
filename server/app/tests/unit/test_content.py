@@ -45,7 +45,7 @@ async def test_analyze_success(
     auth_client, test_user_persist, content_type, body, field
 ):
     """
-    콘텐츠 분석 성공 시 200
+    콘텐츠 분석 성공 -> 200
     각 필드(url, title, thumbnail 등)가 응답에 포함되는지 확인
     """
     body["user_id"] = test_user_persist.id
@@ -86,7 +86,7 @@ async def test_analyze_fail_with_invalid_url(
     auth_client, test_user_persist, content_type, body
 ):
     """
-    존재하지 않는 url analyze시 422 Unprocessable Entitiy
+    존재하지 않는 url analyze -> 422 Unprocessable Entitiy
     """
     body["user_id"] = test_user_persist.id
 
@@ -121,7 +121,7 @@ async def test_analyze_fail_with_exists_content(
     auth_client, test_user_persist_with_content, content_type, body
 ):
     """
-    이미 존재하는 contents를 analyze하려할 때 400 Bad Request
+    이미 존재하는 contents를 analyze -> 400 Bad Request
     """
     body["user_id"] = test_user_persist_with_content.id
 
@@ -217,12 +217,45 @@ async def test_save_content_success(
         )
     ],
 )
+async def test_save_content_fail_with_invalid_user(auth_client, content_type, body):
+    """
+    존재하지 않는 사용자의 컨텐츠 저장 -> 404 Not found
+    """
+    body["user_id"] = 999999
+
+    response = await auth_client.post(
+        f"/api/contents/save?content_type={content_type}", json=body
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"User with id 999999 not found"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ["content_type", "body"],
+    [
+        (
+            "post",
+            {
+                "url": "https://www.github.com/",
+                "title": "github",
+                "thumbnail": "",
+                "favicon": "",
+                "description": "",
+                "bookmark": False,
+                "video_length": 0,
+                "body": "",
+                "tags": ["temp"],
+            },
+        )
+    ],
+)
 async def test_save_content_fail_with_exists_content(
     auth_client, test_user_persist_with_content, content_type, body
 ):
     """
-    이미 저장된 콘텐츠를 다시 저장하려 하면 400 Bad Request
-    'Content already exists' 메시지를 반환하는지 확인
+    이미 저장된 콘텐츠를 다시 저장 -> 400 Bad Request
     """
     body["user_id"] = test_user_persist_with_content.id
 
@@ -235,29 +268,27 @@ async def test_save_content_fail_with_exists_content(
 
 
 @pytest.mark.asyncio
-async def test_delete_content_success(auth_client, test_user_persist_with_content, db_session):
+async def test_delete_content_success(
+    auth_client, test_user_persist_with_content, db_session
+):
     """
     콘텐츠 삭제 성공 -> 200
-    'success' 메시지를 반환 및 DB에서 해당 콘텐츠가 실제로 삭제되었는지 확인
+    DB에서 해당 콘텐츠가 실제로 삭제되었는지 확인
     """
     async with db_session as session:
         result = await session.execute(
-          select(Content).where(Content.user_id == test_user_persist_with_content.id)
+            select(Content).where(Content.user_id == test_user_persist_with_content.id)
         )
         db_content = result.unique().scalars().first()
         content_id = db_content.id
 
-    response = await auth_client.delete(
-        f"/api/contents/{content_id}"
-    )
+    response = await auth_client.delete(f"/api/contents/{content_id}")
 
     assert response.status_code == 200
     assert response.json()["message"] == "success"
 
     async with db_session as session:
-        result = await session.execute(
-            select(Content).where(Content.id == content_id)
-        )
+        result = await session.execute(select(Content).where(Content.id == content_id))
         db_content = result.unique().scalars().first()
         assert not db_content
 
@@ -266,13 +297,10 @@ async def test_delete_content_success(auth_client, test_user_persist_with_conten
 async def test_delete_content_fail(auth_client):
     """
     존재하지 않는 콘텐츠 ID 삭제 -> 404 Not Found
-    'Content not found' 메시지를 반환하는지 확인
     """
     fake_content_id = 999999
 
-    response = await auth_client.delete(
-        f"/api/contents/{fake_content_id}"
-    )
+    response = await auth_client.delete(f"/api/contents/{fake_content_id}")
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Content not found"
@@ -323,8 +351,11 @@ async def test_get_all_contents_success(
 
 
 @pytest.mark.asyncio
-async def test_get_bookmarked_contents_success(auth_client, test_user_persist_with_content, db_session):
+async def test_get_bookmarked_contents_success(
+    auth_client, test_user_persist_with_content, db_session
+):
     """
+    북마크된 콘텐츠 조회 성공 테스트
     """
     response = await auth_client.get(
         f"/api/contents/bookmarks/user/{test_user_persist_with_content.id}"
@@ -338,8 +369,11 @@ async def test_get_bookmarked_contents_success(auth_client, test_user_persist_wi
 
 
 @pytest.mark.asyncio
-async def test_toggle_bookmark_success(auth_client, test_user_persist_with_content, db_session):
+async def test_toggle_bookmark_success(
+    auth_client, test_user_persist_with_content, db_session
+):
     """
+    북마크 상태 토글 성공 테스트
     """
     async with db_session as session:
         result = await session.execute(
@@ -349,9 +383,7 @@ async def test_toggle_bookmark_success(auth_client, test_user_persist_with_conte
         db_content = result.unique().scalars().first()
         bookmarked = db_content.bookmark
 
-    response = await auth_client.post(
-        f"/api/contents/{db_content.id}/bookmark"
-    )
+    response = await auth_client.post(f"/api/contents/{db_content.id}/bookmark")
 
     assert response.status_code == 200
     assert response.json()["message"] == "success"
@@ -368,37 +400,40 @@ async def test_toggle_bookmark_success(auth_client, test_user_persist_with_conte
 
 
 @pytest.mark.asyncio
-async def test_edit_content_success(auth_client, test_user_persist_with_content, db_session):
+async def test_edit_content_success(
+    auth_client, test_user_persist_with_content, db_session
+):
     """
+    콘텐츠 수정 성공 테스트
     """
     async with db_session as session:
         result = await session.execute(
             select(Content)
-              .where(Content.user_id == test_user_persist_with_content.id)
-              .options(
-                  selectinload(Content.tags),
-                  joinedload(Content.video_metadata),
-                  joinedload(Content.post_metadata),
-              )
+            .where(Content.user_id == test_user_persist_with_content.id)
+            .options(
+                selectinload(Content.tags),
+                joinedload(Content.video_metadata),
+                joinedload(Content.post_metadata),
+            )
         )
 
         db_content = result.unique().scalars().first()
 
     body = {
-        "url": db_content.url, # url은 못바꿈
+        "url": db_content.url,  # url은 못바꿈
         "title": "new_title",
         "thumbnail": "new_thumbnail",
-        "favicon": db_content.favicon, # favicon은 못바꿈
+        "favicon": db_content.favicon,  # favicon은 못바꿈
         "description": "new_description",
         "bookmark": not db_content.bookmark,
         "video_length": 0,
         "body": "",
-        "tags": db_content.tags,
+        "tags": [x.tagname for x in db_content.tags],
     }
-    
+
     response = await auth_client.put(
         f"/api/contents/{db_content.id}/user/{test_user_persist_with_content.id}",
-        json=body
+        json=body,
     )
 
     assert response.status_code == 200
@@ -409,9 +444,8 @@ async def test_edit_content_success(auth_client, test_user_persist_with_content,
         )
 
         editted_content = result.unique().scalars().first()
-    
+
     assert editted_content.title == "new_title"
     assert editted_content.thumbnail == "new_thumbnail"
     assert editted_content.description == "new_description"
     assert editted_content.bookmark != db_content.bookmark
-        

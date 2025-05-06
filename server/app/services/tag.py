@@ -32,6 +32,8 @@ class TagService:
         """
         태그와 매치되는 모든 콘텐츠 반환
         """
+        result = await db.execute(select(Tag).where(Tag.id == tag.tag_id))
+
         stmt = (
             select(Content)
             .join(

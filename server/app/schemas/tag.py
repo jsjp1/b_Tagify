@@ -19,7 +19,6 @@ class TagContents(BaseModel):
 
 
 class TagContentsResponse(ContentResponseModel):
-    id: int
     type: str
 
     model_config = {"from_attributes": True}
