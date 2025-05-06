@@ -216,17 +216,23 @@ class PostService:
         if match:
             return match.group(0)
         return url
-    
+        
     @staticmethod
-    def normalize_url_scheme(url: str) -> str:
+    def normalize_url_scheme(url: str, base_url: str) -> str:
         """
-        스킴 없는 경우 추가해서 반환
+        스킴이 없으면 https:// 붙임
+        잘못된 도메인 or 상대 경로 -> base_url 기준으로 보정
         """
+        if not url:
+            return ""
+
         if url.startswith("//"):
-            return f"https:{url}" 
+            url = f"https:{url}"
+
         parsed = urlparse(url)
-        if not parsed.scheme:
-            return f"https://{url}"
+        if not parsed.netloc: 
+            return urljoin(base_url, url)
+
         return url
 
     @staticmethod
@@ -252,8 +258,8 @@ class PostService:
         content = ContentAnalyzeResponse(
             url=real_url,
             title=post_info["title"],
-            thumbnail=PostService.normalize_url_scheme(post_info["thumbnail"]),
-            favicon=PostService.normalize_url_scheme(post_info["favicon"]),
+            thumbnail=PostService.normalize_url_scheme(post_info["thumbnail"], content.url),
+            favicon=PostService.normalize_url_scheme(post_info["favicon"], content.url),
             description=post_info["description"],
             body=post_info["body"],
             tags=post_info["tags"],
@@ -281,3 +287,4 @@ class PostService:
         result = await db.execute(stmt)
         contents = result.scalars().all()
         return contents
+
