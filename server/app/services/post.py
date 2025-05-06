@@ -1,3 +1,4 @@
+import re
 from typing import List
 from urllib.parse import unquote, urljoin, urlparse
 
@@ -204,6 +205,29 @@ class PostService:
             "body": body,
             "tags": tags,
         }
+    
+    @staticmethod
+    def extract_first_url(url: str) -> str:
+        """
+        정규표현식 이용해 url만 추출
+        """
+        pattern = r"https?://[^\s]+"
+        match = re.search(pattern, url)
+        if match:
+            return match.group(0)
+        return url
+    
+    @staticmethod
+    def normalize_url_scheme(url: str) -> str:
+        """
+        스킴 없는 경우 추가해서 반환
+        """
+        if url.startswith("//"):
+            return f"https:{url}" 
+        parsed = urlparse(url)
+        if not parsed.scheme:
+            return f"https://{url}"
+        return url
 
     @staticmethod
     async def analyze_post(
@@ -212,22 +236,24 @@ class PostService:
         """
         post 정보 추출 후 반환
         """
+        real_url = PostService.extract_first_url(content.url)
+
         stmt = select(Content).where(
-            and_(Content.url == content.url, Content.user_id == content.user_id)
+            and_(Content.url == real_url, Content.user_id == content.user_id)
         )
         result = await db.execute(stmt)
         db_content = result.scalar_one_or_none()
 
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
-
-        post_info = PostService._analyze(content.url)
+        
+        post_info = PostService._analyze(real_url)
 
         content = ContentAnalyzeResponse(
-            url=content.url,
+            url=real_url,
             title=post_info["title"],
-            thumbnail=post_info["thumbnail"],
-            favicon=post_info["favicon"],
+            thumbnail=PostService.normalize_url_scheme(post_info["thumbnail"]),
+            favicon=PostService.normalize_url_scheme(post_info["favicon"]),
             description=post_info["description"],
             body=post_info["body"],
             tags=post_info["tags"],
@@ -254,5 +280,4 @@ class PostService:
 
         result = await db.execute(stmt)
         contents = result.scalars().all()
-        return contents
         return contents
