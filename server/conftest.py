@@ -14,7 +14,8 @@ from app.util.auth import create_access_token
 from config import get_settings
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
 POSTGRES_TEST_DB_URL = "postgresql+asyncpg://test:1234@localhost:5432/test_db"
 
@@ -156,7 +157,7 @@ async def test_user_persist_with_content(
     db_session: AsyncSession,
 ):
     # 신규 가입한 후 유효 content 저장한 user
-    content = Content(
+    content1 = Content(
         url="https://www.github.com/",
         title="GitHub · Build software better, together.",
         description="GitHub is where over 100 million developers shape the future of software, together.",
@@ -167,8 +168,20 @@ async def test_user_persist_with_content(
         user_id=test_google_user_persist.id,
     )
 
-    db_session.add(content)
+    content2 = Content(
+        url="https://www.naver.com/",
+        title="",
+        description="",
+        bookmark=True,
+        thumbnail="",
+        favicon="",
+        content_type=ContentTypeEnum.POST,
+        user_id=test_google_user_persist.id,
+    )
+
+    db_session.add(content1)
+    db_session.add(content2)
+    await db_session.flush()
     await db_session.commit()
-    await db_session.refresh(content)
 
     return test_google_user_persist

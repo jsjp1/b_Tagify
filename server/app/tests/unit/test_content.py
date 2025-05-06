@@ -1,6 +1,7 @@
 import pytest
 from app.models.content import Content
 from sqlalchemy import and_, select
+from sqlalchemy.orm import joinedload, selectinload
 
 
 @pytest.mark.asyncio
@@ -243,7 +244,7 @@ async def test_delete_content_success(auth_client, test_user_persist_with_conten
         result = await session.execute(
           select(Content).where(Content.user_id == test_user_persist_with_content.id)
         )
-        db_content = result.scalar_one_or_none()
+        db_content = result.unique().scalars().first()
         content_id = db_content.id
 
     response = await auth_client.delete(
@@ -257,7 +258,7 @@ async def test_delete_content_success(auth_client, test_user_persist_with_conten
         result = await session.execute(
             select(Content).where(Content.id == content_id)
         )
-        db_content = result.scalar_one_or_none()
+        db_content = result.unique().scalars().first()
         assert not db_content
 
 
@@ -319,4 +320,98 @@ async def test_get_all_contents_success(
     assert isinstance(response_json, list)
     assert len(response_json) == content_len
     assert field in response_json[0]
-    assert field in response_json[0]
+
+
+@pytest.mark.asyncio
+async def test_get_bookmarked_contents_success(auth_client, test_user_persist_with_content, db_session):
+    """
+    """
+    response = await auth_client.get(
+        f"/api/contents/bookmarks/user/{test_user_persist_with_content.id}"
+    )
+
+    response_json = response.json()
+
+    assert response.status_code == 200
+    assert isinstance(response_json, list)
+    assert all(x["bookmark"] for x in response_json)
+
+
+@pytest.mark.asyncio
+async def test_toggle_bookmark_success(auth_client, test_user_persist_with_content, db_session):
+    """
+    """
+    async with db_session as session:
+        result = await session.execute(
+            select(Content).where(Content.user_id == test_user_persist_with_content.id)
+        )
+
+        db_content = result.unique().scalars().first()
+        bookmarked = db_content.bookmark
+
+    response = await auth_client.post(
+        f"/api/contents/{db_content.id}/bookmark"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "success"
+
+    async with db_session as session:
+        result = await session.execute(
+            select(Content).where(Content.user_id == test_user_persist_with_content.id)
+        )
+
+        db_content = result.unique().scalars().first()
+        new_bookmarked = db_content.bookmark
+
+    assert new_bookmarked != bookmarked
+
+
+@pytest.mark.asyncio
+async def test_edit_content_success(auth_client, test_user_persist_with_content, db_session):
+    """
+    """
+    async with db_session as session:
+        result = await session.execute(
+            select(Content)
+              .where(Content.user_id == test_user_persist_with_content.id)
+              .options(
+                  selectinload(Content.tags),
+                  joinedload(Content.video_metadata),
+                  joinedload(Content.post_metadata),
+              )
+        )
+
+        db_content = result.unique().scalars().first()
+
+    body = {
+        "url": db_content.url, # url은 못바꿈
+        "title": "new_title",
+        "thumbnail": "new_thumbnail",
+        "favicon": db_content.favicon, # favicon은 못바꿈
+        "description": "new_description",
+        "bookmark": not db_content.bookmark,
+        "video_length": 0,
+        "body": "",
+        "tags": db_content.tags,
+    }
+    
+    response = await auth_client.put(
+        f"/api/contents/{db_content.id}/user/{test_user_persist_with_content.id}",
+        json=body
+    )
+
+    assert response.status_code == 200
+
+    async with db_session as session:
+        result = await session.execute(
+            select(Content).where(Content.id == db_content.id)
+        )
+
+        editted_content = result.unique().scalars().first()
+    
+    assert editted_content.title == "new_title"
+    assert editted_content.thumbnail == "new_thumbnail"
+    assert editted_content.description == "new_description"
+    assert editted_content.bookmark != db_content.bookmark
+        
