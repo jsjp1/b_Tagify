@@ -133,3 +133,11 @@ async def test_get_tag_all_contents_success_with_empty_tags(auth_client):
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_update_tag_success(
+    auth_client, test_user_persist_with_content, db_session
+):
+    """ """
+    pass

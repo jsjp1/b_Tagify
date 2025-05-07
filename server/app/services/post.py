@@ -5,8 +5,7 @@ from urllib.parse import unquote, urljoin, urlparse
 import requests
 from app.models.content import Content, ContentTypeEnum
 from app.models.user import User
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select
@@ -231,7 +230,7 @@ class PostService:
             "body": body,
             "tags": tags,
         }
-    
+
     @staticmethod
     def extract_first_url(url: str) -> str:
         """
@@ -242,7 +241,7 @@ class PostService:
         if match:
             return match.group(0)
         return url
-        
+
     @staticmethod
     def normalize_url_scheme(url: str, base_url: str) -> str:
         """
@@ -256,7 +255,7 @@ class PostService:
             url = f"https:{url}"
 
         parsed = urlparse(url)
-        if not parsed.netloc: 
+        if not parsed.netloc:
             return urljoin(base_url, url)
 
         return url
@@ -278,13 +277,15 @@ class PostService:
 
         if db_content:
             raise HTTPException(status_code=400, detail="Content already exists")
-        
+
         post_info = PostService._analyze(real_url)
 
         content = ContentAnalyzeResponse(
             url=real_url,
             title=post_info["title"],
-            thumbnail=PostService.normalize_url_scheme(post_info["thumbnail"], content.url),
+            thumbnail=PostService.normalize_url_scheme(
+                post_info["thumbnail"], content.url
+            ),
             favicon=PostService.normalize_url_scheme(post_info["favicon"], content.url),
             description=post_info["description"],
             body=post_info["body"],
@@ -313,4 +314,3 @@ class PostService:
         result = await db.execute(stmt)
         contents = result.scalars().all()
         return contents
-

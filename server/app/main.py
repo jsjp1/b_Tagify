@@ -47,7 +47,13 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+
 @app.get("/privacy-policy", response_class=FileResponse)
 async def privacy_policy():
     file_path = os.path.join("static", "privacy_policy.html")
     return FileResponse(file_path, media_type="text/html")
+
+
+@app.get("/terms-of-service", response_class=FileResponse)
+async def terms_of_service():
+    return FileResponse("static/terms_of_service.html", media_type="text/html")
