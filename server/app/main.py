@@ -1,3 +1,4 @@
+import os
 import time
 from contextlib import asynccontextmanager
 
@@ -10,6 +11,8 @@ from app.middleware.time import QueryTimeMiddleware
 from app.router import router
 from config import get_settings
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
@@ -21,6 +24,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="tagify backend server", lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(router=router)
 
@@ -41,3 +46,8 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+@app.get("/privacy-policy", response_class=FileResponse)
+async def privacy_policy():
+    file_path = os.path.join("static", "privacy_policy.html")
+    return FileResponse(file_path, media_type="text/html")
