@@ -1,5 +1,8 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from app.models.content import Content
+from fastapi import HTTPException
 from sqlalchemy import and_, select
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -41,13 +44,26 @@ from sqlalchemy.orm import joinedload, selectinload
         ),
     ],
 )
+@patch("app.services.video.VideoService.analyze_video", new_callable=AsyncMock)
 async def test_analyze_success(
-    auth_client, test_user_persist, content_type, body, field
+    mock_analyze_video, auth_client, test_user_persist, content_type, body, field
 ):
     """
     콘텐츠 분석 성공 -> 200
     각 필드(url, title, thumbnail 등)가 응답에 포함되는지 확인
     """
+    if content_type == "video":
+        mock_analyze_video.return_value = {
+            "url": body["url"],
+            "title": "Mock Video",
+            "thumbnail": "https://example.com/thumb.jpg",
+            "favicon": "https://example.com/favicon.ico",
+            "description": "Test description",
+            "video_length": 300,
+            "body": "mocked body",
+            "tags": ["mock", "tag"],
+        }
+
     body["user_id"] = test_user_persist.id
 
     response = await auth_client.post(
@@ -56,6 +72,7 @@ async def test_analyze_success(
 
     assert response.status_code == 200
     assert field in response.json()
+
 
 
 @pytest.mark.asyncio
@@ -71,6 +88,29 @@ async def test_analyze_success(
                 "detail_degree": 3,
             },
         ),
+    ],
+)
+async def test_analyze_success_with_invalid_url(
+    auth_client, test_user_persist, content_type, body
+):
+    """
+    존재하지 않는 post url analyze -> 200
+    post의 경우, 실패 처리하지 않고 200 반환
+    """
+    body["user_id"] = test_user_persist.id
+
+    response = await auth_client.post(
+        f"/api/contents/analyze?content_type={content_type}", json=body
+    )
+
+    # 해당 video id의 video가 존재하지 않음
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("content_type", "body"),
+    [
         (
             "video",
             {
@@ -82,24 +122,25 @@ async def test_analyze_success(
         ),
     ],
 )
+@patch("app.services.video.VideoService.analyze_video", new_callable=AsyncMock)
 async def test_analyze_fail_with_invalid_url(
-    auth_client, test_user_persist, content_type, body
+    mock_analyze_video, auth_client, test_user_persist, content_type, body
 ):
     """
-    존재하지 않는 url analyze -> 422 Unprocessable Entitiy
+    존재하지 않는 url analyze -> 404 Unprocessable Entitiy
     """
+    if content_type == "video":
+        mock_analyze_video.side_effect = HTTPException(status_code=404, detail="Video not found on YouTube")
+
     body["user_id"] = test_user_persist.id
 
     response = await auth_client.post(
         f"/api/contents/analyze?content_type={content_type}", json=body
     )
 
-    if content_type == "post":
-        # 해당 url이 존재하지 않음
-        assert response.status_code == 422
-    else:
-        # 해당 video id의 video가 존재하지 않음
-        assert response.status_code == 404
+    # 해당 video id의 video가 존재하지 않음
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Video not found on YouTube"
 
 
 @pytest.mark.asyncio
@@ -448,4 +489,5 @@ async def test_edit_content_success(
     assert editted_content.title == "new_title"
     assert editted_content.thumbnail == "new_thumbnail"
     assert editted_content.description == "new_description"
+    assert editted_content.bookmark != db_content.bookmark
     assert editted_content.bookmark != db_content.bookmark

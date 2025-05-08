@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from app.db import get_db, init_db
@@ -20,7 +21,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="tagify backend server", lifespan=lifespan)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# pytest 위해 임시로 절대경로 추가
+base_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(base_dir, "..", "static")
+if os.path.isdir(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.include_router(router=router)
 
