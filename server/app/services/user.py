@@ -4,14 +4,23 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.schemas.content import ContentPost
-from app.schemas.user import (CheckRefreshToken, TokenRefresh, UserDelete,
-                              UserLogin, UserUpdateName,
-                              UserUpdateProfileImage)
+from app.schemas.user import (
+    CheckRefreshToken,
+    TokenRefresh,
+    UserDelete,
+    UserLogin,
+    UserUpdateName,
+    UserUpdateProfileImage,
+)
 from app.services.content import ContentService
 from app.services.post import PostService
-from app.util.auth import (create_access_token, create_refresh_token,
-                           decode_token, verify_apple_token,
-                           verify_google_token)
+from app.util.auth import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    verify_apple_token,
+    verify_google_token,
+)
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -49,7 +58,9 @@ class UserService:
             tutorial1_description = "Tagifyの使い方をチェックしてみてください!"
             tutorial1_tags = ["チュートリアル", "Tagify"]
 
-            tutorial2_title = "上部のアプリアイコンとプロフィール画像をタップしてみてください！"
+            tutorial2_title = (
+                "上部のアプリアイコンとプロフィール画像をタップしてみてください！"
+            )
             tutorial2_description = "上部のアプリアイコンとプロフィール画像をタップしてみてください！何が表示されるか確認してみましょう。読み終わったらこのメモを削除してください。"
             tutorial2_tags = ["チュートリアル"]
 
@@ -81,8 +92,7 @@ class UserService:
             tags=tutorial2_tags,
         )
 
-        await ContentService.post_content("post", tutorial1, db)
-        await ContentService.post_content("post", tutorial2, db)
+        await ContentService.post_multiple_contents([tutorial1, tutorial2], "post", db)
 
     @staticmethod
     async def login_google(

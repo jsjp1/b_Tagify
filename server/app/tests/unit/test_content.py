@@ -74,7 +74,6 @@ async def test_analyze_success(
     assert field in response.json()
 
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("content_type", "body"),
@@ -130,7 +129,9 @@ async def test_analyze_fail_with_invalid_url(
     존재하지 않는 url analyze -> 404 Unprocessable Entitiy
     """
     if content_type == "video":
-        mock_analyze_video.side_effect = HTTPException(status_code=404, detail="Video not found on YouTube")
+        mock_analyze_video.side_effect = HTTPException(
+            status_code=404, detail="Video not found on YouTube"
+        )
 
     body["user_id"] = test_user_persist.id
 

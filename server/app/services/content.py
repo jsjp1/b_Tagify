@@ -60,7 +60,10 @@ class ContentService:
 
     @staticmethod
     async def post_content(
-        content_type: str, content: ContentPost, db: AsyncSession
+        content_type: str,
+        content: ContentPost,
+        db: AsyncSession,
+        commit=False,
     ) -> dict:
         """
         content 정보 db에 저장 (content, metadata, tag, content_tag)
@@ -135,9 +138,27 @@ class ContentService:
             ],
         )
 
-        await db.commit()
+        if commit:
+            await db.commit()
 
         return {"id": new_content.id, "tags": [tag for tag in existing_tags.values()]}
+
+    @staticmethod
+    async def post_multiple_contents(
+        contents: list[ContentPost], content_type: str, db: AsyncSession
+    ) -> list[dict]:
+        """
+        한 세션에서 여러 번 db를 사용해야할 경우 (e.g. insert tutorial)
+        """
+        results = []
+        for content in contents:
+            result = await ContentService.post_content(
+                content_type=content_type, content=content, db=db, commit=False
+            )
+            results.append(result)
+
+        await db.commit()
+        return results
 
     @staticmethod
     async def toggle_bookmark(content_id: int, db: AsyncSession):
