@@ -1,0 +1,31 @@
+name: Tagify Back Run Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Compose
+        run: docker-compose -f docker-compose.yml up -d --build
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services..."
+          sleep 10
+          docker ps
+
+      - name: Run pytest in FastAPI container
+        run: docker exec app pytest
+
+      - name: Shutdown docker-compose
+        if: always()
+        run: docker-compose down
