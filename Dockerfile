@@ -6,7 +6,7 @@ COPY server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server/ /app
-COPY .env /app
+# COPY .env /app
 
 ENV PYTHONPATH="/app"
 
