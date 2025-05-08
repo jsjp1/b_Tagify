@@ -4,23 +4,14 @@ from typing import List
 import jwt
 from app.models.user import User
 from app.schemas.content import ContentPost
-from app.schemas.user import (
-    CheckRefreshToken,
-    TokenRefresh,
-    UserDelete,
-    UserLogin,
-    UserUpdateName,
-    UserUpdateProfileImage,
-)
+from app.schemas.user import (CheckRefreshToken, TokenRefresh, UserDelete,
+                              UserLogin, UserUpdateName,
+                              UserUpdateProfileImage)
 from app.services.content import ContentService
 from app.services.post import PostService
-from app.util.auth import (
-    create_access_token,
-    create_refresh_token,
-    decode_token,
-    verify_apple_token,
-    verify_google_token,
-)
+from app.util.auth import (create_access_token, create_refresh_token,
+                           decode_token, verify_apple_token,
+                           verify_google_token)
 from config import Settings
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -33,38 +24,65 @@ class UserService:
         """
         신규 가입자일 시 튜토리얼 컨텐츠 집어넣기
         """
-        tutorial_url = "https://jieeen.notion.site/How-to-use-Tagify-1c816dae3fdf80bab3e3dfc7fb6f387d?pvs=4"
-        tutorial_title = 'How to use "Tagify"? 🚀'
-        tutorial_description = "Check out how to use Tagify!"
-        tutorial_tags = ["Tutorial", "Tagify"]
+        tutorial1_url = "https://jieeen.notion.site/How-to-use-Tagify-1c816dae3fdf80bab3e3dfc7fb6f387d?pvs=4"
+        tutorial1_title = 'How to use "Tagify"? 🚀'
+        tutorial1_description = "Check out how to use Tagify!"
+        tutorial1_tags = ["Tutorial", "Tagify"]
+
+        tutorial2_url = ""
+        tutorial2_title = "Try tapping both the app logo and profile image at the top!"
+        tutorial2_description = "Try tapping both the app logo and profile image at the top! What can you discover? Please delete this memo after reading it!"
+        tutorial2_tags = ["Tutorial"]
 
         if lang == "ko":
-            tutorial_url = "https://jieeen.notion.site/Tagify-1c816dae3fdf809d8ad4fa66a417f1dd?pvs=4"
-            tutorial_title = "Tagify를 이용하는 방법 🚀"
-            tutorial_description = "Tagify를 이용하는 방법을 확인해보세요!"
-            tutorial_tags = ["튜토리얼", "Tagify"]
+            tutorial1_url = "https://jieeen.notion.site/Tagify-1c816dae3fdf809d8ad4fa66a417f1dd?pvs=4"
+            tutorial1_title = "Tagify를 이용하는 방법 🚀"
+            tutorial1_description = "Tagify를 이용하는 방법을 확인해보세요!"
+            tutorial1_tags = ["튜토리얼", "Tagify"]
+
+            tutorial2_title = "상단에 있는 앱 로고와 프로필 이미지를 모두 터치해보세요!"
+            tutorial2_description = "상단에 있는 앱 로고와 프로필 이미지를 모두 터치해보세요! 어떤 것을 확인할 수 있을까요? 이 메모는 다 읽어보신 후 삭제해주시기 바랍니다!"
+            tutorial2_tags = ["튜토리얼"]
         elif lang == "ja":
-            tutorial_url = "https://jieeen.notion.site/Tagify-1e416dae3fdf80d28f90f7b7a54a8f71?pvs=4"
-            tutorial_title = "Tagifyの使い方 🚀"
-            tutorial_description = "Tagifyの使い方をチェックしてみてください!"
-            tutorial_tags = ["チュートリアル", "Tagify"]
+            tutorial1_url = "https://jieeen.notion.site/Tagify-1e416dae3fdf80d28f90f7b7a54a8f71?pvs=4"
+            tutorial1_title = "Tagifyの使い方 🚀"
+            tutorial1_description = "Tagifyの使い方をチェックしてみてください!"
+            tutorial1_tags = ["チュートリアル", "Tagify"]
 
-        analyzed_post = PostService._analyze(tutorial_url)
+            tutorial2_title = "上部のアプリアイコンとプロフィール画像をタップしてみてください！"
+            tutorial2_description = "上部のアプリアイコンとプロフィール画像をタップしてみてください！何が表示されるか確認してみましょう。読み終わったらこのメモを削除してください。"
+            tutorial2_tags = ["チュートリアル"]
 
-        content = ContentPost(
+        analyzed_post = PostService._analyze(tutorial1_url)
+
+        tutorial1 = ContentPost(
             user_id=db_user.id,
             bookmark=True,
-            url=tutorial_url,
-            title=tutorial_title,
+            url=tutorial1_url,
+            title=tutorial1_title,
             thumbnail=analyzed_post["thumbnail"],
             favicon=analyzed_post["favicon"],
-            description=tutorial_description,
+            description=tutorial1_description,
             video_length=0,
             body="",
-            tags=tutorial_tags,
+            tags=tutorial1_tags,
         )
 
-        await ContentService.post_content("post", content, db)
+        tutorial2 = ContentPost(
+            user_id=db_user.id,
+            bookmark=False,
+            url=tutorial2_url,
+            title=tutorial2_title,
+            thumbnail="",
+            favicon="",
+            description=tutorial2_description,
+            video_length=0,
+            body="",
+            tags=tutorial2_tags,
+        )
+
+        await ContentService.post_content("post", tutorial1, db)
+        await ContentService.post_content("post", tutorial2, db)
 
     @staticmethod
     async def login_google(
