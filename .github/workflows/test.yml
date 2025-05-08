@@ -17,6 +17,12 @@ jobs:
       - name: Set up Docker Compose
         run: docker compose -f docker-compose.yaml up -d --build
 
+      - name: Create .env file
+        run: |
+          echo "POSTGRES_USER=testuser" >> .env
+          echo "POSTGRES_PASSWORD=testpass" >> .env
+          echo "POSTGRES_DB=testdb" >> .env
+
       - name: Wait for services to be healthy
         run: |
           echo "Waiting for services..."
@@ -28,4 +34,4 @@ jobs:
 
       - name: Shutdown docker-compose
         if: always()
-        run: docker-compose down
+        run: docker compose down
