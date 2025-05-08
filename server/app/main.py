@@ -1,16 +1,11 @@
-import os
-import time
 from contextlib import asynccontextmanager
 
-import httpx
-import jwt
 from app.db import get_db, init_db
 from app.middleware.auth import AuthMiddleware
 from app.middleware.exception_handler import ExceptionHandlerMiddleware
-from app.middleware.time import QueryTimeMiddleware
 from app.router import router
 from config import get_settings
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,8 +45,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
 
 @app.get("/privacy-policy", response_class=FileResponse)
 async def privacy_policy():
-    file_path = os.path.join("static", "privacy_policy.html")
-    return FileResponse(file_path, media_type="text/html")
+    return FileResponse("static/privacy_policy.html", media_type="text/html")
 
 
 @app.get("/terms-of-service", response_class=FileResponse)
