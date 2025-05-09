@@ -17,6 +17,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/docs",
             "/openapi.json",
             "/home",
+            "/static/img/app_icon.png",
+            "/static/img/download_on_the_appstore.svg",
             "/privacy-policy",
             "/terms-of-service",
             "/api/users/login",
