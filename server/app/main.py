@@ -48,6 +48,11 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+@app.get("/home", response_class=FileResponse)
+async def home():
+    return FileResponse("static/home.html", media_type="text/html")
+
+
 @app.get("/privacy-policy", response_class=FileResponse)
 async def privacy_policy():
     return FileResponse("static/privacy_policy.html", media_type="text/html")

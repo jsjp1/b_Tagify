@@ -16,6 +16,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/",
             "/docs",
             "/openapi.json",
+            "/home",
             "/privacy-policy",
             "/terms-of-service",
             "/api/users/login",
