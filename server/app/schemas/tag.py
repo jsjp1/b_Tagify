@@ -48,7 +48,7 @@ class TagPutResponse(BaseModel):
 
 
 class TagDelete(BaseModel):
-    tagname: str
+    id: int
 
 
 class TagDeleteResponse(BaseModel):

@@ -155,7 +155,7 @@ class TagService:
         if not db_tag:
             raise HTTPException(
                 status_code=404,
-                detail=f"Tag name '{tag.tagname}' does not exist for user id '{user_id}'",
+                detail=f"Tag id '{tag_id}' does not exist for user id '{user_id}'",
             )
 
         if tag.tagname:
@@ -173,14 +173,14 @@ class TagService:
         콘텐츠 없는 빈 태그 삭제, 연관된 콘텐츠가 하나라도 있을시 예외 반환
         """
         result = await db.execute(
-            select(Tag).where(and_(Tag.tagname == tag.tagname, Tag.user_id == user_id))
+            select(Tag).where(and_(Tag.id == tag.id, Tag.user_id == user_id))
         )
         db_tag = result.scalar_one_or_none()
 
         if not db_tag:
             raise HTTPException(
-                status_code=400,
-                detail=f"Tag name '{tag.tagname}' does not exist for user id '{user_id}'",
+                status_code=404,
+                detail=f"Tag name '{tag.id}' does not exist for user id '{user_id}'",
             )
 
         result = await db.execute(

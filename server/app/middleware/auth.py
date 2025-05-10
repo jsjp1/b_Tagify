@@ -21,6 +21,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/static/img/download_on_the_appstore.svg",
             "/privacy-policy",
             "/terms-of-service",
+            "/static/privacy_policy.html",
+            "/static/terms_of_service.html",
             "/api/users/login",
             "/api/users/token/refresh",
             "/api/users/token/check/refresh_token",

@@ -23,10 +23,16 @@
       color: #222;
     }
 
-    img {
-      width: 180px;
+    img.logo {
+      width: 300px;
       height: auto;
-      margin-bottom: 30px;
+      margin-bottom: 50px;
+    }
+    img.app-store {
+      width: 160px;
+      height: auto;
+      margin-top: 10px;
+      cursor: pointer;
     }
 
     p {
@@ -39,10 +45,14 @@
   </style>
 </head>
 <body>
-  <img src="/static/img/app_icon.png" alt="Tagify Logo" />
-    <a href="https://apps.apple.com/app/id6742812759" target="_blank">
-      <img src="/static/img/download_on_the_appstore.svg" alt="Download on the App Store" class="app-store" />
-    </a>
-    <!-- <a href="https://play.google.com/store/apps/details?id=com.ellipsoid.tagi" target="_blank">Download on Android</a> -->
+  <img src="/static/img/app_icon.png" alt="Tagify Logo" class="logo"/>
+  <a href="https://apps.apple.com/app/id6742812759" target="_blank">
+    <img src="/static/img/download_on_the_appstore.svg" alt="Download on the App Store" class="app-store" />
+  </a>
+
+  <div style="margin-top: 40px;">
+    <a href="/static/privacy_policy.html" target="_blank" style="margin-right: 20px; color: #007aff; text-decoration: none;">Privacy Policy</a>
+    <a href="/static/terms_of_service.html" target="_blank" style="color: #007aff; text-decoration: none;">Terms of Service</a>
+  </div>
 </body>
 </html>
