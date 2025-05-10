@@ -5,7 +5,8 @@ from urllib.parse import unquote, urljoin, urlparse
 import requests
 from app.models.content import Content, ContentTypeEnum
 from app.models.user import User
-from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
+from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
+                                 UserContents)
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select
@@ -56,8 +57,7 @@ class PostService:
                 response = requests.get(
                     url,
                     headers={
-                        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-                        # "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
+                        "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36",
                         "Accept-Language": "ko-KR,ko;q=0.9",
                         "Accept": (
                             "text/html,application/xhtml+xml,application/xml;"
@@ -65,7 +65,7 @@ class PostService:
                         ),
                         "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
                     },
-                    timeout=10,
+                    timeout=5,
                     allow_redirects=False,
                 )
                 if 300 <= response.status_code < 400:
@@ -127,12 +127,7 @@ class PostService:
             response = requests.get(
                 final_url,
                 headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/122.0.0.0 Safari/537.36"
-                    ),
-                    # "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
                     "Accept": (
                         "text/html,application/xhtml+xml,application/xml;"
                         "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
@@ -147,7 +142,7 @@ class PostService:
                     "Sec-Fetch-User": "?1",
                     "Referer": "https://www.google.com/",
                 },
-                timeout=3,
+                timeout=2,
                 allow_redirects=True,
             )
         except Exception as e:
@@ -155,12 +150,11 @@ class PostService:
             response = requests.get(
                 final_url,
                 headers={
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-                    # "User-Agent": (
-                    #     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    #     "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    #     "Chrome/122.0.0.0 Safari/537.36"
-                    # ),
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/122.0.0.0 Safari/537.36"
+                    ),
                     "Accept": (
                         "text/html,application/xhtml+xml,application/xml;"
                         "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
@@ -176,7 +170,7 @@ class PostService:
                     "Sec-Fetch-User": "?1",
                     "Referer": "https://www.google.com/",
                 },
-                timeout=3,
+                timeout=2,
                 allow_redirects=True,
             )
         response.encoding = response.apparent_encoding
