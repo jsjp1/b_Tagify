@@ -1,4 +1,4 @@
-name: Tagify Backend Pytest Only
+name: Tagify Backend test & deploy
 
 on:
   push:
@@ -47,3 +47,20 @@ jobs:
         run: |
           cd server
           pytest -v --maxfail=1
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/work/b_tagify
+            git pull origin main
+            docker-compose down
+            docker-compose up -d --build
