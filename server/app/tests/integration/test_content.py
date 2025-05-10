@@ -491,4 +491,3 @@ async def test_edit_content_success(
     assert editted_content.thumbnail == "new_thumbnail"
     assert editted_content.description == "new_description"
     assert editted_content.bookmark != db_content.bookmark
-    assert editted_content.bookmark != db_content.bookmark

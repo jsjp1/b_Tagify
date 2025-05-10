@@ -46,7 +46,7 @@ class PostService:
         return f"{base_url}/favicon.ico"
 
     @staticmethod
-    def follow_redirects_until_valid(url: str, max_redirects: int = 10) -> str:
+    def _follow_redirects_until_valid(url: str, max_redirects: int = 10) -> str:
         """
         수동 리디렉션을 따라가며 최종 유효한 URL 반환
         intent:// 등 requests가 지원하지 않는 스킴을 피함
@@ -108,7 +108,7 @@ class PostService:
         주어진 URL에서 콘텐츠 관련 정보를 추출하여 딕셔너리로 반환
         """
         try:
-            final_url = PostService.follow_redirects_until_valid(url)
+            final_url = PostService._follow_redirects_until_valid(url)
         except Exception as e:
             print(e)
             parsed_url = urlparse(url)
