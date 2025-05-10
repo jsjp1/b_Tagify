@@ -232,18 +232,19 @@ class PostService:
         }
 
     @staticmethod
-    def extract_first_url(url: str) -> str:
+    def _extract_first_url(url: str) -> str:
         """
         정규표현식 이용해 url만 추출
         """
-        pattern = r"https?://[^\s]+"
+        pattern = r"https?://[^\s\)\],]+"
         match = re.search(pattern, url)
         if match:
             return match.group(0)
-        return url
+
+        raise ValueError("No valid URL found in input string")
 
     @staticmethod
-    def normalize_url_scheme(url: str, base_url: str) -> str:
+    def _normalize_url_scheme(url: str, base_url: str) -> str:
         """
         스킴이 없으면 https:// 붙임
         잘못된 도메인 or 상대 경로 -> base_url 기준으로 보정
@@ -267,7 +268,13 @@ class PostService:
         """
         post 정보 추출 후 반환
         """
-        real_url = PostService.extract_first_url(content.url)
+        try:
+            real_url = PostService._extract_first_url(content.url)
+        except ValueError as e:
+            print(e)
+            raise HTTPException(
+                status_code=422, detail="No valid URL found in input string"
+            )
 
         stmt = select(Content).where(
             and_(Content.url == real_url, Content.user_id == content.user_id)
@@ -283,10 +290,12 @@ class PostService:
         content = ContentAnalyzeResponse(
             url=real_url,
             title=post_info["title"],
-            thumbnail=PostService.normalize_url_scheme(
+            thumbnail=PostService._normalize_url_scheme(
                 post_info["thumbnail"], content.url
             ),
-            favicon=PostService.normalize_url_scheme(post_info["favicon"], content.url),
+            favicon=PostService._normalize_url_scheme(
+                post_info["favicon"], content.url
+            ),
             description=post_info["description"],
             body=post_info["body"],
             tags=post_info["tags"],
