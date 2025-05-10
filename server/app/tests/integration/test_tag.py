@@ -155,23 +155,18 @@ async def test_update_tag_success(
     for i, before_tag in enumerate(db_tags):
         random_color_int = random.randint(0, 4_294_967_295)
 
-        body={
-            "tagname": before_tag.tagname + str(i),
-            "color": random_color_int
-        }
+        body = {"tagname": before_tag.tagname + str(i), "color": random_color_int}
 
         response = await auth_client.put(
             f"/api/tags/user/{test_user_persist_with_content.id}/{before_tag.id}/update",
-            json=body
+            json=body,
         )
 
         assert response.status_code == 200
         assert "id" in response.json()
 
         async with db_session as session:
-            result = await session.execute(
-                select(Tag).where(Tag.id == before_tag.id)
-            )
+            result = await session.execute(select(Tag).where(Tag.id == before_tag.id))
 
             updated_tag = result.unique().scalars().first()
 
@@ -180,22 +175,24 @@ async def test_update_tag_success(
 
 
 @pytest.mark.asyncio
-async def test_update_tag_fail_with_invalid_tag_id(auth_client, test_user_persist_with_content):
+async def test_update_tag_fail_with_invalid_tag_id(
+    auth_client, test_user_persist_with_content
+):
     """
     유저가 갖고 있지 않은 tag 업데이트 -> 404 Not found
     """
     fake_tag_id = 999999
     random_color_int = random.randint(0, 4_294_967_295)
 
-    body = {
-        "tagname": "new_tag_id",
-        "color": random_color_int
-    }
+    body = {"tagname": "new_tag_id", "color": random_color_int}
 
     response = await auth_client.put(
         f"/api/tags/user/{test_user_persist_with_content.id}/{fake_tag_id}/update",
-        json=body
+        json=body,
     )
 
     assert response.status_code == 404
-    assert response.json()["detail"] == f"Tag id '{fake_tag_id}' does not exist for user id '{test_user_persist_with_content.id}'"
+    assert (
+        response.json()["detail"]
+        == f"Tag id '{fake_tag_id}' does not exist for user id '{test_user_persist_with_content.id}'"
+    )
