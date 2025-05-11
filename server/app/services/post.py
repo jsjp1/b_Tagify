@@ -5,8 +5,7 @@ from urllib.parse import unquote, urljoin, urlparse
 import requests
 from app.models.content import Content, ContentTypeEnum
 from app.models.user import User
-from app.schemas.content import (ContentAnalyze, ContentAnalyzeResponse,
-                                 UserContents)
+from app.schemas.content import ContentAnalyze, ContentAnalyzeResponse, UserContents
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
 from sqlalchemy import and_, desc, select

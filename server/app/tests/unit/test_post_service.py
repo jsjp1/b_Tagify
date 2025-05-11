@@ -68,46 +68,34 @@ def test_get_favicon_no_icon_tag():
 # 8. 괄호가 붙는 경우
 
 
-def test_extract_first_url_only_url():
-    url = "https://www.example.com"
-    assert PostService._extract_first_url(url) == "https://www.example.com"
+@pytest.mark.parametrize(
+    "input_text, expected_url",
+    [
+        ("https://www.example.com", "https://www.example.com"),
+        ("check this out: https://www.example.com", "https://www.example.com"),
+        ("https://www.example.com is great", "https://www.example.com"),
+        ("first https://first.com and then https://second.com", "https://first.com"),
+        ("visit http://test.com", "http://test.com"),
+        ("link: https://example.com, and more", "https://example.com"),
+        ("(https://example.com)", "https://example.com"),
+    ],
+)
+def test_extract_first_url_valid(input_text, expected_url):
+    assert PostService._extract_first_url(input_text) == expected_url
 
 
-def test_extract_first_url_with_prefix_text():
-    url = "check this out: https://www.example.com"
-    assert PostService._extract_first_url(url) == "https://www.example.com"
-
-
-def test_extract_first_url_with_suffix_text():
-    url = "https://www.example.com is great"
-    assert PostService._extract_first_url(url) == "https://www.example.com"
-
-
-def test_extract_first_url_multiple_urls():
-    url = "first https://first.com and then https://second.com"
-    assert PostService._extract_first_url(url) == "https://first.com"
-
-
-def test_extract_first_url_with_http():
-    url = "visit http://test.com"
-    assert PostService._extract_first_url(url) == "http://test.com"
-
-
-def test_extract_first_url_invalid_format():
-    url = "htp://notvalid.com is wrong"
+@pytest.mark.parametrize(
+    "input_text",
+    [
+        "htp://notvalid.com is wrong",
+        "this string has no link",
+        "ftp://example.com",
+    ],
+)
+def test_extract_first_url_invalid(input_text):
     with pytest.raises(ValueError) as exc_info:
-        PostService._extract_first_url(url)
+        PostService._extract_first_url(input_text)
     assert str(exc_info.value) == "No valid URL found in input string"
-
-
-def test_extract_first_url_with_trailing_punctuation():
-    url = "link: https://example.com, and more"
-    assert PostService._extract_first_url(url) == "https://example.com"
-
-
-def test_extract_first_url_with_brackets():
-    url = "(https://example.com)"
-    assert PostService._extract_first_url(url) == "https://example.com"
 
 
 ## normalize url scheme unit test
@@ -119,40 +107,33 @@ def test_extract_first_url_with_brackets():
 # 6. https로 시작하는 정상 URL → 그대로 반환
 
 
-def test_normalize_url_empty():
-    assert PostService._normalize_url_scheme("", "https://example.com") == ""
-
-
-def test_normalize_url_protocol_relative():
-    url = "//example.com/favicon.ico"
-    expected = "https://example.com/favicon.ico"
-    result = PostService._normalize_url_scheme(url, "https://base.com")
-    assert result == expected
-
-
-def test_normalize_url_relative_path_with_slash():
-    url = "/images/icon.png"
-    base_url = "https://example.com"
-    expected = urljoin(base_url, url)
+@pytest.mark.parametrize(
+    "url, base_url, expected",
+    [
+        ("", "https://example.com", ""),
+        (
+            "//example.com/favicon.ico",
+            "https://base.com",
+            "https://example.com/favicon.ico",
+        ),
+        (
+            "/images/icon.png",
+            "https://example.com",
+            urljoin("https://example.com", "/images/icon.png"),
+        ),
+        ("icon.png", "https://example.com", urljoin("https://example.com", "icon.png")),
+        (
+            "http://example.com/icon.png",
+            "https://base.com",
+            "http://example.com/icon.png",
+        ),
+        (
+            "https://example.com/icon.png",
+            "https://base.com",
+            "https://example.com/icon.png",
+        ),
+    ],
+)
+def test_normalize_url_scheme(url, base_url, expected):
     result = PostService._normalize_url_scheme(url, base_url)
     assert result == expected
-
-
-def test_normalize_url_relative_path_no_slash():
-    url = "icon.png"
-    base_url = "https://example.com"
-    expected = urljoin(base_url, url)
-    result = PostService._normalize_url_scheme(url, base_url)
-    assert result == expected
-
-
-def test_normalize_url_full_http():
-    url = "http://example.com/icon.png"
-    result = PostService._normalize_url_scheme(url, "https://base.com")
-    assert result == url
-
-
-def test_normalize_url_full_https():
-    url = "https://example.com/icon.png"
-    result = PostService._normalize_url_scheme(url, "https://base.com")
-    assert result == url
