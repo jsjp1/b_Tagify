@@ -1,5 +1,3 @@
-import os
-
 import jwt
 from config import Settings
 from fastapi import HTTPException, Request

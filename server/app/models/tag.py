@@ -10,7 +10,7 @@ class Tag(Base):
     __table_args__ = (UniqueConstraint("user_id", "tagname", name="uq_user_tagname"),)
 
     id = Column(Integer, primary_key=True, index=True)
-    tagname = Column(String, nullable=False, index=True)
+    tagname = Column(String, nullable=False)
     color = Column(BIGINT, nullable=True, default=4288585374)  # default = Colors.grey
 
     user_id = Column(BIGINT, ForeignKey("users.id", ondelete="CASCADE"))

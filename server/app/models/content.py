@@ -16,7 +16,7 @@ class Content(Base):
     __tablename__ = "contents"
 
     id = Column(BIGINT, primary_key=True, index=True)
-    url = Column(String, nullable=False)
+    url = Column(String, index=True, nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True, default="")
     bookmark = Column(Boolean, nullable=False, default=False)
