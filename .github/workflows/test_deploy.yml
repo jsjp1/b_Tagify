@@ -27,6 +27,8 @@ jobs:
 
     env:
       DATABASE_URL: postgresql+asyncpg://test:1234@localhost:5432/test_db
+      TEST_GOOGLE_ID_TOKEN: ${{ secrets.TEST_GOOGLE_ID_TOKEN }}
+      TEST_GOOGLE_OAUTH_ID: ${{ secrets.TEST_GOOGLE_OAUTH_ID }}
 
     steps:
       - name: Checkout code
