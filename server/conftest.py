@@ -58,11 +58,20 @@ async def client(
 
     from httpx import ASGITransport
 
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(
+        app=app
+    )  # app 객체를 네트워크 통신 없이 직접 호출하기 위해 사용
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
 
     app.dependency_overrides.clear()
+
+
+# e2e test에서 실제 작동하는 서버 사용
+@pytest_asyncio.fixture()
+async def server_client() -> AsyncGenerator[AsyncClient, Any]:
+    async with AsyncClient(base_url="https://tagi.jieeen.kr") as client:
+        yield client
 
 
 @pytest_asyncio.fixture()
