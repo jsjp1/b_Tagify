@@ -23,12 +23,12 @@ class Settings(BaseSettings):
     APPLE_CLIENT_ID_IOS: str = "com.ellipsoid.tagi"
     APPLE_CLIENT_ID_ANDROID: str = "com.ellipsoid.tagi.socialLogin"
 
+    TEST_GOOGLE_ID_TOKEN: str = "TEST_GOOGLE_ID_TOKEN"
+    TEST_GOOGLE_OAUTH_ID: str = "TEST_GOOGLE_OAUTH_ID"
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )
-
-    TEST_GOOGLE_ID_TOKEN: str = "TEST_GOOGLE_ID_TOKEN"
-    TEST_GOOGLE_OAUTH_ID: str = "TEST_GOOGLE_OAUTH_ID"
 
     @property
     def apple_audiences(self) -> list[str]:

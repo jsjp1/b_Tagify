@@ -2,6 +2,7 @@ import pytest
 from config import get_settings
 
 
+@pytest.mark.skip(reason="google id token")
 @pytest.mark.asyncio
 async def test_e2e_scenario1(server_client):
     """
@@ -25,13 +26,13 @@ async def test_e2e_scenario1(server_client):
         "lang": "kr",
     }
 
-    response1 = await server_client.post(
+    response = await server_client.post(
         "/api/users/login",
         json=body,
     )
 
-    assert response1.status_code == 200
-    login_response = response1.json()
+    assert response.status_code == 200
+    login_response = response.json()
     user_id = login_response["id"]
 
     server_client.headers.update(
