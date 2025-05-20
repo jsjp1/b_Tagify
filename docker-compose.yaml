@@ -57,6 +57,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./server/static:/app/static
     depends_on:
       - fastapi
     networks:
