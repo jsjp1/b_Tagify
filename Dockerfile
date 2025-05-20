@@ -11,4 +11,4 @@ COPY .env /app
 ENV PYTHONPATH="/app"
 
 # CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "3", "app.main:app"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "3", "-b", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "app.main:app"]
