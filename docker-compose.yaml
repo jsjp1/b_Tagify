@@ -25,7 +25,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./psql/postgresql.conf:/etc/postgresql/postgresql.conf
       - ./psql/pg_hba.conf:/etc/postgresql/pg_hba.conf
-      - ./psql/pg_dump.sh:/docker-entrypoint-initdb.d/pg_dump.sh
+      - ./psql/pg_dump.sh:/usr/local/bin/pg_dump.sh
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
     networks:
       - tagi_network
