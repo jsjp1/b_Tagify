@@ -36,7 +36,6 @@ app.add_middleware(ExceptionHandlerMiddleware)
 
 @app.get("/")
 def get_root():
-    print({type(asyncio.get_event_loop_policy())})
     return {"message": "FastAPI Version 0.115.6"}
 
 

@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+EXPOSE 8000
+
 COPY server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
